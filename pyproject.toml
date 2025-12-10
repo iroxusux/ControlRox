@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "ControlRox"
-version = "2.2.010"
+version = "2.2.011"
 authors = [
   { name="Brian LaFond", email="Brian.L.LaFond@gmail.com" },
 ]
