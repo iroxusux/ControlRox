@@ -68,7 +68,7 @@ class TestRaRoutineInit(unittest.TestCase):
 
     def test_init_with_name_and_description(self):
         """Test RaRoutine initialization with name and description parameters."""
-        routine = RaRoutine(
+        _ = RaRoutine(
             meta_data=self.basic_routine_meta,
             name="CustomName",
             description="Custom description"
