@@ -1,0 +1,21 @@
+{
+    "catalog_number": "ETHERNET-MODULE",
+    "class_name": "Turck_TBEN_L4_8IOL",
+    "vendor": "Turck",
+    "controls_type": "BLOCK",
+    "connection_points": {
+        "input": 103,
+        "output": 104,
+        "config": 0
+    },
+    "connection_sizes": {
+        "input": 346,
+        "output": 262,
+        "config": 162
+    },
+    "metadata": {
+        "vendor": "Turck",
+        "description": "Turck TBEN-L4-8IOL IO-Link Block Module",
+        "created_date": "2025-12-9"
+    }
+}

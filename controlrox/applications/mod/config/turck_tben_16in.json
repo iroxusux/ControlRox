@@ -1,0 +1,21 @@
+{
+    "catalog_number": "ETHERNET-MODULE",
+    "class_name": "Turck_TBEN_16In",
+    "vendor": "Turck",
+    "controls_type": "INPUT_BLOCK",
+    "connection_points": {
+        "input": 103,
+        "output": 104,
+        "config": 0
+    },
+    "connection_sizes": {
+        "input": 8,
+        "output": 2,
+        "config": 16
+    },
+    "metadata": {
+        "vendor": "Turck",
+        "description": "Turck TBEN-16In Input Module",
+        "created_date": "2025-12-2"
+    }
+}

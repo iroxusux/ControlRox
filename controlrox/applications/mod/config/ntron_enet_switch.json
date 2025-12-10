@@ -1,0 +1,21 @@
+{
+    "catalog_number": "ETHERNET-MODULE",
+    "class_name": "NTron_ENET_Switch",
+    "vendor": "Red Lion",
+    "controls_type": "ETHERNET_SWITCH",
+    "connection_points": {
+        "input": 105,
+        "output": 104,
+        "config": 0
+    },
+    "connection_sizes": {
+        "input": 64,
+        "output": 16,
+        "config": 0
+    },
+    "metadata": {
+        "vendor": "Red Lion",
+        "description": "Red Lion NTron Series Ethernet Switch Module",
+        "created_date": "2025-12-2"
+    }
+}

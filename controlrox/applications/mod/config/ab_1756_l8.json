@@ -1,0 +1,11 @@
+{
+    "catalog_number": "1756-L8",
+    "class_name": "AB_1756_L8",
+    "vendor": "Allen Bradley",
+    "controls_type": "PLC",
+    "metadata": {
+        "vendor": "Allen Bradley",
+        "description": "Allen Bradley 1756-L8 Series PLC Controller.",
+        "created_date": "2025-12-2"
+    }
+}

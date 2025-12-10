@@ -1,0 +1,21 @@
+{
+    "catalog_number": "ETHERNET-MODULE",
+    "class_name": "Turck_TBEN_8I8O",
+    "vendor": "Turck",
+    "controls_type": "INPUT_OUTPUT_BLOCK",
+    "connection_points": {
+        "input": 103,
+        "output": 104,
+        "config": 0
+    },
+    "connection_sizes": {
+        "input": 8,
+        "output": 4,
+        "config": 16
+    },
+    "metadata": {
+        "vendor": "Turck",
+        "description": "Turck TBEN-8I8O Input/Output Module",
+        "created_date": "2025-12-2"
+    }
+}

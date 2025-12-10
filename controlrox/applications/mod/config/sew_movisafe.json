@@ -1,0 +1,57 @@
+{
+    "catalog_number": "ETHERNET-SAFETY-STANDARD-MODULE",
+    "class_name": "SEW_MoviSafe",
+    "vendor": "SEW",
+    "controls_type": "DRIVE",
+    "connection_points": {
+        "input": 130,
+        "output": 120,
+        "config": 100
+    },
+    "connection_sizes": {
+        "input": 16,
+        "output": 16,
+        "config": 0
+    },
+    "required_imports": [
+        {
+            "path": "docs\\controls\\emu\\Demo3D_MoviMotAdv_DataType.L5X",
+            "elements": [
+                "DataTypes"
+            ]
+        }
+    ],
+    "tags": [
+        {
+            "name_method": "get_standard_input_tag_name",
+            "datatype": "Demo3D_WDint",
+            "tag_class": "Standard",
+            "description": "Standard input tag."
+        },
+        {
+            "name_method": "get_safety_input_tag_name",
+            "datatype": "Demo3D_WDint",
+            "tag_class": "Safety",
+            "description": "Safety input tag."
+        }
+    ],
+    "rungs": {
+        "safety": [
+            {
+                "text_template": "COP(sz_Demo3D_{module.name}_I,{module.name}:SI,1);",
+                "comment": "Copy the input data from the emulation tag to the safety block."
+            }
+        ],
+        "standard": [
+            {
+                "text_template": "COP(zz_Demo3D_{module.name}.I,{module.name}:I,1)COP({module.name}:O,zz_Demo3D_{module.name}.O,1);",
+                "comment": "Standard Emulation Logic for SEW Safe MoviDrive."
+            }
+        ]
+    },
+    "metadata": {
+        "vendor": "SEW",
+        "description": "SEW MoviSafe Drive Module",
+        "created_date": "2025-12-2"
+    }
+}

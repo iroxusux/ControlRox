@@ -1,0 +1,65 @@
+{
+    "catalog_number": "1732ES-IB8XOBV4",
+    "class_name": "AB_1732Es_IB8XOBV4",
+    "vendor": "Allen Bradley",
+    "controls_type": "SAFETY_BLOCK",
+    "required_imports": [
+        {
+            "path": "docs\\controls\\emu\\Demo3D_WDint_DataType.L5X",
+            "elements": [
+                "DataTypes"
+            ]
+        },
+        {
+            "path": "docs\\controls\\emu\\Demo3D_CommOK_SBK_DataType.L5X",
+            "elements": [
+                "DataTypes"
+            ]
+        }
+    ],
+    "tags": [
+        {
+            "name_template": "zz_Demo3D_Comm_{controller.process_name}SBK",
+            "datatype": "Demo3D_CommOK_SBK",
+            "tag_class": "Standard",
+            "description": "Communication status tag for SBK module array."
+        },
+        {
+            "name_method": "get_standard_input_tag_name",
+            "datatype": "Demo3D_WDint",
+            "tag_class": "Standard",
+            "description": "Standard input tag."
+        },
+        {
+            "name_method": "get_safety_input_tag_name",
+            "datatype": "Demo3D_WDint",
+            "tag_class": "Safety",
+            "description": "Safety input tag."
+        },
+        {
+            "name_method": "get_standard_output_tag_name",
+            "datatype": "DINT",
+            "tag_class": "Standard",
+            "description": "Standard output tag."
+        }
+    ],
+    "rungs": {
+        "safety": [
+            {
+                "text_template": "COP(sz_Demo3D_{module.name}_I,{module.name}:I,1);",
+                "comment": "Copy the input data from the emulation tag to the safety block."
+            }
+        ],
+        "standard": [
+            {
+                "text_template": "COP({module.name}:O,zz_Demo3D_{module.name}_O,1);",
+                "comment": "Copy the output data from the safety block to the emulation tag."
+            }
+        ]
+    },
+    "metadata": {
+        "vendor": "Allen Bradley",
+        "description": "Allen Bradley 1732ES-IB8XOBV4 Safety Block Module",
+        "created_date": "2025-11-27"
+    }
+}

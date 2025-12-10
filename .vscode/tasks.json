@@ -1,0 +1,13 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "install",
+            "type": "shell",
+            "command": "./install.sh",
+            "problemMatcher": [
+                "$python"
+            ]
+        }
+    ]
+}

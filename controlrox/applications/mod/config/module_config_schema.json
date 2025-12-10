@@ -1,0 +1,268 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "IntrospectiveModuleConfig",
+    "description": "Configuration schema for introspective PLC modules",
+    "type": "object",
+    "required": [
+        "catalog_number",
+        "controls_type",
+        "class_name"
+    ],
+    "properties": {
+        "catalog_number": {
+            "type": "string",
+            "description": "The catalog number of the module (e.g., '1732ES-IB8XOBV4')"
+        },
+        "class_name": {
+            "type": "string",
+            "description": "The Python class name to generate (e.g., 'AB_1732Es_IB8XOBV4')",
+            "pattern": "^[A-Z][a-zA-Z0-9_]*$"
+        },
+        "vendor": {
+            "type": "string",
+            "description": "The vendor/manufacturer of the module (e.g., 'Allen Bradley')"
+        },
+        "controls_type": {
+            "type": "string",
+            "description": "The type of controls this module provides",
+            "enum": [
+                "SAFETY_INPUT_OUTPUT_BLOCK",
+                "SAFETY_INPUT_BLOCK",
+                "SAFETY_OUTPUT_BLOCK",
+                "SAFETY_BLOCK",
+                "POINT_IO",
+                "ETHERNET",
+                "RACK_COMM_CARD",
+                "PLC",
+                "DRIVE",
+                "HMI"
+            ]
+        },
+        "connection_points": {
+            "type": "object",
+            "description": "Connection point configuration for the module",
+            "properties": {
+                "input": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "output": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "config": {
+                    "type": "integer",
+                    "minimum": 0
+                }
+            }
+        },
+        "connection_sizes": {
+            "type": "object",
+            "description": "Connection size configuration in bytes",
+            "properties": {
+                "input": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "output": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "config": {
+                    "type": "integer",
+                    "minimum": 0
+                }
+            }
+        },
+        "required_imports": {
+            "type": "array",
+            "description": "List of required file imports for datatypes/AOIs",
+            "items": {
+                "type": "object",
+                "required": [
+                    "path",
+                    "elements"
+                ],
+                "properties": {
+                    "path": {
+                        "type": "string",
+                        "description": "Path to the L5X file (e.g., 'docs\\controls\\emu\\Demo3D_WDint_DataType.L5X')"
+                    },
+                    "elements": {
+                        "type": "array",
+                        "description": "Elements to import from the file",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "tags": {
+            "type": "array",
+            "description": "Required tags for this module",
+            "items": {
+                "type": "object",
+                "required": [
+                    "name_template",
+                    "datatype"
+                ],
+                "properties": {
+                    "name_template": {
+                        "type": "string",
+                        "description": "Tag name template with placeholders like {module_name}, {controller.process_name}"
+                    },
+                    "name_method": {
+                        "type": "string",
+                        "description": "Method name that returns this tag name (e.g., 'get_safety_input_tag_name')"
+                    },
+                    "datatype": {
+                        "type": "string",
+                        "description": "The data type of the tag (e.g., 'Demo3D_WDint', 'DINT')"
+                    },
+                    "tag_class": {
+                        "type": "string",
+                        "enum": [
+                            "Safety",
+                            "Standard"
+                        ],
+                        "description": "Tag class: Safety or Standard"
+                    },
+                    "description": {
+                        "type": "string",
+                        "description": "Tag description/comment"
+                    }
+                }
+            }
+        },
+        "tag_name_methods": {
+            "type": "object",
+            "description": "Define custom tag name getter methods",
+            "properties": {
+                "safety_input": {
+                    "type": "string",
+                    "description": "Template for safety input tag name (e.g., 'sz_Demo3D_{module.name}_I')"
+                },
+                "safety_output": {
+                    "type": "string",
+                    "description": "Template for safety output tag name"
+                },
+                "standard_input": {
+                    "type": "string",
+                    "description": "Template for standard input tag name (e.g., 'zz_Demo3D_{module.name}_I')"
+                },
+                "standard_output": {
+                    "type": "string",
+                    "description": "Template for standard output tag name"
+                }
+            }
+        },
+        "rungs": {
+            "type": "object",
+            "description": "Required rungs for safety and standard programs",
+            "properties": {
+                "safety": {
+                    "type": "array",
+                    "description": "Safety program rungs",
+                    "items": {
+                        "type": "object",
+                        "required": [
+                            "text_template",
+                            "comment"
+                        ],
+                        "properties": {
+                            "text_template": {
+                                "type": "string",
+                                "description": "Rung text with placeholders like {module.name}, {module.parent_module}"
+                            },
+                            "comment": {
+                                "type": "string",
+                                "description": "Rung comment/documentation"
+                            }
+                        }
+                    }
+                },
+                "standard": {
+                    "type": "array",
+                    "description": "Standard program rungs",
+                    "items": {
+                        "type": "object",
+                        "required": [
+                            "text_template",
+                            "comment"
+                        ],
+                        "properties": {
+                            "text_template": {
+                                "type": "string",
+                                "description": "Rung text with placeholders"
+                            },
+                            "comment": {
+                                "type": "string",
+                                "description": "Rung comment/documentation"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "standard_to_safety_mapping": {
+            "type": "object",
+            "description": "Mapping template for standard to safety tag mapping",
+            "properties": {
+                "standard_name_method": {
+                    "type": "string",
+                    "description": "Template for standard tag reference"
+                },
+                "safety_name_method": {
+                    "type": "string",
+                    "description": "Template for safety tag reference"
+                }
+            }
+        },
+        "custom_methods": {
+            "type": "array",
+            "description": "Custom Python methods to include in the generated class",
+            "items": {
+                "type": "object",
+                "required": [
+                    "name",
+                    "code"
+                ],
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "Method name"
+                    },
+                    "code": {
+                        "type": "string",
+                        "description": "Complete Python method code as a string"
+                    }
+                }
+            }
+        },
+        "metadata": {
+            "type": "object",
+            "description": "Additional metadata about the module",
+            "properties": {
+                "vendor": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "documentation_url": {
+                    "type": "string"
+                },
+                "created_by": {
+                    "type": "string"
+                },
+                "created_date": {
+                    "type": "string"
+                },
+                "modified_date": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}

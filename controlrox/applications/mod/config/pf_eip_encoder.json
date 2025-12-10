@@ -1,0 +1,37 @@
+{
+    "catalog_number": "ETHERNET-MODULE",
+    "class_name": "PF_EIP_Encoder",
+    "vendor": "Pepperl+Fuchs",
+    "controls_type": "ENCODER",
+    "connection_points": {
+        "input": 101,
+        "output": 193,
+        "config": 0
+    },
+    "connection_sizes": {
+        "input": 22,
+        "output": 0,
+        "config": 0
+    },
+    "tags": [
+        {
+            "name_method": "get_standard_input_tag_name",
+            "datatype": "DINT",
+            "tag_class": "Standard",
+            "description": "Standard input tag."
+        }
+    ],
+    "rungs": {
+        "standard": [
+            {
+                "text_template": "XIC(zz_Demo3D_TestBit)NOP();",
+                "comment": "Integration TBD."
+            }
+        ]
+    },
+    "metadata": {
+        "vendor": "Pepperl+Fuchs",
+        "description": "Pepperl+Fuchs Ethernet IP Encoder Module",
+        "created_date": "2025-12-2"
+    }
+}

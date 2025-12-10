@@ -1,0 +1,29 @@
+{
+    "catalog_number": "ETHERNET-MODULE",
+    "class_name": "PF_EIP_Rope_Encoder",
+    "vendor": "Pepperl+Fuchs",
+    "controls_type": "ENCODER",
+    "connection_points": {
+        "input": 3,
+        "output": 105,
+        "config": 0
+    },
+    "connection_sizes": {
+        "input": 8,
+        "output": 0,
+        "config": 12
+    },
+    "tags": [
+        {
+            "name_method": "get_standard_input_tag_name",
+            "datatype": "DINT",
+            "tag_class": "Standard",
+            "description": "Standard input tag."
+        }
+    ],
+    "metadata": {
+        "vendor": "Pepperl+Fuchs",
+        "description": "Pepperl+Fuchs Ethernet IP Rope Encoder Module ECA30PL-02C1A-B25AZ:OE",
+        "created_date": "2025-12-2"
+    }
+}

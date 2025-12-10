@@ -1,0 +1,46 @@
+{
+    "catalog_number": "ETHERNET-MODULE",
+    "class_name": "Siemens_G115D",
+    "vendor": "Siemens",
+    "controls_type": "DRIVE",
+    "connection_points": {
+        "input": 101,
+        "output": 102,
+        "config": 0
+    },
+    "connection_sizes": {
+        "input": 26,
+        "output": 4,
+        "config": 0
+    },
+    "required_imports": [
+        {
+            "path": "docs\\controls\\emu\\Demo3D_G115D_Drive_DataType.L5X",
+            "elements": [
+                "DataTypes"
+            ]
+        }
+    ],
+    "tags": [
+        {
+            "name_template": "zz_Demo3D_{controller.process_name}_Siemens_Drives",
+            "datatype": "Demo3D_WDint",
+            "dimensions": 150,
+            "tag_class": "Standard",
+            "description": "Standard input tag for the drive array."
+        }
+    ],
+    "rungs": {
+        "standard": [
+            {
+                "text_template": "COP(zz_Demo3D_{module.name}.I,{module.name}:I,1)COP({module.name}:O,zz_Demo3D_{module.name}.O,1);",
+                "comment": "Standard Emulation Logic for G115D Siemens Drives."
+            }
+        ]
+    },
+    "metadata": {
+        "vendor": "Siemens",
+        "description": "Siemens G115D Drive Module",
+        "created_date": "2025-12-2"
+    }
+}

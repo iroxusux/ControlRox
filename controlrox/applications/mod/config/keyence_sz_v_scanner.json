@@ -1,0 +1,46 @@
+{
+    "catalog_number": "ETHERNET-SAFETYMODULE",
+    "class_name": "Keyence_SZ_V_Scanner",
+    "vendor": "Keyence",
+    "controls_type": "SAFETY_SCANNER",
+    "connection_points": {
+        "input": 130,
+        "output": 1278,
+        "config": 0
+    },
+    "connection_sizes": {
+        "input": 16,
+        "output": 0,
+        "config": 0
+    },
+    "tag_name_methods": {
+        "safety_input": "sz_Demo3D_{module.parent_module}_I",
+        "standard_input": "zz_Demo3D_{module.parent_module}_I",
+        "standard_output": "zz_Demo3D_{module.parent_module}_O"
+    },
+    "tags": [
+        {
+            "name_method": "get_standard_input_tag_name",
+            "datatype": "Demo3D_HMI_IN",
+            "tag_class": "Standard",
+            "description": "Standard input tag for the Keyence SZ-V Scanner module."
+        },
+        {
+            "name_method": "get_safety_input_tag_name",
+            "datatype": "Demo3D_HMI_IN",
+            "tag_class": "Safety",
+            "description": "Safety input tag for the Keyence SZ-V Scanner module."
+        },
+        {
+            "name_method": "get_standard_output_tag_name",
+            "datatype": "Demo3D_HMI_OUT",
+            "tag_class": "Standard",
+            "description": "Standard output tag for the Keyence SZ-V Scanner module."
+        }
+    ],
+    "metadata": {
+        "vendor": "Keyence",
+        "description": "Keyence SZ-V Scanner Module",
+        "created_date": "2025-12-9"
+    }
+}

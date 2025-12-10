@@ -1,0 +1,11 @@
+{
+    "catalog_number": "1734-8CFG",
+    "class_name": "AB_1734_8CFG",
+    "vendor": "Allen Bradley",
+    "controls_type": "POINT_IO",
+    "metadata": {
+        "vendor": "Allen Bradley",
+        "description": "Allen Bradley 1734-8CFG Configurable Chassis Module",
+        "created_date": "2025-12-2"
+    }
+}

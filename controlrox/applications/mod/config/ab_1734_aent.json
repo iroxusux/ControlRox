@@ -1,0 +1,11 @@
+{
+  "catalog_number": "1734-AENT",
+  "class_name": "AB_1734_AENT",
+  "parent_class": "AllenBradleyModule",
+  "controls_type": "ETHERNET",
+  "metadata": {
+    "vendor": "Allen Bradley",
+    "description": "Allen Bradley 1734-AENT Ethernet Module for Point I/O",
+    "created_date": "2025-11-27"
+  }
+}

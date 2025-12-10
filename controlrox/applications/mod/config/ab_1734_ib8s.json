@@ -1,0 +1,80 @@
+{
+    "catalog_number": "1734-IB8S",
+    "class_name": "AB_1734_IB8S",
+    "vendor": "Allen Bradley",
+    "controls_type": "SAFETY_INPUT_BLOCK",
+    "required_imports": [
+        {
+            "path": "docs\\controls\\emu\\Demo3D_HMI_IN_DataType.L5X",
+            "elements": [
+                "DataTypes"
+            ]
+        },
+        {
+            "path": "docs\\controls\\emu\\Demo3D_HMI_OUT_DataType.L5X",
+            "elements": [
+                "DataTypes"
+            ]
+        },
+        {
+            "path": "docs\\controls\\emu\\Demo3D_CommOK_HMI_DataType.L5X",
+            "elements": [
+                "DataTypes"
+            ]
+        }
+    ],
+    "tag_name_methods": {
+        "safety_input": "sz_Demo3D_{module.parent_module}_I",
+        "standard_input": "zz_Demo3D_{module.parent_module}_I",
+        "standard_output": "zz_Demo3D_{module.parent_module}_O"
+    },
+    "tags": [
+        {
+            "name_template": "zz_Demo3D_Comm_{controller.process_name}HMI",
+            "datatype": "Demo3D_CommOK_HMI",
+            "tag_class": "Standard",
+            "description": "Communication status tag for HMI module"
+        },
+        {
+            "name_method": "get_standard_input_tag_name",
+            "datatype": "Demo3D_HMI_IN",
+            "tag_class": "Standard",
+            "description": "Standard input tag for the Allen Bradley IB8S module."
+        },
+        {
+            "name_method": "get_safety_input_tag_name",
+            "datatype": "Demo3D_HMI_IN",
+            "tag_class": "Safety",
+            "description": "Safety input tag for the Allen Bradley IB8S module."
+        },
+        {
+            "name_method": "get_standard_output_tag_name",
+            "datatype": "Demo3D_HMI_OUT",
+            "tag_class": "Standard",
+            "description": "Standard output tag for the Allen Bradley IB8S module."
+        }
+    ],
+    "rungs": {
+        "safety": [
+            {
+                "text_template": "COP(sz_Demo3D_{module.parent_module}_I,{module.parent_module}:1:I,1);",
+                "comment": "Copy the input data from the emulation tag to the safety input card."
+            }
+        ],
+        "standard": [
+            {
+                "text_template": "CLR({module.parent_module}:2:I.Fault)MOV(sz_Demo3D_{module.parent_module}_I.S2.Word1,{module.parent_module}:2:I.Data);",
+                "comment": "Clear the fault and move the data from the HMI card to the input data."
+            },
+            {
+                "text_template": "COP({module.parent_module}:1:O,zz_Demo3D_{module.parent_module}_O.S1,1)COP({module.parent_module}:2:O,zz_Demo3D_{module.parent_module}_O.S2,1);",
+                "comment": "Map output data from physical card to emulation card."
+            }
+        ]
+    },
+    "metadata": {
+        "vendor": "Allen Bradley",
+        "description": "Allen Bradley 1734-IB8S Safety Input Module with HMI integration",
+        "created_date": "2025-11-27"
+    }
+}

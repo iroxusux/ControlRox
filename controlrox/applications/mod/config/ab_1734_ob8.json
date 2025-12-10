@@ -1,0 +1,11 @@
+{
+    "catalog_number": "1734-OB8",
+    "class_name": "AB_1734_OB8",
+    "vendor": "Allen Bradley",
+    "controls_type": "POINT_IO",
+    "metadata": {
+        "vendor": "Allen Bradley",
+        "description": "Allen Bradley 1734-OB8 Input Chassis Module",
+        "created_date": "2025-12-9"
+    }
+}
