@@ -386,72 +386,6 @@ class TestRungInheritance(unittest.TestCase):
         self.assertIsInstance(rung._instructions, list)
 
 
-class TestRungWithController(unittest.TestCase):
-    """Test Rung with controller integration."""
-
-    def setUp(self):
-        """Set up test fixtures."""
-        from controlrox.interfaces import IController
-
-        self.mock_controller = Mock(spec=IController)
-        self.mock_controller.name = 'TestController'
-
-        class TestableRung(Rung):
-            def compile_instructions(self):
-                pass
-
-            def get_rung_number(self):
-                return '5'
-
-            def get_rung_sequence(self):
-                return []
-
-            def set_rung_number(self, rung_number):
-                self._rung_number = rung_number
-
-            def add_instruction(self, instruction, index=-1):
-                if index == -1:
-                    self._instructions.append(instruction)
-                else:
-                    self._instructions.insert(index, instruction)
-
-            def clear_instructions(self):
-                self._instructions.clear()
-
-            def remove_instruction(self, instruction):
-                self._instructions.remove(instruction)
-
-        self.TestableRung = TestableRung
-
-    def test_rung_with_controller(self):
-        """Test rung initialized with controller."""
-        rung = self.TestableRung(controller=self.mock_controller)
-
-        self.assertEqual(rung.controller, self.mock_controller)
-
-    def test_rung_controller_access(self):
-        """Test accessing controller from rung."""
-        rung = self.TestableRung(controller=self.mock_controller)
-
-        controller = rung.get_controller()
-
-        self.assertEqual(controller, self.mock_controller)
-
-    def test_rung_set_controller(self):
-        """Test setting controller after initialization."""
-        rung = self.TestableRung()
-
-        rung.set_controller(self.mock_controller)
-
-        self.assertEqual(rung.controller, self.mock_controller)
-
-    def test_rung_without_controller(self):
-        """Test rung without controller."""
-        rung = self.TestableRung()
-
-        self.assertIsNone(rung.controller)
-
-
 class TestRungRoutineIntegration(unittest.TestCase):
     """Test Rung with routine integration."""
 
@@ -1033,7 +967,6 @@ class TestRungSpecialCases(unittest.TestCase):
             meta_data=None,
             name=None,
             description=None,
-            controller=None,
             routine=None
         )
 

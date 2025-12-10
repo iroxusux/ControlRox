@@ -49,12 +49,10 @@ class ControllerSafetyInfo(
     def __init__(
         self,
         meta_data: str,
-        controller: Optional['Controller'] = None,
         **kwargs
     ) -> None:
         super().__init__(
             meta_data=meta_data,
-            controller=controller,
             **kwargs
         )
 

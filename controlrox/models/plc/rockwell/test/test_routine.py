@@ -54,17 +54,15 @@ class TestRaRoutineInit(unittest.TestCase):
         """Test RaRoutine initialization with provided meta_data."""
         routine = RaRoutine(
             meta_data=self.basic_routine_meta,
-            controller=self.mock_controller,
             container=self.mock_program
         )
 
         self.assertEqual(routine['@Name'], 'TestRaRoutine')
-        self.assertEqual(routine.controller, self.mock_controller)
         self.assertEqual(routine.container, self.mock_program)
 
     def test_init_without_meta_data(self):
         """Test RaRoutine initialization without meta_data loads from file."""
-        routine = RaRoutine(controller=self.mock_controller)
+        routine = RaRoutine()
 
         self.assertEqual(routine['@Name'], 'MainRoutine')
 
@@ -72,19 +70,15 @@ class TestRaRoutineInit(unittest.TestCase):
         """Test RaRoutine initialization with name and description parameters."""
         routine = RaRoutine(
             meta_data=self.basic_routine_meta,
-            controller=self.mock_controller,
             name="CustomName",
             description="Custom description"
         )
-
-        self.assertEqual(routine.controller, self.mock_controller)
-        # Note: The actual name/description handling depends on NamedPlcObject implementation
 
     def test_init_sets_private_attributes(self):
         """Test that initialization properly sets private attributes."""
         routine = RaRoutine(
             meta_data=self.basic_routine_meta,
-            controller=self.mock_controller
+
         )
 
         # These are initialized by HasInstructions and HasRungs mixins
@@ -116,7 +110,7 @@ class TestRaRoutineInstructionMethods(unittest.TestCase):
         """Test instructions property compiles when _instructions is empty."""
         routine = RaRoutine(
             meta_data=self.basic_routine_meta,
-            controller=self.mock_controller
+
         )
 
         with patch.object(routine, 'compile_instructions') as mock_compile:
@@ -127,7 +121,7 @@ class TestRaRoutineInstructionMethods(unittest.TestCase):
         """Test input_instructions property compiles when empty."""
         routine = RaRoutine(
             meta_data=self.basic_routine_meta,
-            controller=self.mock_controller
+
         )
 
         with patch.object(routine, 'compile_instructions') as mock_compile:
@@ -138,7 +132,7 @@ class TestRaRoutineInstructionMethods(unittest.TestCase):
         """Test output_instructions property compiles when empty."""
         routine = RaRoutine(
             meta_data=self.basic_routine_meta,
-            controller=self.mock_controller
+
         )
 
         with patch.object(routine, 'compile_instructions') as mock_compile:
@@ -149,7 +143,7 @@ class TestRaRoutineInstructionMethods(unittest.TestCase):
         """Test instructions property returns cached value when available."""
         routine = RaRoutine(
             meta_data=self.basic_routine_meta,
-            controller=self.mock_controller
+
         )
 
         mock_instruction = Mock(spec=RaLogicInstruction)
@@ -164,7 +158,7 @@ class TestRaRoutineInstructionMethods(unittest.TestCase):
         """Test get_instructions method with filters."""
         routine = RaRoutine(
             meta_data=self.basic_routine_meta,
-            controller=self.mock_controller
+
         )
 
         # Mock rungs with all required methods
@@ -205,7 +199,7 @@ class TestRaRoutineInstructionMethods(unittest.TestCase):
         """Test get_instructions method without operand filter."""
         routine = RaRoutine(
             meta_data=self.basic_routine_meta,
-            controller=self.mock_controller
+
         )
 
         mock_rung = Mock(spec=RaRung)
@@ -253,7 +247,7 @@ class TestRaRoutineJSRMethods(unittest.TestCase):
         """Test check_for_jsr method when JSR is found."""
         routine = RaRoutine(
             meta_data=self.basic_routine_meta,
-            controller=self.mock_controller
+
         )
 
         # Mock JSR instruction with proper interface methods
@@ -277,7 +271,7 @@ class TestRaRoutineJSRMethods(unittest.TestCase):
         """Test check_for_jsr method when JSR is not found."""
         routine = RaRoutine(
             meta_data=self.basic_routine_meta,
-            controller=self.mock_controller
+
         )
 
         # Mock JSR instruction with different operand
@@ -296,7 +290,7 @@ class TestRaRoutineJSRMethods(unittest.TestCase):
         """Test check_for_jsr method when JSR has no operands."""
         routine = RaRoutine(
             meta_data=self.basic_routine_meta,
-            controller=self.mock_controller
+
         )
 
         # Mock JSR instruction with no operands
@@ -314,7 +308,7 @@ class TestRaRoutineJSRMethods(unittest.TestCase):
         """Test check_for_jsr method with no instructions."""
         routine = RaRoutine(
             meta_data=self.basic_routine_meta,
-            controller=self.mock_controller
+
         )
 
         routine._instructions = []
@@ -345,7 +339,7 @@ class TestRaRoutineRungMethods(unittest.TestCase):
         """Test rungs property returns cached value when available."""
         routine = RaRoutine(
             meta_data=self.basic_routine_meta,
-            controller=self.mock_controller
+
         )
 
         mock_rung = Mock(spec=RaRung)
@@ -360,7 +354,7 @@ class TestRaRoutineRungMethods(unittest.TestCase):
         """Test add_rung method adding to end."""
         routine = RaRoutine(
             meta_data=self.basic_routine_meta,
-            controller=self.mock_controller
+
         )
 
         mock_rung = Mock(spec=RaRung)
@@ -385,7 +379,7 @@ class TestRaRoutineRungMethods(unittest.TestCase):
         """Test add_rung method adding at specific index."""
         routine = RaRoutine(
             meta_data=self.basic_routine_meta,
-            controller=self.mock_controller
+
         )
 
         # Add initial rung
@@ -424,7 +418,7 @@ class TestRaRoutineRungMethods(unittest.TestCase):
         """Test add_rung method with invalid rung type."""
         routine = RaRoutine(
             meta_data=self.basic_routine_meta,
-            controller=self.mock_controller
+
         )
 
         with self.assertRaises(ValueError) as context:
@@ -436,7 +430,7 @@ class TestRaRoutineRungMethods(unittest.TestCase):
         """Test remove_rung method with Rung instance."""
         routine = RaRoutine(
             meta_data=self.basic_routine_meta,
-            controller=self.mock_controller
+
         )
 
         rung_meta = {
@@ -462,7 +456,7 @@ class TestRaRoutineRungMethods(unittest.TestCase):
         """Test remove_rung_by_index method with index."""
         routine = RaRoutine(
             meta_data=self.basic_routine_meta,
-            controller=self.mock_controller
+
         )
 
         rung_meta = {
@@ -488,7 +482,7 @@ class TestRaRoutineRungMethods(unittest.TestCase):
         """Test remove_rung_by_index method with string number converted to int."""
         routine = RaRoutine(
             meta_data=self.basic_routine_meta,
-            controller=self.mock_controller
+
         )
 
         rung_meta = {
@@ -516,7 +510,7 @@ class TestRaRoutineRungMethods(unittest.TestCase):
         """Test remove_rung_by_index method with out of range index."""
         routine = RaRoutine(
             meta_data=self.basic_routine_meta,
-            controller=self.mock_controller
+
         )
 
         with self.assertRaises(IndexError) as context:
@@ -528,7 +522,7 @@ class TestRaRoutineRungMethods(unittest.TestCase):
         """Test remove_rung method with invalid type."""
         routine = RaRoutine(
             meta_data=self.basic_routine_meta,
-            controller=self.mock_controller
+
         )
 
         # remove_rung expects IRung interface, but the error comes from remove_asset_from_meta_data
@@ -539,7 +533,7 @@ class TestRaRoutineRungMethods(unittest.TestCase):
         """Test clear_rungs method."""
         routine = RaRoutine(
             meta_data=self.basic_routine_meta,
-            controller=self.mock_controller
+
         )
 
         # Add some rungs
@@ -605,7 +599,7 @@ class TestRaRoutineCompilationMethods(unittest.TestCase):
         """Test compile_instructions method."""
         routine = RaRoutine(
             meta_data=self.routine_with_rungs_meta,
-            controller=self.mock_controller
+
         )
 
         # Mock rungs with instructions using interface methods
@@ -639,7 +633,7 @@ class TestRaRoutineCompilationMethods(unittest.TestCase):
         """Test invalidate method."""
         routine = RaRoutine(
             meta_data=self.routine_with_rungs_meta,
-            controller=self.mock_controller
+
         )
 
         # Set up some data to be invalidated
@@ -675,7 +669,7 @@ class TestRaRoutineEdgeCases(unittest.TestCase):
 
         routine = RaRoutine(
             meta_data=malformed_meta,
-            controller=self.mock_controller
+
         )
 
         # Should handle None gracefully and convert to empty list
@@ -686,7 +680,7 @@ class TestRaRoutineEdgeCases(unittest.TestCase):
         """Test check_for_jsr with None operands."""
         routine = RaRoutine(
             meta_data={'@Name': 'Test', '@Type': 'RLL'},
-            controller=self.mock_controller
+
         )
 
         mock_jsr = Mock(spec=RaLogicInstruction)
@@ -702,7 +696,7 @@ class TestRaRoutineEdgeCases(unittest.TestCase):
         """Test remove_rung_by_index with index that doesn't exist."""
         routine = RaRoutine(
             meta_data={'@Name': 'Test', '@Type': 'RLL', 'RLLContent': {'Rung': []}},
-            controller=self.mock_controller
+
         )
 
         mock_rung = Mock(spec=RaRung)
@@ -744,7 +738,7 @@ class TestRaRoutineIntegration(unittest.TestCase):
         mock_l5x_dict.return_value = {'Routine': routine_meta}
 
         # Create routine
-        routine = RaRoutine(controller=self.mock_controller)
+        routine = RaRoutine()
 
         # Verify properties
         self.assertEqual(routine.name, 'MainRoutine')

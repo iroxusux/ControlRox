@@ -403,7 +403,7 @@ class RaModule(
 
         config_tag_data = self.communications.get('ConfigTag', None)
         if config_tag_data:
-            self._config_tag = RaModuleConnectionTag(meta_data=config_tag_data, controller=self.controller)
+            self._config_tag = RaModuleConnectionTag(meta_data=config_tag_data)
 
         if not self.connections:
             return
@@ -412,6 +412,6 @@ class RaModule(
         output_tag_data = self.controller_connection.get('OutputTag', None)
 
         if input_tag_data:
-            self._input_tag = RaModuleConnectionTag(meta_data=input_tag_data, controller=self.controller)
+            self._input_tag = RaModuleConnectionTag(meta_data=input_tag_data)
         if output_tag_data:
-            self._output_tag = RaModuleConnectionTag(meta_data=output_tag_data, controller=self.controller)
+            self._output_tag = RaModuleConnectionTag(meta_data=output_tag_data)

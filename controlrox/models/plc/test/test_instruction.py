@@ -327,54 +327,6 @@ class TestLogicInstructionWithMocks(unittest.TestCase):
         self.assertEqual(operands[0], mock_operand)
 
 
-class TestLogicInstructionWithController(unittest.TestCase):
-    """Test LogicInstruction with controller integration."""
-
-    def setUp(self):
-        """Set up test fixtures."""
-        from controlrox.interfaces import IController
-
-        self.mock_controller = Mock(spec=IController)
-        self.mock_controller.name = 'TestController'
-
-        class TestableInstruction(LogicInstruction):
-            def get_instruction_name(self):
-                return 'XIC'
-
-            def compile_operands(self):
-                pass
-
-        self.TestableInstruction = TestableInstruction
-
-    def test_instruction_with_controller(self):
-        """Test instruction initialized with controller."""
-        instruction = self.TestableInstruction('XIC(Tag)', controller=self.mock_controller)
-
-        self.assertEqual(instruction.controller, self.mock_controller)
-
-    def test_instruction_controller_access(self):
-        """Test accessing controller from instruction."""
-        instruction = self.TestableInstruction('XIC(Tag)', controller=self.mock_controller)
-
-        controller = instruction.get_controller()
-
-        self.assertEqual(controller, self.mock_controller)
-
-    def test_instruction_set_controller(self):
-        """Test setting controller after initialization."""
-        instruction = self.TestableInstruction('XIC(Tag)')
-
-        instruction.set_controller(self.mock_controller)
-
-        self.assertEqual(instruction.controller, self.mock_controller)
-
-    def test_instruction_without_controller(self):
-        """Test instruction without controller."""
-        instruction = self.TestableInstruction('XIC(Tag)')
-
-        self.assertIsNone(instruction.controller)
-
-
 class TestLogicInstructionRungIntegration(unittest.TestCase):
     """Test LogicInstruction with rung integration."""
 
@@ -669,12 +621,6 @@ class TestLogicInstructionSpecialCases(unittest.TestCase):
 
         self.TestableInstruction = TestableInstruction
 
-    def test_instruction_with_none_controller(self):
-        """Test instruction with None controller."""
-        instruction = self.TestableInstruction('XIC(Tag)', controller=None)
-
-        self.assertIsNone(instruction.controller)
-
     def test_instruction_with_none_rung(self):
         """Test instruction with None rung."""
         instruction = self.TestableInstruction('XIC(Tag)', rung=None)
@@ -695,18 +641,13 @@ class TestLogicInstructionSpecialCases(unittest.TestCase):
 
     def test_instruction_initialization_order(self):
         """Test instruction initializes properly with various parameter orders."""
-        from controlrox.interfaces import IController
-
-        mock_controller = Mock(spec=IController)
         operand = Mock(spec=ILogicOperand)
 
         instr1 = self.TestableInstruction(
             meta_data='XIC(A)',
             operands=[operand],
-            controller=mock_controller
         )
         instr2 = self.TestableInstruction(
-            controller=mock_controller,
             meta_data='XIC(B)',
             operands=[]
         )

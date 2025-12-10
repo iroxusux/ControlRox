@@ -118,7 +118,6 @@ class TestControllerSafetyInfo(unittest.TestCase):
         # Test setter with None SafetyTagMap initially
         safety_info_none = ControllerSafetyInfo(
             meta_data={'SafetyTagMap': None},  # type: ignore
-            controller=self.mock_controller
         )
         self.assertEqual(safety_info_none.safety_tag_map, '')
 
@@ -165,7 +164,6 @@ class TestControllerSafetyInfo(unittest.TestCase):
         # Test adding to empty map
         empty_safety_info = ControllerSafetyInfo(
             meta_data={'SafetyTagMap': None},  # type: ignore
-            controller=self.mock_controller
         )
         empty_safety_info.add_safety_tag_mapping('first_tag', 'first_safety')
         self.assertEqual(empty_safety_info.safety_tag_map, 'first_tag=first_safety')
@@ -196,7 +194,6 @@ class TestControllerSafetyInfo(unittest.TestCase):
         # Test removing from empty map
         empty_safety_info = ControllerSafetyInfo(
             meta_data={'SafetyTagMap': None},  # type: ignore
-            controller=self.mock_controller
         )
         empty_safety_info.remove_safety_tag_mapping('tag', 'safety')  # Should not raise error
 

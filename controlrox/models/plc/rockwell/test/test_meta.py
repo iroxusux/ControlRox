@@ -1021,53 +1021,6 @@ class TestRaPlcObjectInheritance(unittest.TestCase):
         self.assertTrue(hasattr(obj, 'compile'))
 
 
-class TestRaPlcObjectControllerIntegration(unittest.TestCase):
-    """Test RaPlcObject with controller integration."""
-
-    def setUp(self):
-        """Set up test fixtures."""
-        class TestRaPlcObject(RaPlcObject):
-            def compile(self):
-                return self
-
-            def invalidate(self):
-                pass
-
-            @property
-            def process_name(self):
-                return "Test"
-
-        self.TestRaPlcObject = TestRaPlcObject
-
-    def test_init_with_controller(self):
-        """Test RaPlcObject initialization with controller."""
-        from unittest.mock import Mock
-        from controlrox.interfaces import IController
-
-        controller = Mock(spec=IController)
-        obj = self.TestRaPlcObject(controller=controller)
-
-        self.assertIsNotNone(obj._controller)
-
-    def test_init_without_controller(self):
-        """Test RaPlcObject initialization without controller."""
-        obj = self.TestRaPlcObject()
-
-        self.assertIsNone(obj._controller)
-
-    def test_get_controller_when_set(self):
-        """Test get_controller when controller is set."""
-        from unittest.mock import Mock
-        from controlrox.interfaces import IController
-
-        controller = Mock(spec=IController)
-        obj = self.TestRaPlcObject(controller=controller)
-
-        result = obj.get_controller()
-
-        self.assertEqual(result, controller)
-
-
 class TestRaPlcObjectComplexScenarios(unittest.TestCase):
     """Test RaPlcObject complex real-world scenarios."""
 

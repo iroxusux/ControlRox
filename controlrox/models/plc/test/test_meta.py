@@ -1,7 +1,7 @@
 """Unit tests for controlrox.models.plc.meta module."""
 import unittest
 from typing import Self
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 from controlrox.models.plc.meta import PlcObject
 from controlrox.interfaces import IController
@@ -504,52 +504,23 @@ class TestPlcObjectWithController(unittest.TestCase):
         self.mock_controller = Mock(spec=IController)
         self.mock_controller.name = "TestController"
 
-    def test_init_with_controller(self):
-        """Test PlcObject initialization with controller."""
-        obj = self.ConcreteTestPlcObject(controller=self.mock_controller)
-
-        self.assertIsNotNone(obj.controller)
-        self.assertEqual(obj.controller, self.mock_controller)
-
-    def test_init_without_controller(self):
-        """Test PlcObject initialization without controller."""
-        obj = self.ConcreteTestPlcObject()
-
-        self.assertIsNone(obj.controller)
-
-    def test_get_controller(self):
+    @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
+    def test_get_controller(self, mock_get_controller):
         """Test get_controller method."""
-        obj = self.ConcreteTestPlcObject(controller=self.mock_controller)
+        obj = self.ConcreteTestPlcObject()
+        mock_get_controller.return_value = self.mock_controller
+        self.assertEqual(obj.get_controller(), self.mock_controller)
 
-        controller = obj.get_controller()
-        self.assertEqual(controller, self.mock_controller)
-
-    def test_set_controller(self):
+    @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
+    def test_set_controller(self, mock_get_controller):
         """Test set_controller method."""
+        mock_get_controller.return_value = None
         obj = self.ConcreteTestPlcObject()
         self.assertIsNone(obj.controller)
 
+        mock_get_controller.return_value = self.mock_controller
         obj.set_controller(self.mock_controller)
         self.assertEqual(obj.controller, self.mock_controller)
-
-    def test_controller_property_getter(self):
-        """Test controller property getter."""
-        obj = self.ConcreteTestPlcObject(controller=self.mock_controller)
-
-        self.assertEqual(obj.controller, self.mock_controller)
-
-    def test_set_controller_replaces_existing(self):
-        """Test set_controller replaces existing controller."""
-        mock_controller1 = Mock(spec=IController)
-        mock_controller1.name = "Controller1"
-        mock_controller2 = Mock(spec=IController)
-        mock_controller2.name = "Controller2"
-
-        obj = self.ConcreteTestPlcObject(controller=mock_controller1)
-        self.assertEqual(obj.controller, mock_controller1)
-
-        obj.set_controller(mock_controller2)
-        self.assertEqual(obj.controller, mock_controller2)
 
 
 class TestPlcObjectMetaDataVariations(unittest.TestCase):
@@ -779,12 +750,10 @@ class TestPlcObjectInheritanceChain(unittest.TestCase):
         """Test that multiple inheritance is properly resolved."""
         obj = self.ConcreteTestPlcObject(
             meta_data={'@Name': 'Test'},
-            controller=Mock(spec=IController)
         )
 
         # Should have attributes from all parent classes
         self.assertIsNotNone(obj.id)  # From PyroxObject
-        self.assertIsNotNone(obj.controller)  # From HasController
         self.assertIsNotNone(obj.meta_data)  # From HasMetaData
         self.assertIsNotNone(obj.name)  # From EnforcesNaming
         self.assertTrue(callable(obj.compile))  # From PlcObject
@@ -985,34 +954,28 @@ class TestPlcObjectCombinedFeatures(unittest.TestCase):
 
     def test_full_initialization(self):
         """Test initialization with all parameters."""
-        mock_controller = Mock(spec=IController)
         meta_data = {'@Name': 'MetaName', 'Extra': 'Data'}
 
         obj = self.ConcreteTestPlcObject(
             meta_data=meta_data,
             name='ExplicitName',
             description='Test Description',
-            controller=mock_controller
         )
 
         self.assertEqual(obj.name, 'ExplicitName')
         self.assertEqual(obj.description, 'Test Description')
-        self.assertEqual(obj.controller, mock_controller)
         self.assertEqual(obj.meta_data, meta_data)
 
     def test_metadata_extraction_with_controller(self):
         """Test metadata extraction works with controller."""
-        mock_controller = Mock(spec=IController)
         meta_data = {'@Name': 'MetaName', '@Description': 'Meta Desc'}
 
         obj = self.ConcreteTestPlcObject(
             meta_data=meta_data,
-            controller=mock_controller
         )
 
         self.assertEqual(obj.name, 'MetaName')
         self.assertEqual(obj.description, 'Meta Desc')
-        self.assertEqual(obj.controller, mock_controller)
 
     def test_modify_after_initialization(self):
         """Test modifying object after initialization."""

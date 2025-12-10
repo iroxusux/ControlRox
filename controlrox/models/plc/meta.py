@@ -12,7 +12,8 @@ from pyrox.models.abc import (
     HashList,
     PyroxObject,
 )
-from controlrox.interfaces import IPlcObject, CTRL, META
+from controlrox.interfaces import IController, IPlcObject, META
+from controlrox.services import ControllerInstanceManager
 from .protocols import HasController, HasMetaData
 
 
@@ -44,10 +45,9 @@ class PlcObject(
         meta_data: Optional[Union[dict, str, None]] = None,
         name: Optional[str] = None,
         description: Optional[str] = None,
-        controller: Optional[CTRL] = None,
         **kwargs,
     ) -> None:
-        HasController.__init__(self, controller=controller)
+        HasController.__init__(self)
         HasMetaData.__init__(self, meta_data=meta_data)
         PyroxObject.__init__(self, **kwargs)
 
@@ -251,6 +251,29 @@ class PlcObject(
 
         if isinstance(self.meta_data, dict):
             self.meta_data["@Name"] = name
+
+    def get_controller(self) -> Optional[IController]:
+        """Get the controller this object belongs to.
+
+        Returns:
+            Optional[IController]: The controller if set, None otherwise.
+        """
+        if self._controller:
+            return self._controller
+        self._controller = ControllerInstanceManager.get_controller()
+        return self._controller
+
+    def set_controller(
+        self,
+        controller: Optional[IController]
+    ) -> None:
+        """Set the controller for this object.
+
+        Args:
+            controller: The controller to set.
+        """
+        ControllerInstanceManager.set_controller(controller)
+        self._controller = ControllerInstanceManager.get_controller()
 
     def invalidate(self) -> None:
         """Invalidate this object.

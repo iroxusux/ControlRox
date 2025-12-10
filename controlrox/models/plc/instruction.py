@@ -7,7 +7,6 @@ from controlrox.interfaces import (
     INPUT_INSTRUCTIONS,
     OUTPUT_INSTRUCTIONS,
     INSTR_JSR,
-    IController,
     ILogicInstruction,
     ILogicOperand,
     IRung,
@@ -29,13 +28,11 @@ class LogicInstruction(
         self,
         meta_data: str,
         operands: list[ILogicOperand] = [],
-        controller: Optional[IController] = None,
         rung: Optional[IRung] = None,
         **kwargs
     ):
         super().__init__(
             meta_data=meta_data,
-            controller=controller,
             **kwargs
         )
         self._qualified_meta_data: str = ''

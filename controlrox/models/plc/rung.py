@@ -6,7 +6,6 @@ from typing import (
     Union
 )
 from controlrox.interfaces import (
-    IController,
     IRoutine,
     IRung,
     ILogicInstruction,
@@ -26,7 +25,6 @@ class Rung(
         meta_data: Optional[dict] = None,
         name: Optional[str] = None,
         description: Optional[str] = None,
-        controller: Optional[IController] = None,
         routine: Optional[IRoutine] = None,
         comment: str = '',
         rung_text: str = '',
@@ -36,7 +34,6 @@ class Rung(
             meta_data=meta_data,
             name=name,
             description=description,
-            controller=controller,
         )
 
         self._routine: Optional[IRoutine] = routine
@@ -85,7 +82,8 @@ class Rung(
     def add_instruction(
         self,
         instruction: ILogicInstruction,
-        index: Optional[int] = -1
+        inhibit_invalidate: bool = False,
+        index: Optional[int] = -1,
     ) -> None:
         """Add an instruction to this rung.
 
@@ -145,7 +143,8 @@ class Rung(
 
     def remove_instruction(
         self,
-        instruction: Union[ILogicInstruction, str, int]
+        instruction: Union[ILogicInstruction, str, int],
+        inhibit_invalidate: bool = False,
     ) -> None:
         """Remove an instruction from this rung.
 
@@ -162,7 +161,7 @@ class Rung(
 
     def set_rung_number(
         self,
-        rung_number: str
+        rung_number: Union[str, int],
     ) -> None:
         raise NotImplementedError("set_rung_number method must be implemented by subclass.")
 

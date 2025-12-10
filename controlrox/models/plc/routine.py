@@ -4,7 +4,6 @@ from typing import (
     Optional,
 )
 from controlrox.interfaces import (
-    IController,
     IRoutine,
 )
 from controlrox.services import ControllerInstanceManager
@@ -23,7 +22,6 @@ class Routine(
         meta_data: Optional[dict] = None,
         name: Optional[str] = None,
         description: Optional[str] = None,
-        controller: Optional[IController] = None,
         container: Optional[HasRoutines] = None,
     ) -> None:
         HasInstructions.__init__(self)
@@ -33,7 +31,6 @@ class Routine(
             meta_data=meta_data,
             name=name,
             description=description,
-            controller=controller,
         )
         self._container: Optional[HasRoutines] = container
 

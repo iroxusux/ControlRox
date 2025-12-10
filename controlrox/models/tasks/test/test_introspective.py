@@ -53,16 +53,6 @@ class TestIntrospectiveModule(unittest.TestCase):
         self.assertIs(introspective._module, new_module)
         self.assertEqual(introspective.get_base_module(), new_module)
 
-    def test_get_controller(self):
-        """Test get_controller returns the controller from the wrapped module."""
-        mock_controller = Mock()
-        self.mock_module.controller = mock_controller
-        introspective = IntrospectiveModule(module=self.mock_module)
-
-        result = introspective.get_controller()
-
-        self.assertIs(result, mock_controller)
-
     def test_get_catalog_number_returns_empty_string(self):
         """Test get_catalog_number returns empty string by default."""
         introspective = IntrospectiveModule(module=self.mock_module)

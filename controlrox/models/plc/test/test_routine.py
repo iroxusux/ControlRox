@@ -315,97 +315,6 @@ class TestRoutineEdgeCases(unittest.TestCase):
         self.assertFalse(result)
 
 
-class TestRoutineWithController(unittest.TestCase):
-    """Test Routine with controller integration."""
-
-    def setUp(self):
-        """Set up test fixtures."""
-        from controlrox.interfaces import IController
-
-        self.mock_controller = Mock(spec=IController)
-        self.mock_controller.name = 'TestController'
-
-        class TestableRoutine(Routine):
-            def compile_instructions(self):
-                pass
-
-            def compile_rungs(self):
-                pass
-
-            def add_rung(self, rung):
-                self._rungs.append(rung)
-
-            def remove_rung(self, rung):
-                self._rungs.remove(rung)
-
-            def clear_rungs(self):
-                self._rungs.clear()
-
-            def block(self):
-                pass
-
-            def unblock(self):
-                pass
-
-            def check_for_jsr(self, routine_name):
-                return False
-
-            def compile(self):
-                return self
-
-            def invalidate(self):
-                pass
-
-            @property
-            def process_name(self):
-                return 'TestProcess'
-
-            def add_instruction(self, instruction, index=-1):
-                self._instructions.append(instruction)
-
-            def clear_instructions(self):
-                self._instructions.clear()
-
-            def get_filtered_instructions(self, instruction_filter='', operand_filter=''):
-                return []
-
-            def has_instruction(self, instruction):
-                return instruction in self._instructions
-
-            def remove_instruction(self, instruction):
-                self._instructions.remove(instruction)
-
-        self.TestableRoutine = TestableRoutine
-
-    def test_routine_with_controller(self):
-        """Test routine initialized with controller."""
-        routine = self.TestableRoutine(controller=self.mock_controller)
-
-        self.assertEqual(routine.controller, self.mock_controller)
-
-    def test_routine_controller_access(self):
-        """Test accessing controller from routine."""
-        routine = self.TestableRoutine(controller=self.mock_controller)
-
-        controller = routine.get_controller()
-
-        self.assertEqual(controller, self.mock_controller)
-
-    def test_routine_set_controller(self):
-        """Test setting controller after initialization."""
-        routine = self.TestableRoutine()
-
-        routine.set_controller(self.mock_controller)
-
-        self.assertEqual(routine.controller, self.mock_controller)
-
-    def test_routine_without_controller(self):
-        """Test routine without controller."""
-        routine = self.TestableRoutine()
-
-        self.assertIsNone(routine.controller)
-
-
 class TestRoutineContainerIntegration(unittest.TestCase):
     """Test Routine with container integration."""
 
@@ -1036,7 +945,6 @@ class TestRoutineSpecialCases(unittest.TestCase):
             meta_data=None,
             name=None,
             description=None,
-            controller=None,
             container=None
         )
 

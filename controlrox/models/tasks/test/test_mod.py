@@ -10,8 +10,10 @@ from controlrox.models import Controller, ControllerModificationSchema
 class TestControllerModificationSchema(unittest.TestCase):
     """Test cases for ControllerModificationSchema class."""
 
-    def setUp(self):
+    @patch('controlrox.models.tasks.mod.ControllerInstanceManager.get_controller')
+    def setUp(self, mock_get_controller):
         """Set up test fixtures."""
+
         self.source_controller = Mock(spec=Controller)
         self.destination_controller = Mock(spec=Controller)
 
@@ -25,35 +27,13 @@ class TestControllerModificationSchema(unittest.TestCase):
         self.source_controller.tags = HashList('name')
         self.source_controller.datatypes = HashList('name')
 
-        self.schema = ControllerModificationSchema(
-            source=self.source_controller,
-            destination=self.destination_controller
-        )
+        mock_get_controller.return_value = self.destination_controller
+        self.schema = ControllerModificationSchema()
 
     def test_initialization(self):
         """Test ControllerModificationSchema initialization."""
-        self.assertEqual(self.schema.source, self.source_controller)
         self.assertEqual(self.schema.destination, self.destination_controller)
         self.assertEqual(self.schema.actions, [])
-
-    def test_initialization_with_none_source(self):
-        """Test ControllerModificationSchema initialization with no source."""
-        schema = ControllerModificationSchema(
-            source=None,
-            destination=self.destination_controller
-        )
-
-        self.assertIsNone(schema.source)
-        self.assertEqual(schema.destination, self.destination_controller)
-
-    def test_initialization_invalid_destination(self):
-        """Test ControllerModificationSchema initialization with invalid destination."""
-        with self.assertRaises(ValueError) as context:
-            ControllerModificationSchema(
-                source=self.source_controller,
-                destination="not_a_controller"  # type: ignore
-            )
-        self.assertIn('Destination must be an instance of IController.', str(context.exception))
 
     def test_add_controller_tag_migration(self):
         """Test add_controller_tag_migration method."""
@@ -291,14 +271,6 @@ class TestControllerModificationSchema(unittest.TestCase):
         self.assertIn(action1, self.schema.actions)
         self.assertIn(action3, self.schema.actions)
 
-    def test_execute_no_destination(self):
-        """Test execute method with no destination controller."""
-        self.schema.destination = None  # type: ignore
-
-        with self.assertRaises(ValueError) as context:
-            self.schema.execute()
-        self.assertIn("Destination controller is not set", str(context.exception))
-
     def test_execute_with_valid_methods(self):
         """Test execute method with valid action methods."""
         self.destination_controller.compile = Mock()
@@ -332,29 +304,6 @@ class TestControllerModificationSchema(unittest.TestCase):
         # Should not raise error, just log warning and call compile
         self.destination_controller.compile.assert_called_once()
 
-    def test_execute_controller_tag_migration(self):
-        """Test _execute_controller_tag_migration method."""
-        # Set up source tag
-        mock_tag = Mock(spec=ITag)
-        mock_tag.name = 'TestTag'
-        self.source_controller.tags.append(mock_tag)
-
-        # Set up destination methods
-        self.destination_controller.add_tag = Mock()
-        self.destination_controller.compile = Mock()
-
-        # Create action
-        action = {
-            'type': 'migrate_controller_tag',
-            'name': 'TestTag',
-            'method': self.schema._execute_controller_tag_migration
-        }
-
-        self.schema._execute_controller_tag_migration(action)
-
-        # Verify tag was added
-        self.destination_controller.add_tag.assert_called_once_with(mock_tag)
-
     def test_execute_controller_tag_migration_tag_not_found(self):
         """Test _execute_controller_tag_migration when tag doesn't exist."""
         self.destination_controller.compile = Mock()
@@ -381,28 +330,6 @@ class TestControllerModificationSchema(unittest.TestCase):
 
         # Should not raise error, just log warning
         self.schema._execute_controller_tag_migration(action)
-
-    def test_execute_datatype_migration(self):
-        """Test _execute_datatype_migration method."""
-        # Set up source datatype
-        mock_datatype = Mock()
-        mock_datatype.name = 'TestDatatype'
-        self.source_controller.datatypes.append(mock_datatype)
-
-        # Set up destination methods
-        self.destination_controller.add_datatype = Mock()
-        self.destination_controller.compile = Mock()
-
-        action = {
-            'type': 'migrate_datatype',
-            'name': 'TestDatatype',
-            'method': self.schema._execute_datatype_migration
-        }
-
-        self.schema._execute_datatype_migration(action)
-
-        # Verify datatype was added
-        self.destination_controller.add_datatype.assert_called_once_with(mock_datatype)
 
     def test_execute_add_controller_tag(self):
         """Test _execute_add_controller_tag method."""
@@ -587,10 +514,7 @@ class TestControllerModificationSchemaIntegration(unittest.TestCase):
         self.destination_controller.tags = HashList('name')
         self.destination_controller.datatypes = HashList('name')
 
-        self.schema = ControllerModificationSchema(
-            source=self.source_controller,
-            destination=self.destination_controller
-        )
+        self.schema = ControllerModificationSchema()
 
     def test_complete_migration_workflow(self):
         """Test complete migration workflow with multiple operations."""

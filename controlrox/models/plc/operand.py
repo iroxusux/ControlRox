@@ -1,7 +1,6 @@
 """Logic operand module."""
 from typing import Optional
 from controlrox.interfaces import (
-    IController,
     ILogicInstruction,
     ILogicOperand,
 )
@@ -19,13 +18,11 @@ class LogicOperand(
         self,
         meta_data: str,
         arg_position: int,
-        controller: Optional[IController] = None,
         instruction: Optional[ILogicInstruction] = None,
         **kwargs
     ) -> None:
         super().__init__(
             meta_data=meta_data,
-            controller=controller,
             **kwargs
         )
         # positional argument

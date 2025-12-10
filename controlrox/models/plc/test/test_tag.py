@@ -1,6 +1,6 @@
 """Unit tests for controlrox.models.plc.tag module."""
 import unittest
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 from controlrox.interfaces import LogicTagScope
 from controlrox.models.plc.tag import Tag
@@ -417,91 +417,6 @@ class TestTagInheritance(unittest.TestCase):
         self.assertIsNone(tag._datatype)
 
 
-class TestTagWithController(unittest.TestCase):
-    """Test Tag with controller integration."""
-
-    def setUp(self):
-        """Set up test fixtures."""
-        from controlrox.interfaces import IController
-
-        self.mock_controller = Mock(spec=IController)
-        self.mock_controller.name = 'TestController'
-
-        class TestableTag(Tag):
-            def get_dimensions(self):
-                return '0'
-
-            def get_endpoint_operands(self):
-                return ['']
-
-            def get_external_access(self):
-                return 'Read/Write'
-
-            def get_opcua_access(self):
-                return '1'
-
-            def get_safety_class(self):
-                return 'Standard'
-
-            def get_tag_scope(self):
-                return LogicTagScope.CONTROLLER
-
-            def is_constant(self):
-                return False
-
-            def set_datatype(self, datatype):
-                self._datatype = datatype
-
-            def set_dimensions(self, value):
-                pass
-
-            def set_external_access(self, value):
-                pass
-
-            def set_opcua_access(self, value):
-                pass
-
-            def set_safety_class(self, value):
-                pass
-
-            def set_is_constant(self, value):
-                pass
-
-            def compile(self):
-                return self
-
-            def invalidate(self):
-                pass
-
-            @property
-            def process_name(self):
-                return 'TestProcess'
-
-        self.TestableTag = TestableTag
-
-    def test_tag_with_controller(self):
-        """Test tag initialized with controller."""
-        tag = self.TestableTag(controller=self.mock_controller)
-
-        self.assertEqual(tag.controller, self.mock_controller)
-
-    def test_tag_controller_access(self):
-        """Test accessing controller from tag."""
-        tag = self.TestableTag(controller=self.mock_controller)
-
-        controller = tag.get_controller()
-
-        self.assertEqual(controller, self.mock_controller)
-
-    def test_tag_set_controller(self):
-        """Test setting controller after initialization."""
-        tag = self.TestableTag()
-
-        tag.set_controller(self.mock_controller)
-
-        self.assertEqual(tag.controller, self.mock_controller)
-
-
 class TestTagContainerIntegration(unittest.TestCase):
     """Test Tag with container integration."""
 
@@ -581,29 +496,13 @@ class TestTagContainerIntegration(unittest.TestCase):
 
         self.assertEqual(container, self.mock_container)
 
-    def test_tag_container_defaults_to_controller(self):
+    @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
+    def test_tag_container_defaults_to_controller(self, mock_get_controller):
         """Test container defaults to controller when not provided."""
-        tag = self.TestableTag(controller=self.mock_controller)
+        mock_get_controller.return_value = self.mock_controller
+        tag = self.TestableTag()
 
         self.assertEqual(tag.container, self.mock_controller)
-
-    def test_tag_container_not_set_raises_error(self):
-        """Test accessing container when not set raises ValueError."""
-        tag = self.TestableTag()
-
-        with self.assertRaises(ValueError) as context:
-            _ = tag.container
-
-        self.assertIn('Container not set', str(context.exception))
-
-    def test_get_container_not_set_raises_error(self):
-        """Test get_container when not set raises ValueError."""
-        tag = self.TestableTag()
-
-        with self.assertRaises(ValueError) as context:
-            tag.get_container()
-
-        self.assertIn('Container not set', str(context.exception))
 
 
 class TestTagAliasAndBaseTag(unittest.TestCase):
@@ -1090,12 +989,6 @@ class TestTagSpecialCases(unittest.TestCase):
         tag = Tag(meta_data={})
 
         self.assertEqual(tag.meta_data, {})
-
-    def test_tag_with_none_controller(self):
-        """Test tag with None controller."""
-        tag = Tag(controller=None)
-
-        self.assertIsNone(tag.get_controller())
 
     def test_tag_multiple_property_access(self):
         """Test accessing tag properties multiple times."""
