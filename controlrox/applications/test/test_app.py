@@ -132,7 +132,7 @@ class TestApp(unittest.TestCase):
 
         self.app.controller_treeview.clear.assert_called_once()
 
-    @patch('controlrox.applications.app.ControllerInstanceManager.get_controller')
+    @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
     @patch('controlrox.applications.app.plc_gui_introspection.create_attribute_value_dict')
     def test_display_common_list_in_treeview_with_items(self, mock_create_dict, mock_get_controller):
         """Test displaying list with items."""
@@ -156,7 +156,7 @@ class TestApp(unittest.TestCase):
         self.assertEqual(mock_create_dict.call_count, 2)
         self.app.controller_treeview.display_object.assert_called_once()
 
-    @patch('controlrox.applications.app.ControllerInstanceManager.get_controller')
+    @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
     @patch('controlrox.applications.app.plc_gui_introspection.create_attribute_value_dict')
     def test_display_controller_properties_in_treeview(self, mock_create_dict, mock_get_controller):
         """Test displaying controller properties."""
@@ -177,7 +177,7 @@ class TestApp(unittest.TestCase):
             True
         )
 
-    @patch('controlrox.applications.app.ControllerInstanceManager.get_controller')
+    @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
     def test_display_controller_tags_in_treeview(self, mock_get_controller):
         """Test displaying controller tags."""
         mock_controller = MagicMock(spec=IController)
@@ -196,7 +196,7 @@ class TestApp(unittest.TestCase):
             True
         )
 
-    @patch('controlrox.applications.app.ControllerInstanceManager.get_controller')
+    @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
     def test_display_controller_programs_in_treeview(self, mock_get_controller):
         """Test displaying controller programs."""
         mock_controller = MagicMock(spec=IController)
@@ -214,7 +214,7 @@ class TestApp(unittest.TestCase):
             True
         )
 
-    @patch('controlrox.applications.app.ControllerInstanceManager.get_controller')
+    @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
     def test_display_controller_aois_in_treeview(self, mock_get_controller):
         """Test displaying controller AOIs."""
         mock_controller = MagicMock(spec=IController)
@@ -232,7 +232,7 @@ class TestApp(unittest.TestCase):
             True
         )
 
-    @patch('controlrox.applications.app.ControllerInstanceManager.get_controller')
+    @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
     def test_display_controller_datatypes_in_treeview(self, mock_get_controller):
         """Test displaying controller datatypes."""
         mock_controller = MagicMock(spec=IController)
@@ -265,7 +265,7 @@ class TestApp(unittest.TestCase):
 
         self.assertIsNone(result)
 
-    @patch('controlrox.applications.app.ControllerInstanceManager.get_controller')
+    @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
     @patch('controlrox.applications.app.object_services.resolve_object_path_with_parent')
     def test_get_plc_object_from_selected_tree_item_tags_view(self, mock_resolve, mock_get_controller):
         """Test getting PLC object from tags view."""
@@ -286,7 +286,7 @@ class TestApp(unittest.TestCase):
         self.assertEqual(result, mock_obj)
         mock_resolve.assert_called_once()
 
-    @patch('controlrox.applications.app.ControllerInstanceManager.get_controller')
+    @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
     @patch('controlrox.applications.app.object_services.resolve_object_path_with_parent')
     def test_get_plc_object_from_selected_tree_item_programs_view(self, mock_resolve, mock_get_controller):
         """Test getting PLC object from programs view."""

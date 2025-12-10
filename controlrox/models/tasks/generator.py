@@ -3,6 +3,7 @@
 from typing import Optional
 
 from controlrox.interfaces import (
+    IController,
     IEmulationGenerator,
     IModule,
     IRoutine,
@@ -10,8 +11,6 @@ from controlrox.interfaces import (
     ITag,
     ModuleControlsType,
 )
-from controlrox.interfaces import IController
-from controlrox.models.plc.controller import Controller
 from controlrox.models.tasks.mod import ControllerModificationSchema
 from controlrox.services import ControllerInstanceManager
 from controlrox.services.tasks.generator import EmulationGeneratorFactory
@@ -35,14 +34,10 @@ class EmulationGenerator(
     supports_registering: bool = False
 
     def __init__(
-        self,
-        controller: Controller
+        self
     ) -> None:
-        super().__init__(controller=controller)
-        self.schema = ControllerModificationSchema(
-            source=None,
-            destination=self.controller
-        )
+        PlcObject.__init__(self)
+        self.schema = ControllerModificationSchema()
         self._emulation_standard_routine = None
         self._emulation_safety_routine = None
 
@@ -52,13 +47,22 @@ class EmulationGenerator(
 
     @property
     def controller(self) -> IController:
-        if not self._controller:
-            raise ValueError("Controller is not set for this EmulationGenerator.")
-        return self._controller
+        """Get the controller associated with this generator.
+
+        Raises:
+            ValueError: If no controller is set.
+
+        Returns:
+            IController: The associated controller.
+        """
+        ctrl = self.get_controller()
+        if not ctrl:
+            raise ValueError("No controller is set for this emulation generator.")
+        return ctrl
 
     @controller.setter
     def controller(self, controller: Optional[IController]) -> None:
-        self._controller = controller
+        self.set_controller(controller)
 
     @classmethod
     def get_factory(cls):

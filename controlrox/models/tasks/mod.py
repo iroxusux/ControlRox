@@ -10,6 +10,7 @@ from controlrox.interfaces import (
     ITag,
     TAG
 )
+from controlrox.services import ControllerInstanceManager
 
 
 class ControllerModificationSchema:
@@ -19,17 +20,19 @@ class ControllerModificationSchema:
     """
 
     def __init__(
-        self,
-        source: Optional[IController],
-        destination: IController
+        self
     ) -> None:
-        self.source = source
+        self.source = None
 
-        if not isinstance(destination, IController):
-            raise ValueError('Destination must be an instance of IController.')
-        self.destination = destination
+        self._destination = ControllerInstanceManager.get_controller()
 
         self.actions: list[dict] = []  # List of migration actions
+
+    @property
+    def destination(self) -> IController:
+        if not self._destination:
+            raise ValueError("Destination controller is not set for this ControllerModificationSchema.")
+        return self._destination
 
     def _execute_add_controller_tag(
         self,
@@ -42,7 +45,6 @@ class ControllerModificationSchema:
 
         tag = self.destination.create_tag(
             meta_data=tag_data,
-            controller=self.destination,
             container=self.destination
         )
 
@@ -61,10 +63,7 @@ class ControllerModificationSchema:
             log(self).warning('No datatype data provided for add_datatype action.')
             return
 
-        datatype = self.destination.create_datatype(
-            meta_data=datatype_data,
-            controller=self.destination
-        )
+        datatype = self.destination.create_datatype(meta_data=datatype_data)
 
         try:
             self.destination.add_datatype(datatype)
@@ -89,7 +88,6 @@ class ControllerModificationSchema:
 
         tag = self.destination.create_tag(
             meta_data=tag_data,
-            controller=self.destination,
             container=program
         )
 

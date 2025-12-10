@@ -5,7 +5,6 @@ from typing import (
     Self,
 )
 from controlrox.interfaces import (
-    IController,
     IDatatypeMember,
     IDatatype,
     IDatatypeProto,
@@ -36,7 +35,6 @@ class DatatypeMember(
         parent_datatype: 'IDatatype',
         name: Optional[str] = None,
         description: Optional[str] = None,
-        controller: Optional[IController] = None,
     ) -> None:
         """type member of a datatype
 
@@ -50,7 +48,6 @@ class DatatypeMember(
             meta_data=meta_data,
             name=name,
             description=description,
-            controller=controller
         )
         self._parent_datatype = parent_datatype
         self._datatype = None
@@ -96,13 +93,11 @@ class Datatype(
         meta_data: Optional[dict] = None,
         name: Optional[str] = None,
         description: Optional[str] = None,
-        controller: Optional[IController] = None,
     ) -> None:
         super().__init__(
             meta_data,
             name=name,
             description=description,
-            controller=controller
         )
         self._members: list[IDatatypeMember] = []
         self._endpoint_operands: list[str] = []

@@ -32,7 +32,6 @@ class IntrospectiveModule(
     ) -> None:
         PlcObject.__init__(
             self,
-            controller=module.controller,
             name=module.name,
             description=module.description,
         )

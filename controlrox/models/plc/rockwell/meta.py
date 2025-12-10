@@ -8,10 +8,7 @@ from typing import (
 )
 from pyrox.models import HashList
 from pyrox.services.dict import insert_key_at_index
-from controlrox.interfaces import (
-    META,
-    IController,
-)
+from controlrox.interfaces import (META)
 from controlrox.models.plc.meta import PlcObject
 from controlrox.services.l5x import l5x_dict_from_file
 
@@ -108,7 +105,6 @@ class RaPlcObject(
         meta_data: Optional[Union[dict, str]] = None,
         name: str = '',
         description: str = '',
-        controller: Optional[IController] = None,
         **kwargs
     ) -> None:
         meta_data = self.get_default_meta_data(
@@ -120,7 +116,6 @@ class RaPlcObject(
             meta_data=meta_data,
             name=name,
             description=description,
-            controller=controller,
             **kwargs
         )
         if self._name:

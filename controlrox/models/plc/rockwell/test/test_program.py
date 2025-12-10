@@ -28,21 +28,19 @@ class TestRaProgramInit(unittest.TestCase):
     def test_init_with_meta_data(self):
         """Test RaProgram initialization with provided meta_data."""
         program = RaProgram(
-            meta_data=self.basic_program_meta,
-            controller=self.mock_controller
+            meta_data=self.basic_program_meta
         )
 
         self.assertEqual(program['@Name'], 'TestRaProgram')
-        self.assertEqual(program.controller, self.mock_controller)
 
     def test_init_without_meta_data(self):
         """Test RaProgram initialization without meta_data loads from file."""
-        program = RaProgram(controller=self.mock_controller)
+        program = RaProgram()
         self.assertEqual(program['@Name'], 'Program_Name')
 
     def test_init_with_none_meta_data(self):
         """Test RaProgram initialization with None meta_data."""
-        program = RaProgram(meta_data=None, controller=self.mock_controller)
+        program = RaProgram(meta_data=None)
         self.assertEqual(program['@Name'], 'Program_Name')
 
     def test_init_without_controller(self):
@@ -95,7 +93,7 @@ class TestRaProgramProperties(unittest.TestCase):
 
     def test_dict_key_order(self):
         """Test dict_key_order property returns correct order."""
-        program = RaProgram(meta_data=self.basic_program_meta, controller=self.mock_controller)
+        program = RaProgram(meta_data=self.basic_program_meta)
 
         expected_order = [
             '@Name',
@@ -113,22 +111,22 @@ class TestRaProgramProperties(unittest.TestCase):
 
     def test_disabled_property(self):
         """Test disabled property."""
-        program = RaProgram(meta_data=self.basic_program_meta, controller=self.mock_controller)
+        program = RaProgram(meta_data=self.basic_program_meta)
         self.assertEqual(program.disabled, 'false')
 
     def test_test_edits_property(self):
         """Test test_edits property."""
-        program = RaProgram(meta_data=self.basic_program_meta, controller=self.mock_controller)
+        program = RaProgram(meta_data=self.basic_program_meta)
         self.assertEqual(program.test_edits, 'false')
 
     def test_main_routine_name_property(self):
         """Test main_routine_name property."""
-        program = RaProgram(meta_data=self.basic_program_meta, controller=self.mock_controller)
+        program = RaProgram(meta_data=self.basic_program_meta)
         self.assertEqual(program.main_routine_name, 'MainRoutine')
 
     def test_use_as_folder_property(self):
         """Test use_as_folder property."""
-        program = RaProgram(meta_data=self.basic_program_meta, controller=self.mock_controller)
+        program = RaProgram(meta_data=self.basic_program_meta)
         self.assertEqual(program.use_as_folder, 'false')
 
     def test_main_routine_property_exists(self):
@@ -164,7 +162,7 @@ class TestRaProgramProperties(unittest.TestCase):
             '@MainRoutineName': '',
             'RaRoutines': {}
         }
-        program = RaProgram(meta_data=meta_data, controller=self.mock_controller)
+        program = RaProgram(meta_data=meta_data)
 
         self.assertIsNone(program.main_routine)
 
@@ -214,8 +212,7 @@ class TestRaProgramMethods(unittest.TestCase):
     def test_get_instructions_with_filter(self):
         """Test get_instructions with instruction and operand filters."""
         program = RaProgram(
-            meta_data=self.program_with_routines_meta,
-            controller=self.mock_controller
+            meta_data=self.program_with_routines_meta
         )
 
         # Create mock instructions with different names and operands
@@ -273,7 +270,7 @@ class TestRaProgramMethods(unittest.TestCase):
 
     def test_get_instructions_compiles_when_empty(self):
         """Test get_instructions compiles instructions when cache is empty."""
-        program = RaProgram(meta_data=self.basic_program_meta, controller=self.mock_controller)
+        program = RaProgram(meta_data=self.basic_program_meta)
 
         # Mock compile_instructions to populate _instructions
         mock_instruction = Mock(spec=RaLogicInstruction)
@@ -293,7 +290,7 @@ class TestRaProgramMethods(unittest.TestCase):
 
     def test_get_instructions_with_instruction_without_operands(self):
         """Test get_instructions handles instructions with no operands when filtering by operand."""
-        program = RaProgram(meta_data=self.basic_program_meta, controller=self.mock_controller)
+        program = RaProgram(meta_data=self.basic_program_meta)
 
         # Create instruction with no operands
         mock_instr = Mock(spec=RaLogicInstruction)
@@ -308,7 +305,7 @@ class TestRaProgramMethods(unittest.TestCase):
 
     def test_get_instructions_operand_filter_partial_match(self):
         """Test operand filter requires exact match in operand list."""
-        program = RaProgram(meta_data=self.basic_program_meta, controller=self.mock_controller)
+        program = RaProgram(meta_data=self.basic_program_meta)
 
         mock_instr = Mock(spec=RaLogicInstruction)
         mock_instr.name = 'ADD'
@@ -360,7 +357,7 @@ class TestRaProgramBlockRaRoutine(unittest.TestCase):
 
     def test_block_routine_success(self):
         """Test successful routine blocking."""
-        program = RaProgram(meta_data=self.basic_program_meta, controller=self.mock_controller)
+        program = RaProgram(meta_data=self.basic_program_meta)
         program.get_instructions = Mock(return_value=[self.mock_jsr_instruction])
 
         program.block_routine('SubRaRoutine1', 'BlockingBit')
@@ -370,7 +367,7 @@ class TestRaProgramBlockRaRoutine(unittest.TestCase):
 
     def test_block_routine_already_blocked(self):
         """Test blocking routine that's already blocked."""
-        program = RaProgram(meta_data=self.basic_program_meta, controller=self.mock_controller)
+        program = RaProgram(meta_data=self.basic_program_meta)
         program.get_instructions = Mock(return_value=[self.mock_jsr_instruction])
 
         # Set rung text to already include the blocking condition
@@ -383,7 +380,7 @@ class TestRaProgramBlockRaRoutine(unittest.TestCase):
 
     def test_block_routine_no_matching_jsr(self):
         """Test blocking routine with no matching JSR."""
-        program = RaProgram(meta_data=self.basic_program_meta, controller=self.mock_controller)
+        program = RaProgram(meta_data=self.basic_program_meta)
         # Change operand to different routine
         mock_operand = Mock()
         mock_operand.meta_data = "DifferentRaRoutine"
@@ -397,7 +394,7 @@ class TestRaProgramBlockRaRoutine(unittest.TestCase):
 
     def test_block_routine_no_rung(self):
         """Test blocking routine when JSR has no rung."""
-        program = RaProgram(meta_data=self.basic_program_meta, controller=self.mock_controller)
+        program = RaProgram(meta_data=self.basic_program_meta)
         self.mock_jsr_instruction.get_rung.return_value = None
         program.get_instructions = Mock(return_value=[self.mock_jsr_instruction])
 
@@ -406,7 +403,7 @@ class TestRaProgramBlockRaRoutine(unittest.TestCase):
 
     def test_block_routine_no_jsrs(self):
         """Test blocking routine with no JSR instructions."""
-        program = RaProgram(meta_data=self.basic_program_meta, controller=self.mock_controller)
+        program = RaProgram(meta_data=self.basic_program_meta)
         program.get_instructions = Mock(return_value=[])
 
         # Should not raise any exceptions
@@ -443,7 +440,7 @@ class TestRaProgramUnblockRaRoutine(unittest.TestCase):
 
     def test_unblock_routine_success(self):
         """Test successful routine unblocking."""
-        program = RaProgram(meta_data=self.basic_program_meta, controller=self.mock_controller)
+        program = RaProgram(meta_data=self.basic_program_meta)
         self.mock_rung.get_rung_text.return_value = 'XIC(BlockingBit)JSR(SubRaRoutine1);'
         program.get_instructions = Mock(return_value=[self.mock_jsr_instruction])
 
@@ -454,7 +451,7 @@ class TestRaProgramUnblockRaRoutine(unittest.TestCase):
 
     def test_unblock_routine_not_blocked(self):
         """Test unblocking routine that's not blocked."""
-        program = RaProgram(meta_data=self.basic_program_meta, controller=self.mock_controller)
+        program = RaProgram(meta_data=self.basic_program_meta)
         self.mock_rung.get_rung_text.return_value = 'JSR(SubRaRoutine1);'
         program.get_instructions = Mock(return_value=[self.mock_jsr_instruction])
 
@@ -465,7 +462,7 @@ class TestRaProgramUnblockRaRoutine(unittest.TestCase):
 
     def test_unblock_routine_no_matching_jsr(self):
         """Test unblocking routine with no matching JSR."""
-        program = RaProgram(meta_data=self.basic_program_meta, controller=self.mock_controller)
+        program = RaProgram(meta_data=self.basic_program_meta)
         self.mock_jsr_instruction.get_operands.return_value = ['DifferentRaRoutine']
         program.get_instructions = Mock(return_value=[self.mock_jsr_instruction])
 
@@ -476,7 +473,7 @@ class TestRaProgramUnblockRaRoutine(unittest.TestCase):
 
     def test_unblock_routine_no_rung(self):
         """Test unblocking routine when JSR has no rung."""
-        program = RaProgram(meta_data=self.basic_program_meta, controller=self.mock_controller)
+        program = RaProgram(meta_data=self.basic_program_meta)
         self.mock_jsr_instruction.get_rung.return_value = None
         program.get_instructions = Mock(return_value=[self.mock_jsr_instruction])
 
@@ -485,7 +482,7 @@ class TestRaProgramUnblockRaRoutine(unittest.TestCase):
 
     def test_unblock_routine_partial_match_blocking_bit(self):
         """Test unblocking when blocking bit appears elsewhere in text."""
-        program = RaProgram(meta_data=self.basic_program_meta, controller=self.mock_controller)
+        program = RaProgram(meta_data=self.basic_program_meta)
         self.mock_rung.get_rung_text.return_value = 'XIC(OtherBit)XIC(BlockingBit)JSR(SubRaRoutine1);'
         program.get_instructions = Mock(return_value=[self.mock_jsr_instruction])
 
@@ -496,7 +493,7 @@ class TestRaProgramUnblockRaRoutine(unittest.TestCase):
 
     def test_unblock_routine_multiple_occurrences(self):
         """Test unblocking only removes first occurrence."""
-        program = RaProgram(meta_data=self.basic_program_meta, controller=self.mock_controller)
+        program = RaProgram(meta_data=self.basic_program_meta)
         self.mock_rung.get_rung_text.return_value = 'XIC(BlockingBit)XIC(BlockingBit)JSR(SubRaRoutine1);'
         program.get_instructions = Mock(return_value=[self.mock_jsr_instruction])
 
@@ -529,12 +526,12 @@ class TestRaProgramEdgeCases(unittest.TestCase):
         incomplete_meta = {'@Name': 'TestRaProgram'}
 
         # Should not raise exceptions
-        program = RaProgram(meta_data=incomplete_meta, controller=self.mock_controller)
+        program = RaProgram(meta_data=incomplete_meta)
         _ = program.disabled
 
     def test_block_unblock_with_special_characters(self):
         """Test blocking/unblocking with special characters in names."""
-        program = RaProgram(meta_data=self.basic_program_meta, controller=self.mock_controller)
+        program = RaProgram(meta_data=self.basic_program_meta)
 
         # Test with routine name containing special characters
         mock_jsr_instruction = Mock(spec=RaLogicInstruction)
@@ -553,7 +550,7 @@ class TestRaProgramEdgeCases(unittest.TestCase):
 
     def test_empty_routine_name_block_unblock(self):
         """Test blocking/unblocking with empty routine name."""
-        program = RaProgram(meta_data=self.basic_program_meta, controller=self.mock_controller)
+        program = RaProgram(meta_data=self.basic_program_meta)
         program.get_instructions = Mock(return_value=[])
 
         # Should handle gracefully
@@ -596,7 +593,7 @@ class TestRaProgramIntegration(unittest.TestCase):
     def test_full_program_lifecycle(self):
         """Test full program creation and usage lifecycle."""
         # Create program
-        program = RaProgram(controller=self.mock_controller)
+        program = RaProgram()
 
         # Verify properties
         self.assertEqual(program.name, 'Program_Name')

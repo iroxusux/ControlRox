@@ -1,7 +1,6 @@
 """Module model for pyrox Controller applications."""
 from typing import Optional
 from controlrox.interfaces import (
-    IController,
     IModule,
 )
 from .meta import PlcObject
@@ -15,14 +14,12 @@ class Module(
     def __init__(
         self,
         meta_data: Optional[dict] = None,
-        controller: Optional[IController] = None,
         name: Optional[str] = None,
         description: Optional[str] = None,
     ) -> None:
 
         super().__init__(
             meta_data=meta_data,
-            controller=controller,
             name=name,
             description=description,
         )

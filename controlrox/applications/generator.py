@@ -9,12 +9,6 @@ class BaseEmulationGenerator(generator.EmulationGenerator):
     """Base class for emulation logic generators."""
     supporting_class = plc.RaController
 
-    def __init__(
-        self,
-        controller: plc.RaController
-    ) -> None:
-        super().__init__(controller)
-
     def get_base_tags(self) -> list[tuple[str, str, str]]:
         return [
             ('zz_Demo3D_Uninhibit', 'INT', 'Uninhibit mode for the controller.'),

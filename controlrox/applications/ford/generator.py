@@ -12,9 +12,8 @@ class FordEmulationGenerator(BaseEmulationGenerator):
 
     def __init__(
         self,
-        controller: FordController
     ) -> None:
-        super().__init__(controller)
+        super().__init__()
         self._target_safety_program_name: Optional[str] = None
 
     def disable_all_comm_edit_routines(self):

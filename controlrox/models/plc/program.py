@@ -1,7 +1,6 @@
 """Program module for pyrox
 """
-from typing import Optional
-from controlrox.interfaces import IController, IProgram
+from controlrox.interfaces import IProgram
 from .meta import PlcObject
 from .protocols import (
     CanBeSafe,
@@ -28,7 +27,6 @@ class Program(
         meta_data=None,
         name: str = '',
         description: str = '',
-        controller: Optional[IController] = None,
     ) -> None:
         CanBeSafe.__init__(self)
         CanEnableDisable.__init__(self, enabled=enabled)
@@ -40,5 +38,4 @@ class Program(
             meta_data=meta_data,
             name=name,
             description=description,
-            controller=controller
         )

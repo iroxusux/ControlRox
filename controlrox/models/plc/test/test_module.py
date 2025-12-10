@@ -412,118 +412,6 @@ class TestModuleInheritance(unittest.TestCase):
         self.assertIsInstance(module, IModule)
 
 
-class TestModuleWithController(unittest.TestCase):
-    """Test Module with controller integration."""
-
-    def setUp(self):
-        """Set up test fixtures."""
-        from controlrox.interfaces import IController
-
-        self.mock_controller = Mock(spec=IController)
-        self.mock_controller.name = 'TestController'
-
-        class TestableModule(Module):
-            def get_catalog_number(self):
-                return '1756-L85E'
-
-            def get_ip_address(self):
-                return '192.168.1.1'
-
-            def get_is_inhibited(self):
-                return False
-
-            def get_major_version_number(self):
-                return '32'
-
-            def get_minor_version_number(self):
-                return '11'
-
-            def get_parent_module(self):  # type: ignore
-                return None
-
-            def get_product_code(self):
-                return '123'
-
-            def get_product_type(self):
-                return '14'
-
-            def get_rpi(self):
-                return '20'
-
-            def get_vendor(self):
-                return '1'
-
-            def set_catalog_number(self, catalog_number):
-                pass
-
-            def set_is_inhibited(self, inhibited):
-                pass
-
-            def set_ip_address(self, ip_address):
-                pass
-
-            def set_major_version_number(self, major_version_number):
-                pass
-
-            def set_minor_version_number(self, minor_version_number):
-                pass
-
-            def set_parent_module(self, parent_module):
-                pass
-
-            def set_product_code(self, product_code):
-                pass
-
-            def set_product_type(self, product_type):
-                pass
-
-            def set_rpi(self, rpi):
-                pass
-
-            def set_vendor(self, vendor):
-                pass
-
-            def compile(self):
-                return self
-
-            def invalidate(self):
-                pass
-
-            @property
-            def process_name(self):
-                return 'TestProcess'
-
-        self.TestableModule = TestableModule
-
-    def test_module_with_controller(self):
-        """Test module initialized with controller."""
-        module = self.TestableModule(controller=self.mock_controller)
-
-        self.assertEqual(module.controller, self.mock_controller)
-
-    def test_module_controller_access(self):
-        """Test accessing controller from module."""
-        module = self.TestableModule(controller=self.mock_controller)
-
-        controller = module.get_controller()
-
-        self.assertEqual(controller, self.mock_controller)
-
-    def test_module_set_controller(self):
-        """Test setting controller after initialization."""
-        module = self.TestableModule()
-
-        module.set_controller(self.mock_controller)
-
-        self.assertEqual(module.controller, self.mock_controller)
-
-    def test_module_without_controller(self):
-        """Test module without controller."""
-        module = self.TestableModule()
-
-        self.assertIsNone(module.controller)
-
-
 class TestModuleMetaDataIntegration(unittest.TestCase):
     """Test Module metadata integration."""
 
@@ -1177,13 +1065,13 @@ class TestModuleStringRepresentation(unittest.TestCase):
 
     def test_module_str_returns_name(self):
         """Test __str__ returns module name."""
-        module = Module(name='MyModuleName')
+        module = Module(name='MyModuleName')  # type: ignore
 
         self.assertEqual(str(module), 'MyModuleName')
 
     def test_module_repr_returns_name(self):
         """Test __repr__ returns module name."""
-        module = Module(name='MyModuleName')
+        module = Module(name='MyModuleName')  # type: ignore
 
         self.assertEqual(repr(module), 'MyModuleName')
 
@@ -1193,9 +1081,8 @@ class TestModuleSpecialCases(unittest.TestCase):
 
     def test_module_with_none_values(self):
         """Test module with None for optional parameters."""
-        module = Module(
+        module = Module(  # type: ignore
             meta_data=None,
-            controller=None,
             name=None,
             description=None
         )

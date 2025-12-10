@@ -170,7 +170,6 @@ class TestDatatypeMember(unittest.TestCase):
             parent_datatype=self.mock_parent_datatype,
             name='OverrideName',
             description='Test Description',
-            controller=self.mock_controller
         )
 
         self.assertEqual(member.name, 'OverrideName')
@@ -351,7 +350,6 @@ class TestDatatype(unittest.TestCase):
             meta_data=meta_data,
             name='OverrideName',
             description='Override Description',
-            controller=self.mock_controller
         )
 
         self.assertEqual(dt.name, 'OverrideName')
@@ -662,7 +660,6 @@ class TestDatatypeEdgeCases(unittest.TestCase):
         member = DatatypeMember(
             meta_data=meta_data,
             parent_datatype=self.mock_parent_datatype,
-            controller=None
         )
 
         self.assertEqual(member.name, 'Member1')
@@ -786,18 +783,6 @@ class TestDatatypeMemberProperties(unittest.TestCase):
 
         # Check property access
         self.assertEqual(member.parent_datatype, self.mock_parent_datatype)
-
-    def test_member_with_controller_access(self):
-        """Test member can access controller from parent or directly."""
-        mock_controller = Mock(spec=IController)
-        meta_data = {'@Name': 'TestMember'}
-        member = DatatypeMember(
-            meta_data=meta_data,
-            parent_datatype=self.mock_parent_datatype,
-            controller=mock_controller
-        )
-
-        self.assertEqual(member.controller, mock_controller)
 
 
 class TestDatatypePropertiesAndInterfaces(unittest.TestCase):

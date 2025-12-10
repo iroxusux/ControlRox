@@ -4,7 +4,7 @@ This test suite provides comprehensive testing of the FordEmulationGenerator
 for Rockwell/Allen-Bradley PLC controllers.
 """
 import unittest
-from unittest.mock import Mock, MagicMock
+from unittest.mock import Mock, MagicMock, patch
 
 from controlrox.interfaces import (
     IProgram,
@@ -31,26 +31,32 @@ class TestFordEmulationGeneratorInitialization(unittest.TestCase):
         self.mock_controller.create_routine = Mock(return_value=Mock(spec=IRoutine))
         self.mock_controller.create_rung = Mock(return_value=Mock(spec=IRung))
 
-    def test_initialization_with_ford_controller(self):
+    @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
+    def test_initialization_with_ford_controller(self, mock_get_controller):
         """Test FordEmulationGenerator can be initialized with FordController."""
-        generator = FordEmulationGenerator(controller=self.mock_controller)
+        mock_get_controller.return_value = self.mock_controller
+        generator = FordEmulationGenerator()
 
         self.assertIsInstance(generator, FordEmulationGenerator)
         self.assertIs(generator.controller, self.mock_controller)
         self.assertIsInstance(generator.schema, ControllerModificationSchema)
         self.assertIsNone(generator._target_safety_program_name)
 
-    def test_initialization_creates_schema(self):
+    @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
+    def test_initialization_creates_schema(self, mock_get_controller):
         """Test initialization creates a ControllerModificationSchema."""
-        generator = FordEmulationGenerator(controller=self.mock_controller)
+        mock_get_controller.return_value = self.mock_controller
+        generator = FordEmulationGenerator()
 
         self.assertIsNotNone(generator.schema)
         self.assertIsInstance(generator.schema, ControllerModificationSchema)
         self.assertIs(generator.schema.destination, self.mock_controller)
 
-    def test_target_safety_program_name_initially_none(self):
+    @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
+    def test_target_safety_program_name_initially_none(self, mock_get_controller):
         """Test _target_safety_program_name is None on initialization."""
-        generator = FordEmulationGenerator(controller=self.mock_controller)
+        mock_get_controller.return_value = self.mock_controller
+        generator = FordEmulationGenerator()
 
         self.assertIsNone(generator._target_safety_program_name)
 
@@ -73,25 +79,31 @@ class TestFordEmulationGeneratorConfiguration(unittest.TestCase):
         self.mock_controller.create_routine = Mock(return_value=Mock(spec=IRoutine))
         self.mock_controller.create_rung = Mock(return_value=Mock(spec=IRung))
 
-    def test_get_custom_tags_returns_empty_list(self):
+    @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
+    def test_get_custom_tags_returns_empty_list(self, mock_get_controller):
         """Test get_custom_tags returns an empty list for Ford."""
-        generator = FordEmulationGenerator(controller=self.mock_controller)
+        mock_get_controller.return_value = self.mock_controller
+        generator = FordEmulationGenerator()
 
         custom_tags = generator.get_custom_tags()
 
         self.assertEqual(custom_tags, [])
         self.assertIsInstance(custom_tags, list)
 
-    def test_get_emulation_standard_program_name(self):
+    @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
+    def test_get_emulation_standard_program_name(self, mock_get_controller):
         """Test get_emulation_standard_program_name returns 'MainProgram'."""
-        generator = FordEmulationGenerator(controller=self.mock_controller)
+        mock_get_controller.return_value = self.mock_controller
+        generator = FordEmulationGenerator()
 
         program_name = generator.get_emulation_standard_program_name()
 
         self.assertEqual(program_name, 'MainProgram')
 
-    def test_get_emulation_safety_program_name_when_none_set(self):
+    @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
+    def test_get_emulation_safety_program_name_when_none_set(self, mock_get_controller):
         """Test get_emulation_safety_program_name when no safety program is set."""
+        mock_get_controller.return_value = self.mock_controller
         # Create mock safety programs
         mock_safety_prog1 = Mock()
         mock_safety_prog1.name = 'SafetyTask'
@@ -106,29 +118,33 @@ class TestFordEmulationGeneratorConfiguration(unittest.TestCase):
             mock_safety_prog3
         ]
 
-        generator = FordEmulationGenerator(controller=self.mock_controller)
+        generator = FordEmulationGenerator()
 
         program_name = generator.get_emulation_safety_program_name()
 
         self.assertEqual(program_name, 'MappingInputs_Edit')
         self.assertEqual(generator._target_safety_program_name, 'MappingInputs_Edit')
 
-    def test_get_emulation_safety_program_name_returns_cached_value(self):
+    @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
+    def test_get_emulation_safety_program_name_returns_cached_value(self, mock_get_controller):
         """Test get_emulation_safety_program_name returns cached value if already set."""
-        generator = FordEmulationGenerator(controller=self.mock_controller)
+        mock_get_controller.return_value = self.mock_controller
+        generator = FordEmulationGenerator()
         generator._target_safety_program_name = 'CachedProgramName'
 
         program_name = generator.get_emulation_safety_program_name()
 
         self.assertEqual(program_name, 'CachedProgramName')
 
-    def test_get_emulation_safety_program_name_returns_empty_when_no_match(self):
+    @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
+    def test_get_emulation_safety_program_name_returns_empty_when_no_match(self, mock_get_controller):
         """Test get_emulation_safety_program_name returns empty string when no matching program."""
+        mock_get_controller.return_value = self.mock_controller
         mock_safety_prog = Mock()
         mock_safety_prog.name = 'SafetyTask'
         self.mock_controller.safety_programs = [mock_safety_prog]
 
-        generator = FordEmulationGenerator(controller=self.mock_controller)
+        generator = FordEmulationGenerator()
 
         program_name = generator.get_emulation_safety_program_name()
 
@@ -153,9 +169,11 @@ class TestFordEmulationGeneratorCommOkLogic(unittest.TestCase):
         self.mock_controller.create_tag = Mock(return_value=Mock(spec=ITag))
         self.mock_controller.create_routine = Mock(return_value=Mock(spec=IRoutine))
 
-    def test_scrape_all_comm_ok_bits_from_single_program(self):
+    @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
+    def test_scrape_all_comm_ok_bits_from_single_program(self, mock_get_controller):
         """Test _scrape_all_comm_ok_bits finds CommOk bits in programs."""
-        generator = FordEmulationGenerator(controller=self.mock_controller)
+        mock_get_controller.return_value = self.mock_controller
+        generator = FordEmulationGenerator()
 
         # Create mock instruction with CommOk in metadata
         mock_instruction = Mock(spec=ILogicInstruction)
@@ -181,9 +199,11 @@ class TestFordEmulationGeneratorCommOkLogic(unittest.TestCase):
         self.assertEqual(len(result), 1)
         self.assertIn(mock_instruction, result)
 
-    def test_scrape_all_comm_ok_bits_filters_otl_instructions(self):
+    @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
+    def test_scrape_all_comm_ok_bits_filters_otl_instructions(self, mock_get_controller):
         """Test _scrape_all_comm_ok_bits includes OTL instructions."""
-        generator = FordEmulationGenerator(controller=self.mock_controller)
+        mock_get_controller.return_value = self.mock_controller
+        generator = FordEmulationGenerator()
 
         # Create mock OTL instruction
         mock_instruction = Mock(spec=ILogicInstruction)
@@ -207,9 +227,11 @@ class TestFordEmulationGeneratorCommOkLogic(unittest.TestCase):
         self.assertEqual(len(result), 1)
         self.assertIn(mock_instruction, result)
 
-    def test_scrape_all_comm_ok_bits_ignores_non_commok_instructions(self):
+    @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
+    def test_scrape_all_comm_ok_bits_ignores_non_commok_instructions(self, mock_get_controller):
         """Test _scrape_all_comm_ok_bits ignores instructions without CommOk."""
-        generator = FordEmulationGenerator(controller=self.mock_controller)
+        mock_get_controller.return_value = self.mock_controller
+        generator = FordEmulationGenerator()
 
         # Create instruction without CommOk in metadata
         mock_instruction = Mock(spec=ILogicInstruction)
@@ -229,9 +251,11 @@ class TestFordEmulationGeneratorCommOkLogic(unittest.TestCase):
 
         self.assertEqual(len(result), 0)
 
-    def test_scrape_all_comm_ok_bits_ignores_wrong_instruction_type(self):
+    @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
+    def test_scrape_all_comm_ok_bits_ignores_wrong_instruction_type(self, mock_get_controller):
         """Test _scrape_all_comm_ok_bits ignores non-OTE/OTL instructions."""
-        generator = FordEmulationGenerator(controller=self.mock_controller)
+        mock_get_controller.return_value = self.mock_controller
+        generator = FordEmulationGenerator()
 
         # Create XIC instruction with CommOk (should be ignored)
         mock_instruction = Mock(spec=ILogicInstruction)
@@ -251,9 +275,11 @@ class TestFordEmulationGeneratorCommOkLogic(unittest.TestCase):
 
         self.assertEqual(len(result), 0)
 
-    def test_scrape_all_comm_ok_bits_handles_program_without_comm_edit(self):
+    @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
+    def test_scrape_all_comm_ok_bits_handles_program_without_comm_edit(self, mock_get_controller):
         """Test _scrape_all_comm_ok_bits handles programs without comm_edit_routine."""
-        generator = FordEmulationGenerator(controller=self.mock_controller)
+        mock_get_controller.return_value = self.mock_controller
+        generator = FordEmulationGenerator()
 
         mock_program = Mock(spec=IProgram)
         mock_program.name = 'TestProgram'
@@ -265,9 +291,11 @@ class TestFordEmulationGeneratorCommOkLogic(unittest.TestCase):
 
         self.assertEqual(len(result), 0)
 
-    def test_scrape_all_comm_ok_bits_from_multiple_programs(self):
+    @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
+    def test_scrape_all_comm_ok_bits_from_multiple_programs(self, mock_get_controller):
         """Test _scrape_all_comm_ok_bits aggregates from multiple programs."""
-        generator = FordEmulationGenerator(controller=self.mock_controller)
+        mock_get_controller.return_value = self.mock_controller
+        generator = FordEmulationGenerator()
 
         # Create first program with CommOk bit
         mock_instruction1 = Mock(spec=ILogicInstruction)
@@ -331,9 +359,11 @@ class TestFordEmulationGeneratorCustomLogic(unittest.TestCase):
         self.mock_routine = Mock(spec=IRoutine)
         self.mock_controller.create_routine = Mock(return_value=self.mock_routine)
 
-    def test_generate_custom_logic_with_no_comm_ok_bits(self):
+    @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
+    def test_generate_custom_logic_with_no_comm_ok_bits(self, mock_get_controller):
         """Test _generate_custom_logic handles no CommOk bits gracefully."""
-        generator = FordEmulationGenerator(controller=self.mock_controller)
+        mock_get_controller.return_value = self.mock_controller
+        generator = FordEmulationGenerator()
         generator._scrape_all_comm_ok_bits = Mock(return_value=[])
         generator.add_controller_tag = Mock()
         generator.add_rung_to_standard_routine = Mock()
@@ -347,9 +377,11 @@ class TestFordEmulationGeneratorCustomLogic(unittest.TestCase):
         generator.add_controller_tag.assert_not_called()
         generator.add_rung_to_standard_routine.assert_not_called()
 
-    def test_generate_custom_logic_creates_tags_for_each_comm_ok_bit(self):
+    @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
+    def test_generate_custom_logic_creates_tags_for_each_comm_ok_bit(self, mock_get_controller):
         """Test _generate_custom_logic creates comm, pwr1, and pwr2 tags for each device."""
-        generator = FordEmulationGenerator(controller=self.mock_controller)
+        mock_get_controller.return_value = self.mock_controller
+        generator = FordEmulationGenerator()
 
         # Create mock CommOk instruction
         mock_instruction = Mock(spec=ILogicInstruction)
@@ -380,9 +412,11 @@ class TestFordEmulationGeneratorCustomLogic(unittest.TestCase):
         for call_item in calls:
             self.assertEqual(call_item.kwargs['datatype'], 'BOOL')
 
-    def test_generate_custom_logic_creates_emulation_rung(self):
+    @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
+    def test_generate_custom_logic_creates_emulation_rung(self, mock_get_controller):
         """Test _generate_custom_logic creates emulation rung with proper logic."""
-        generator = FordEmulationGenerator(controller=self.mock_controller)
+        mock_get_controller.return_value = self.mock_controller
+        generator = FordEmulationGenerator()
 
         # Create mock CommOk instruction
         mock_instruction = Mock(spec=ILogicInstruction)
@@ -414,9 +448,11 @@ class TestFordEmulationGeneratorCustomLogic(unittest.TestCase):
         self.assertIn('XIC(', rung_text)
         self.assertIn('Device1.CommOk', rung_text)
 
-    def test_generate_custom_logic_handles_multiple_devices(self):
+    @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
+    def test_generate_custom_logic_handles_multiple_devices(self, mock_get_controller):
         """Test _generate_custom_logic handles multiple CommOk bits."""
-        generator = FordEmulationGenerator(controller=self.mock_controller)
+        mock_get_controller.return_value = self.mock_controller
+        generator = FordEmulationGenerator()
 
         # Create multiple mock CommOk instructions
         mock_instruction1 = Mock(spec=ILogicInstruction)
@@ -449,9 +485,11 @@ class TestFordEmulationGeneratorCustomLogic(unittest.TestCase):
         # Should create 2 rungs (1 per device)
         self.assertEqual(generator.add_rung_to_standard_routine.call_count, 2)
 
-    def test_generate_custom_logic_calls_disable_comm_edit_routines(self):
+    @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
+    def test_generate_custom_logic_calls_disable_comm_edit_routines(self, mock_get_controller):
         """Test _generate_custom_logic calls disable_all_comm_edit_routines."""
-        generator = FordEmulationGenerator(controller=self.mock_controller)
+        mock_get_controller.return_value = self.mock_controller
+        generator = FordEmulationGenerator()
         generator._scrape_all_comm_ok_bits = Mock(return_value=[])
         generator.disable_all_comm_edit_routines = Mock()
         generator._emulation_standard_routine = Mock()
@@ -475,9 +513,11 @@ class TestFordEmulationGeneratorCommEditDisable(unittest.TestCase):
         self.mock_controller.create_rung = Mock(return_value=Mock(spec=IRung))
         self.mock_controller.create_routine = Mock(return_value=Mock(spec=IRoutine))
 
-    def test_disable_all_comm_edit_routines_blocks_existing_routines(self):
+    @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
+    def test_disable_all_comm_edit_routines_blocks_existing_routines(self, mock_get_controller):
         """Test disable_all_comm_edit_routines blocks routines in programs that have them."""
-        generator = FordEmulationGenerator(controller=self.mock_controller)
+        mock_get_controller.return_value = self.mock_controller
+        generator = FordEmulationGenerator()
 
         # Create mock program with comm_edit_routine
         mock_routine = Mock(spec=IRoutine)
@@ -501,9 +541,11 @@ class TestFordEmulationGeneratorCommEditDisable(unittest.TestCase):
         call_args = mock_program.block_routine.call_args
         self.assertEqual(call_args[0][0], 'A_Comm_Edit')
 
-    def test_disable_all_comm_edit_routines_skips_programs_without_comm_edit(self):
+    @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
+    def test_disable_all_comm_edit_routines_skips_programs_without_comm_edit(self, mock_get_controller):
         """Test disable_all_comm_edit_routines skips programs without comm_edit_routine."""
-        generator = FordEmulationGenerator(controller=self.mock_controller)
+        mock_get_controller.return_value = self.mock_controller
+        generator = FordEmulationGenerator()
 
         # Create mock program without comm_edit_routine
         mock_program = Mock(spec=IProgram)
@@ -518,9 +560,11 @@ class TestFordEmulationGeneratorCommEditDisable(unittest.TestCase):
         # Verify block_routine was NOT called
         mock_program.block_routine.assert_not_called()
 
-    def test_disable_all_comm_edit_routines_handles_multiple_programs(self):
+    @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
+    def test_disable_all_comm_edit_routines_handles_multiple_programs(self, mock_get_controller):
         """Test disable_all_comm_edit_routines handles multiple programs."""
-        generator = FordEmulationGenerator(controller=self.mock_controller)
+        mock_get_controller.return_value = self.mock_controller
+        generator = FordEmulationGenerator()
 
         # Create first program with comm_edit_routine
         mock_routine1 = Mock(spec=IRoutine)
@@ -557,7 +601,8 @@ class TestFordEmulationGeneratorCommEditDisable(unittest.TestCase):
 class TestFordEmulationGeneratorInheritance(unittest.TestCase):
     """Test cases for FordEmulationGenerator inheritance."""
 
-    def test_inherits_from_base_emulation_generator(self):
+    @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
+    def test_inherits_from_base_emulation_generator(self, mock_get_controller):
         """Test FordEmulationGenerator inherits from BaseEmulationGenerator."""
         from controlrox.applications.generator import BaseEmulationGenerator
 
@@ -588,9 +633,11 @@ class TestFordEmulationGeneratorIntegration(unittest.TestCase):
         self.mock_controller.create_rung = Mock(return_value=Mock(spec=IRung))
         self.mock_controller.create_routine = Mock(return_value=Mock(spec=IRoutine))
 
-    def test_full_generation_workflow_without_comm_bits(self):
+    @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
+    def test_full_generation_workflow_without_comm_bits(self, mock_get_controller):
         """Test complete generation workflow without CommOk bits."""
-        generator = FordEmulationGenerator(controller=self.mock_controller)
+        mock_get_controller.return_value = self.mock_controller
+        generator = FordEmulationGenerator()
 
         # Mock schema and its methods
         generator.schema.execute = Mock()
@@ -613,9 +660,11 @@ class TestFordEmulationGeneratorIntegration(unittest.TestCase):
         # Verify schema is returned
         self.assertIs(result, generator.schema)
 
-    def test_full_generation_workflow_with_comm_bits(self):
+    @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
+    def test_full_generation_workflow_with_comm_bits(self, mock_get_controller):
         """Test complete generation workflow with CommOk bits."""
-        generator = FordEmulationGenerator(controller=self.mock_controller)
+        mock_get_controller.return_value = self.mock_controller
+        generator = FordEmulationGenerator()
 
         # Create mock CommOk instruction
         mock_instruction = Mock(spec=ILogicInstruction)
@@ -656,9 +705,11 @@ class TestFordEmulationGeneratorIntegration(unittest.TestCase):
         generator.schema.execute.assert_called_once()
         self.assertIs(result, generator.schema)
 
-    def test_safety_program_name_caching(self):
+    @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
+    def test_safety_program_name_caching(self, mock_get_controller):
         """Test safety program name is cached after first retrieval."""
-        generator = FordEmulationGenerator(controller=self.mock_controller)
+        mock_get_controller.return_value = self.mock_controller
+        generator = FordEmulationGenerator()
 
         # First call should search and cache
         first_call = generator.get_emulation_safety_program_name()
@@ -686,9 +737,11 @@ class TestFordEmulationGeneratorEdgeCases(unittest.TestCase):
         self.mock_controller.create_rung = Mock(return_value=Mock(spec=IRung))
         self.mock_controller.create_routine = Mock(return_value=Mock(spec=IRoutine))
 
-    def test_generate_custom_logic_with_empty_programs_list(self):
+    @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
+    def test_generate_custom_logic_with_empty_programs_list(self, mock_get_controller):
         """Test _generate_custom_logic handles empty programs list."""
-        generator = FordEmulationGenerator(controller=self.mock_controller)
+        mock_get_controller.return_value = self.mock_controller
+        generator = FordEmulationGenerator()
         self.mock_controller.programs = []
         generator.disable_all_comm_edit_routines = Mock()
         generator._emulation_standard_routine = Mock()
@@ -698,9 +751,11 @@ class TestFordEmulationGeneratorEdgeCases(unittest.TestCase):
 
         generator.disable_all_comm_edit_routines.assert_called_once()
 
-    def test_scrape_comm_ok_bits_with_malformed_metadata(self):
+    @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
+    def test_scrape_comm_ok_bits_with_malformed_metadata(self, mock_get_controller):
         """Test _scrape_all_comm_ok_bits handles instructions with incomplete metadata."""
-        generator = FordEmulationGenerator(controller=self.mock_controller)
+        mock_get_controller.return_value = self.mock_controller
+        generator = FordEmulationGenerator()
 
         # Create instruction with CommOk but no operands
         mock_instruction = Mock(spec=ILogicInstruction)
@@ -722,9 +777,11 @@ class TestFordEmulationGeneratorEdgeCases(unittest.TestCase):
 
         self.assertEqual(len(result), 1)
 
-    def test_disable_comm_edit_with_none_controller_programs(self):
+    @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
+    def test_disable_comm_edit_with_none_controller_programs(self, mock_get_controller):
         """Test disable_all_comm_edit_routines handles None in programs."""
-        generator = FordEmulationGenerator(controller=self.mock_controller)
+        mock_get_controller.return_value = self.mock_controller
+        generator = FordEmulationGenerator()
         self.mock_controller.programs = [None]
 
         # Should handle None with exception
@@ -732,18 +789,22 @@ class TestFordEmulationGeneratorEdgeCases(unittest.TestCase):
             generator.disable_all_comm_edit_routines()
         self.assertIn('Program cannot be None', str(context.exception))
 
-    def test_get_emulation_safety_program_with_empty_safety_programs(self):
+    @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
+    def test_get_emulation_safety_program_with_empty_safety_programs(self, mock_get_controller):
         """Test get_emulation_safety_program_name with empty safety_programs."""
-        generator = FordEmulationGenerator(controller=self.mock_controller)
+        mock_get_controller.return_value = self.mock_controller
+        generator = FordEmulationGenerator()
         self.mock_controller.safety_programs = []
 
         result = generator.get_emulation_safety_program_name()
 
         self.assertEqual(result, '')
 
-    def test_comm_ok_device_name_extraction_with_nested_tags(self):
+    @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
+    def test_comm_ok_device_name_extraction_with_nested_tags(self, mock_get_controller):
         """Test device name extraction handles nested tag structures."""
-        generator = FordEmulationGenerator(controller=self.mock_controller)
+        mock_get_controller.return_value = self.mock_controller
+        generator = FordEmulationGenerator()
 
         # Create instruction with nested tag path
         mock_instruction = Mock(spec=ILogicInstruction)
@@ -780,17 +841,21 @@ class TestFordEmulationGeneratorRockwellSpecific(unittest.TestCase):
         self.mock_controller.create_rung = Mock(return_value=Mock(spec=IRung))
         self.mock_controller.create_routine = Mock(return_value=Mock(spec=IRoutine))
 
-    def test_ford_controller_type_compatibility(self):
+    @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
+    def test_ford_controller_type_compatibility(self, mock_get_controller):
         """Test FordEmulationGenerator works specifically with FordController."""
+        mock_get_controller.return_value = self.mock_controller
         # This verifies the type hint and supporting_class match
-        generator = FordEmulationGenerator(controller=self.mock_controller)
+        generator = FordEmulationGenerator()
 
         self.assertIsInstance(generator.controller, FordController)
         self.assertEqual(type(generator).__name__, 'FordEmulationGenerator')
 
-    def test_inherits_rockwell_base_configuration(self):
+    @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
+    def test_inherits_rockwell_base_configuration(self, mock_get_controller):
         """Test generator inherits Rockwell-specific base configurations."""
-        generator = FordEmulationGenerator(controller=self.mock_controller)
+        mock_get_controller.return_value = self.mock_controller
+        generator = FordEmulationGenerator()
 
         # Should have base_tags from BaseEmulationGenerator
         base_tags = generator.base_tags
@@ -803,18 +868,22 @@ class TestFordEmulationGeneratorRockwellSpecific(unittest.TestCase):
         self.assertIn('zz_Demo3D_Inhibit', tag_names)
         self.assertIn('zz_Demo3D_TestMode', tag_names)
 
-    def test_standard_program_name_matches_rockwell_convention(self):
+    @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
+    def test_standard_program_name_matches_rockwell_convention(self, mock_get_controller):
         """Test standard program name follows Rockwell naming conventions."""
-        generator = FordEmulationGenerator(controller=self.mock_controller)
+        mock_get_controller.return_value = self.mock_controller
+        generator = FordEmulationGenerator()
 
         program_name = generator.get_emulation_standard_program_name()
 
         # MainProgram is typical Rockwell naming
         self.assertEqual(program_name, 'MainProgram')
 
-    def test_comm_edit_routine_naming_convention(self):
+    @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
+    def test_comm_edit_routine_naming_convention(self, mock_get_controller):
         """Test Comm Edit routine follows Ford-specific A_Comm_Edit convention."""
-        generator = FordEmulationGenerator(controller=self.mock_controller)
+        mock_get_controller.return_value = self.mock_controller
+        generator = FordEmulationGenerator()
 
         # Create mock program
         mock_program = Mock(spec=IProgram)

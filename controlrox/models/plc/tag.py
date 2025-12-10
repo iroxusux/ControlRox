@@ -5,7 +5,6 @@ from typing import (
     Union
 )
 from controlrox.interfaces import (
-    IController,
     IDatatype,
     IHasTags,
     ITag,
@@ -23,7 +22,6 @@ class Tag(
     def __init__(
         self,
         meta_data: Optional[dict] = None,
-        controller: Optional[IController] = None,
         name: Optional[str] = None,
         description: Optional[str] = None,
         container: Optional[IHasTags] = None,
@@ -32,7 +30,6 @@ class Tag(
         PlcObject.__init__(
             self=self,
             meta_data=meta_data,
-            controller=controller,
             name=name,
             description=description
         )
@@ -40,7 +37,7 @@ class Tag(
         self._aliased_tag: Optional[ITag] = None
         self._base_tag: Optional[ITag] = None
         self._datatype: Optional[IDatatype] = None
-        self._container = container or controller
+        self._container = container or self.get_controller()
 
     @property
     def container(self) -> IHasTags:

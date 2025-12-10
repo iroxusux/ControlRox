@@ -102,42 +102,47 @@ class TestEmulationGenerator(unittest.TestCase):
         self.mock_controller.create_routine = Mock(return_value=Mock(spec=IRoutine))
         self.mock_controller.create_rung = Mock(return_value=Mock(spec=IRung))
 
-    def test_init_with_controller(self):
+    @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
+    def test_init_with_controller(self, mock_get_controller):
         """Test initialization with controller."""
-        generator = self.ConcreteClass(controller=self.mock_controller)
+        mock_get_controller.return_value = self.mock_controller
+        generator = self.ConcreteClass()
 
         self.assertIs(generator.controller, self.mock_controller)
         self.assertIsInstance(generator.schema, ControllerModificationSchema)
         self.assertIsNone(generator._emulation_standard_routine)
         self.assertIsNone(generator._emulation_safety_routine)
 
-    def test_init_creates_schema(self):
+    @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
+    def test_init_creates_schema(self, mock_get_controller):
         """Test that initialization creates a ControllerModificationSchema."""
-        generator = self.ConcreteClass(controller=self.mock_controller)
+        mock_get_controller.return_value = self.mock_controller
+        generator = self.ConcreteClass()
 
         self.assertIsNotNone(generator.schema)
         self.assertIsInstance(generator.schema, ControllerModificationSchema)
         self.assertIs(generator.schema.destination, self.mock_controller)
 
-    def test_controller_property_raises_when_not_set(self):
+    @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
+    def test_controller_property_raises_when_not_set(self, mock_get_controller):
         """Test controller property raises ValueError when not set."""
-        generator = self.ConcreteClass.__new__(self.ConcreteClass)
-        generator._controller = None
+        mock_get_controller.return_value = None
+        generator = self.ConcreteClass()
 
         with self.assertRaises(ValueError) as context:
             _ = generator.controller
 
-        self.assertIn("Controller is not set", str(context.exception))
+        self.assertIn("No controller is set for this emulation generator", str(context.exception))
 
     def test_emulation_safety_program_name_property(self):
         """Test emulation_safety_program_name property."""
-        generator = self.ConcreteClass(controller=self.mock_controller)
+        generator = self.ConcreteClass()
 
         self.assertEqual(generator.emulation_safety_program_name, 'SafetyProgram')
 
     def test_emulation_standard_program_name_property(self):
         """Test emulation_standard_program_name property."""
-        generator = self.ConcreteClass(controller=self.mock_controller)
+        generator = self.ConcreteClass()
 
         self.assertEqual(generator.emulation_standard_program_name, 'StandardProgram')
 
@@ -151,7 +156,7 @@ class TestEmulationGenerator(unittest.TestCase):
 
     def test_base_tags_property(self):
         """Test base_tags property returns expected tags."""
-        generator = self.ConcreteClass(controller=self.mock_controller)
+        generator = self.ConcreteClass()
 
         tags = generator.base_tags
 
@@ -163,7 +168,7 @@ class TestEmulationGenerator(unittest.TestCase):
 
     def test_custom_tags_property(self):
         """Test custom_tags property returns expected tags."""
-        generator = self.ConcreteClass(controller=self.mock_controller)
+        generator = self.ConcreteClass()
 
         tags = generator.custom_tags
 
@@ -253,7 +258,7 @@ class TestEmulationGeneratorHelperMethods(unittest.TestCase):
 
     def test_add_rung_common(self):
         """Test _add_rung_common helper method."""
-        generator = self.ConcreteClass(controller=self.mock_controller)
+        generator = self.ConcreteClass()
         mock_rung = Mock(spec=IRung)
         generator.schema.add_rung = Mock()
 
@@ -271,7 +276,7 @@ class TestEmulationGeneratorHelperMethods(unittest.TestCase):
 
     def test_add_l5x_imports(self):
         """Test add_l5x_imports method."""
-        generator = self.ConcreteClass(controller=self.mock_controller)
+        generator = self.ConcreteClass()
         generator.schema.add_import_from_file = Mock()
 
         imports = [
@@ -291,9 +296,11 @@ class TestEmulationGeneratorHelperMethods(unittest.TestCase):
             asset_types=['AOI']
         )
 
-    def test_add_controller_tag(self):
+    @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
+    def test_add_controller_tag(self, mock_get_controller):
         """Test add_controller_tag method."""
-        generator = self.ConcreteClass(controller=self.mock_controller)
+        mock_get_controller.return_value = self.mock_controller
+        generator = self.ConcreteClass()
         mock_tag = Mock(spec=ITag)
         self.mock_controller.create_tag = Mock(return_value=mock_tag)
         generator.schema.add_controller_tag = Mock(return_value=mock_tag)
@@ -309,7 +316,7 @@ class TestEmulationGeneratorHelperMethods(unittest.TestCase):
 
     def test_add_controller_tags(self):
         """Test add_controller_tags method with multiple tags."""
-        generator = self.ConcreteClass(controller=self.mock_controller)
+        generator = self.ConcreteClass()
         generator.add_controller_tag = Mock()
 
         tags = [
@@ -321,9 +328,11 @@ class TestEmulationGeneratorHelperMethods(unittest.TestCase):
 
         self.assertEqual(generator.add_controller_tag.call_count, 2)
 
-    def test_add_program_tag(self):
+    @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
+    def test_add_program_tag(self, mock_get_controller):
         """Test add_program_tag method."""
-        generator = self.ConcreteClass(controller=self.mock_controller)
+        mock_get_controller.return_value = self.mock_controller
+        generator = self.ConcreteClass()
         mock_tag = Mock(spec=ITag)
         self.mock_controller.create_tag = Mock(return_value=mock_tag)
         generator.schema.add_program_tag = Mock(return_value=mock_tag)
@@ -337,9 +346,11 @@ class TestEmulationGeneratorHelperMethods(unittest.TestCase):
         self.assertIs(result, mock_tag)
         generator.schema.add_program_tag.assert_called_once()
 
-    def test_add_routine(self):
+    @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
+    def test_add_routine(self, mock_get_controller):
         """Test add_routine method."""
-        generator = self.ConcreteClass(controller=self.mock_controller)
+        mock_get_controller.return_value = self.mock_controller
+        generator = self.ConcreteClass()
         mock_routine = Mock(spec=IRoutine)
         mock_routine.name = 'TestRoutine'
         self.mock_controller.create_routine = Mock(return_value=mock_routine)
@@ -358,9 +369,11 @@ class TestEmulationGeneratorHelperMethods(unittest.TestCase):
         mock_routine.set_description.assert_called_once_with('Test Description')
         generator.schema.add_routine.assert_called_once()
 
-    def test_add_routine_with_jsr_call(self):
+    @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
+    def test_add_routine_with_jsr_call(self, mock_get_controller):
         """Test add_routine with JSR call to main routine."""
-        generator = self.ConcreteClass(controller=self.mock_controller)
+        mock_get_controller.return_value = self.mock_controller
+        generator = self.ConcreteClass()
         mock_routine = Mock(spec=IRoutine)
         mock_routine.name = 'TestRoutine'
         mock_main_routine = Mock()
@@ -389,9 +402,11 @@ class TestEmulationGeneratorHelperMethods(unittest.TestCase):
         self.assertEqual(call_args.kwargs['routine_name'], 'MainRoutine')
         self.assertEqual(call_args.kwargs['rung_number'], 0)
 
-    def test_add_routine_skips_jsr_if_exists(self):
+    @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
+    def test_add_routine_skips_jsr_if_exists(self, mock_get_controller):
         """Test add_routine skips JSR if already exists."""
-        generator = self.ConcreteClass(controller=self.mock_controller)
+        mock_get_controller.return_value = self.mock_controller
+        generator = self.ConcreteClass()
         mock_routine = Mock(spec=IRoutine)
         mock_routine.name = 'TestRoutine'
         mock_main_routine = Mock()
@@ -417,7 +432,7 @@ class TestEmulationGeneratorHelperMethods(unittest.TestCase):
 
     def test_add_rung(self):
         """Test add_rung method."""
-        generator = self.ConcreteClass(controller=self.mock_controller)
+        generator = self.ConcreteClass()
         mock_rung = Mock(spec=IRung)
         generator.schema.add_rung = Mock(return_value=mock_rung)
 
@@ -438,7 +453,7 @@ class TestEmulationGeneratorHelperMethods(unittest.TestCase):
 
     def test_add_rungs(self):
         """Test add_rungs method adds multiple rungs."""
-        generator = self.ConcreteClass(controller=self.mock_controller)
+        generator = self.ConcreteClass()
         mock_rungs = [Mock(spec=IRung), Mock(spec=IRung), Mock(spec=IRung)]
         generator.add_rung = Mock()
 
@@ -458,7 +473,7 @@ class TestEmulationGeneratorHelperMethods(unittest.TestCase):
 
     def test_add_rungs_with_default_position(self):
         """Test add_rungs with default position (end)."""
-        generator = self.ConcreteClass(controller=self.mock_controller)
+        generator = self.ConcreteClass()
         mock_rungs = [Mock(spec=IRung), Mock(spec=IRung)]
         generator.add_rung = Mock()
 
@@ -477,7 +492,7 @@ class TestEmulationGeneratorHelperMethods(unittest.TestCase):
 
     def test_add_rung_to_safety_routine(self):
         """Test add_rung_to_safety_routine method."""
-        generator = self.ConcreteClass(controller=self.mock_controller)
+        generator = self.ConcreteClass()
         mock_routine = Mock(spec=IRoutine)
         generator._emulation_safety_routine = mock_routine
         mock_rung = Mock(spec=IRung)
@@ -493,7 +508,7 @@ class TestEmulationGeneratorHelperMethods(unittest.TestCase):
 
     def test_add_rung_to_safety_routine_raises_if_not_created(self):
         """Test add_rung_to_safety_routine raises if routine not created."""
-        generator = self.ConcreteClass(controller=self.mock_controller)
+        generator = self.ConcreteClass()
         generator._emulation_safety_routine = None
         mock_rung = Mock(spec=IRung)
 
@@ -504,7 +519,7 @@ class TestEmulationGeneratorHelperMethods(unittest.TestCase):
 
     def test_add_rung_to_standard_routine(self):
         """Test add_rung_to_standard_routine method."""
-        generator = self.ConcreteClass(controller=self.mock_controller)
+        generator = self.ConcreteClass()
         mock_routine = Mock(spec=IRoutine)
         generator._emulation_standard_routine = mock_routine
         mock_rung = Mock(spec=IRung)
@@ -520,7 +535,7 @@ class TestEmulationGeneratorHelperMethods(unittest.TestCase):
 
     def test_add_rung_to_standard_routine_raises_if_not_created(self):
         """Test add_rung_to_standard_routine raises if routine not created."""
-        generator = self.ConcreteClass(controller=self.mock_controller)
+        generator = self.ConcreteClass()
         generator._emulation_standard_routine = None
         mock_rung = Mock(spec=IRung)
 
@@ -531,7 +546,7 @@ class TestEmulationGeneratorHelperMethods(unittest.TestCase):
 
     def test_add_safety_tag_mapping(self):
         """Test add_safety_tag_mapping method."""
-        generator = self.ConcreteClass(controller=self.mock_controller)
+        generator = self.ConcreteClass()
         generator.schema.add_safety_tag_mapping = Mock()
 
         generator.add_safety_tag_mapping(
@@ -546,7 +561,7 @@ class TestEmulationGeneratorHelperMethods(unittest.TestCase):
 
     def test_add_safety_tag_mapping_skips_empty_tags(self):
         """Test add_safety_tag_mapping skips if tags are empty."""
-        generator = self.ConcreteClass(controller=self.mock_controller)
+        generator = self.ConcreteClass()
         generator.schema.add_safety_tag_mapping = Mock()
 
         # Test with empty standard tag
@@ -642,7 +657,7 @@ class TestEmulationGeneratorGenerationMethods(unittest.TestCase):
 
     def test_generate_base_tags(self):
         """Test _generate_base_tags method."""
-        generator = self.ConcreteClass(controller=self.mock_controller)
+        generator = self.ConcreteClass()
         generator.add_controller_tag = Mock()
 
         generator._generate_base_tags()
@@ -658,7 +673,7 @@ class TestEmulationGeneratorGenerationMethods(unittest.TestCase):
 
     def test_generate_custom_tags(self):
         """Test _generate_custom_tags method."""
-        generator = self.ConcreteClass(controller=self.mock_controller)
+        generator = self.ConcreteClass()
         generator.add_controller_tag = Mock()
 
         generator._generate_custom_tags()
@@ -670,7 +685,7 @@ class TestEmulationGeneratorGenerationMethods(unittest.TestCase):
 
     def test_generate_base_standard_routine(self):
         """Test _generate_base_standard_routine method."""
-        generator = self.ConcreteClass(controller=self.mock_controller)
+        generator = self.ConcreteClass()
         mock_routine = Mock(spec=IRoutine)
         generator.add_routine = Mock(return_value=mock_routine)
 
@@ -687,7 +702,7 @@ class TestEmulationGeneratorGenerationMethods(unittest.TestCase):
 
     def test_generate_base_safety_routine(self):
         """Test _generate_base_safety_routine method."""
-        generator = self.ConcreteClass(controller=self.mock_controller)
+        generator = self.ConcreteClass()
         mock_routine = Mock(spec=IRoutine)
         generator.add_routine = Mock(return_value=mock_routine)
 
@@ -702,9 +717,11 @@ class TestEmulationGeneratorGenerationMethods(unittest.TestCase):
         )
         self.assertIs(generator._emulation_safety_routine, mock_routine)
 
-    def test_generate_base_standard_rungs(self):
+    @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
+    def test_generate_base_standard_rungs(self, mock_get_controller):
         """Test _generate_base_standard_rungs method."""
-        generator = self.ConcreteClass(controller=self.mock_controller)
+        mock_get_controller.return_value = self.mock_controller
+        generator = self.ConcreteClass()
         mock_routine = Mock(spec=IRoutine)
         generator._emulation_standard_routine = mock_routine
         generator.add_rung_to_standard_routine = Mock()
@@ -721,7 +738,7 @@ class TestEmulationGeneratorGenerationMethods(unittest.TestCase):
 
     def test_generate_base_standard_rungs_raises_if_routine_not_set(self):
         """Test _generate_base_standard_rungs raises if routine not set."""
-        generator = self.ConcreteClass(controller=self.mock_controller)
+        generator = self.ConcreteClass()
         generator._emulation_standard_routine = None
 
         with self.assertRaises(ValueError) as context:
@@ -729,9 +746,11 @@ class TestEmulationGeneratorGenerationMethods(unittest.TestCase):
 
         self.assertIn("Emulation routine has not been created", str(context.exception))
 
-    def test_generate_base_safety_rungs(self):
+    @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
+    def test_generate_base_safety_rungs(self, mock_get_controller):
         """Test _generate_base_safety_rungs method."""
-        generator = self.ConcreteClass(controller=self.mock_controller)
+        mock_get_controller.return_value = self.mock_controller
+        generator = self.ConcreteClass()
         mock_routine = Mock(spec=IRoutine)
         generator._emulation_safety_routine = mock_routine
         generator.add_rung_to_safety_routine = Mock()
@@ -745,7 +764,7 @@ class TestEmulationGeneratorGenerationMethods(unittest.TestCase):
 
     def test_generate_base_safety_rungs_raises_if_routine_not_set(self):
         """Test _generate_base_safety_rungs raises if routine not set."""
-        generator = self.ConcreteClass(controller=self.mock_controller)
+        generator = self.ConcreteClass()
         generator._emulation_safety_routine = None
 
         with self.assertRaises(ValueError) as context:
@@ -753,9 +772,11 @@ class TestEmulationGeneratorGenerationMethods(unittest.TestCase):
 
         self.assertIn("Safety emulation routine has not been created", str(context.exception))
 
-    def test_generate_module_inhibit_rungs(self):
+    @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
+    def test_generate_module_inhibit_rungs(self, mock_get_controller):
         """Test _generate_module_inhibit_rungs method."""
-        generator = self.ConcreteClass(controller=self.mock_controller)
+        mock_get_controller.return_value = self.mock_controller
+        generator = self.ConcreteClass()
         mock_routine = Mock(spec=IRoutine)
         generator._emulation_standard_routine = mock_routine
 
@@ -777,7 +798,7 @@ class TestEmulationGeneratorGenerationMethods(unittest.TestCase):
 
     def test_generate_module_inhibit_rungs_raises_if_routine_not_set(self):
         """Test _generate_module_inhibit_rungs raises if routine not set."""
-        generator = self.ConcreteClass(controller=self.mock_controller)
+        generator = self.ConcreteClass()
         generator._emulation_standard_routine = None
 
         with self.assertRaises(ValueError) as context:
@@ -785,10 +806,12 @@ class TestEmulationGeneratorGenerationMethods(unittest.TestCase):
 
         self.assertIn("Emulation routine has not been created", str(context.exception))
 
+    @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
     @patch('controlrox.models.tasks.generator.IntrospectiveModuleWarehouseFactory')
-    def test_generate_builtin_common(self, mock_warehouse):
+    def test_generate_builtin_common(self, mock_warehouse, mock_get_controller):
         """Test _generate_builtin_common method."""
-        generator = self.ConcreteClass(controller=self.mock_controller)
+        mock_get_controller.return_value = self.mock_controller
+        generator = self.ConcreteClass()
 
         # Create mock introspective modules
         mock_imodule1 = Mock()
@@ -818,7 +841,7 @@ class TestEmulationGeneratorGenerationMethods(unittest.TestCase):
 
     def test_generate_base_emulation(self):
         """Test _generate_base_emulation orchestration method."""
-        generator = self.ConcreteClass(controller=self.mock_controller)
+        generator = self.ConcreteClass()
 
         # Mock all the called methods
         generator._generate_base_tags = Mock()
@@ -850,7 +873,7 @@ class TestEmulationGeneratorGenerationMethods(unittest.TestCase):
 
     def test_generate_base_module_emulation(self):
         """Test _generate_base_module_emulation method."""
-        generator = self.ConcreteClass(controller=self.mock_controller)
+        generator = self.ConcreteClass()
         generator._generate_builtin_common = Mock()
 
         generator._generate_base_module_emulation()
@@ -942,9 +965,11 @@ class TestEmulationGeneratorMainMethods(unittest.TestCase):
         self.mock_controller.create_routine = Mock(return_value=Mock(spec=IRoutine))
         self.mock_controller.create_rung = Mock(return_value=Mock(spec=IRung))
 
-    def test_generate_emulation_logic(self):
+    @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
+    def test_generate_emulation_logic(self, mock_get_controller):
         """Test generate_emulation_logic main entry point."""
-        generator = self.ConcreteClass(controller=self.mock_controller)
+        mock_get_controller.return_value = self.mock_controller
+        generator = self.ConcreteClass()
 
         # Mock the orchestration methods
         generator._generate_base_emulation = Mock()
@@ -963,9 +988,11 @@ class TestEmulationGeneratorMainMethods(unittest.TestCase):
         # Verify it returns the schema
         self.assertIs(result, generator.schema)
 
-    def test_remove_emulation_logic(self):
+    @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
+    def test_remove_emulation_logic(self, mock_get_controller):
         """Test remove_emulation_logic main entry point."""
-        generator = self.ConcreteClass(controller=self.mock_controller)
+        mock_get_controller.return_value = self.mock_controller
+        generator = self.ConcreteClass()
 
         # Mock the removal methods
         generator.remove_base_emulation = Mock()
@@ -1021,7 +1048,7 @@ class TestEmulationGeneratorRemovalMethods(unittest.TestCase):
 
     def test_remove_controller_tag(self):
         """Test remove_controller_tag method."""
-        generator = self.ConcreteClass(controller=self.mock_controller)
+        generator = self.ConcreteClass()
         generator.schema.remove_controller_tag = Mock()
 
         generator.remove_controller_tag('TestTag')
@@ -1030,7 +1057,7 @@ class TestEmulationGeneratorRemovalMethods(unittest.TestCase):
 
     def test_remove_program_tag(self):
         """Test remove_program_tag method."""
-        generator = self.ConcreteClass(controller=self.mock_controller)
+        generator = self.ConcreteClass()
         generator.schema.remove_program_tag = Mock()
 
         generator.remove_program_tag('TestProgram', 'TestTag')
@@ -1042,7 +1069,7 @@ class TestEmulationGeneratorRemovalMethods(unittest.TestCase):
 
     def test_remove_datatype(self):
         """Test remove_datatype method."""
-        generator = self.ConcreteClass(controller=self.mock_controller)
+        generator = self.ConcreteClass()
         generator.schema.remove_datatype = Mock()
 
         generator.remove_datatype('TestDatatype')
@@ -1051,7 +1078,7 @@ class TestEmulationGeneratorRemovalMethods(unittest.TestCase):
 
     def test_remove_routine(self):
         """Test remove_routine method."""
-        generator = self.ConcreteClass(controller=self.mock_controller)
+        generator = self.ConcreteClass()
         generator.schema.remove_routine = Mock()
 
         generator.remove_routine('TestProgram', 'TestRoutine')
@@ -1093,10 +1120,12 @@ class TestEmulationGeneratorQueryMethods(unittest.TestCase):
         self.mock_controller = Mock(spec=Controller)
         self.mock_controller.name = 'TestController'
 
+    @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
     @patch('controlrox.models.tasks.generator.IntrospectiveModuleWarehouseFactory')
-    def test_get_modules_by_type(self, mock_warehouse):
+    def test_get_modules_by_type(self, mock_warehouse, mock_get_controller):
         """Test get_modules_by_type method."""
-        generator = self.ConcreteClass(controller=self.mock_controller)
+        mock_get_controller.return_value = self.mock_controller
+        generator = self.ConcreteClass()
 
         # Create mock modules and introspective modules
         mock_module1 = Mock(spec=IModule)
@@ -1125,10 +1154,12 @@ class TestEmulationGeneratorQueryMethods(unittest.TestCase):
         self.assertIn(mock_module3, result)
         self.assertNotIn(mock_module2, result)
 
+    @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
     @patch('controlrox.models.tasks.generator.IntrospectiveModuleWarehouseFactory')
-    def test_get_modules_by_type_skips_none(self, mock_warehouse):
+    def test_get_modules_by_type_skips_none(self, mock_warehouse, mock_get_controller):
         """Test get_modules_by_type skips modules with no introspective module."""
-        generator = self.ConcreteClass(controller=self.mock_controller)
+        mock_get_controller.return_value = self.mock_controller
+        generator = self.ConcreteClass()
 
         mock_module1 = Mock(spec=IModule)
         mock_module2 = Mock(spec=IModule)
@@ -1146,9 +1177,11 @@ class TestEmulationGeneratorQueryMethods(unittest.TestCase):
         self.assertEqual(len(result), 1)
         self.assertIn(mock_module2, result)
 
-    def test_get_modules_by_description_pattern(self):
+    @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
+    def test_get_modules_by_description_pattern(self, mock_get_controller):
         """Test get_modules_by_description_pattern method."""
-        generator = self.ConcreteClass(controller=self.mock_controller)
+        mock_get_controller.return_value = self.mock_controller
+        generator = self.ConcreteClass()
 
         # Create mock modules with descriptions
         mock_module1 = Mock(spec=IModule)
@@ -1210,70 +1243,70 @@ class TestEmulationGeneratorAbstractMethods(unittest.TestCase):
 
     def test_generate_custom_logic_is_empty_by_default(self):
         """Test _generate_custom_logic is a no-op by default."""
-        generator = self.ConcreteClass(controller=self.mock_controller)
+        generator = self.ConcreteClass()
 
         # Should not raise an error
         generator._generate_custom_logic()
 
     def test_generate_custom_module_emulation_is_empty_by_default(self):
         """Test _generate_custom_module_emulation is a no-op by default."""
-        generator = self.ConcreteClass(controller=self.mock_controller)
+        generator = self.ConcreteClass()
 
         # Should not raise an error
         generator._generate_custom_module_emulation()
 
     def test_generate_custom_safety_routines_is_empty_by_default(self):
         """Test _generate_custom_safety_routines is a no-op by default."""
-        generator = self.ConcreteClass(controller=self.mock_controller)
+        generator = self.ConcreteClass()
 
         # Should not raise an error
         generator._generate_custom_safety_routines()
 
     def test_generate_custom_safety_rungs_is_empty_by_default(self):
         """Test _generate_custom_safety_rungs is a no-op by default."""
-        generator = self.ConcreteClass(controller=self.mock_controller)
+        generator = self.ConcreteClass()
 
         # Should not raise an error
         generator._generate_custom_safety_rungs()
 
     def test_generate_custom_standard_routines_is_empty_by_default(self):
         """Test _generate_custom_standard_routines is a no-op by default."""
-        generator = self.ConcreteClass(controller=self.mock_controller)
+        generator = self.ConcreteClass()
 
         # Should not raise an error
         generator._generate_custom_standard_routines()
 
     def test_generate_custom_standard_rungs_is_empty_by_default(self):
         """Test _generate_custom_standard_rungs is a no-op by default."""
-        generator = self.ConcreteClass(controller=self.mock_controller)
+        generator = self.ConcreteClass()
 
         # Should not raise an error
         generator._generate_custom_standard_rungs()
 
     def test_remove_base_emulation_is_empty_by_default(self):
         """Test remove_base_emulation is a no-op by default."""
-        generator = self.ConcreteClass(controller=self.mock_controller)
+        generator = self.ConcreteClass()
 
         # Should not raise an error
         generator.remove_base_emulation()
 
     def test_remove_module_emulation_is_empty_by_default(self):
         """Test remove_module_emulation is a no-op by default."""
-        generator = self.ConcreteClass(controller=self.mock_controller)
+        generator = self.ConcreteClass()
 
         # Should not raise an error
         generator.remove_module_emulation()
 
     def test_remove_custom_logic_is_empty_by_default(self):
         """Test remove_custom_logic is a no-op by default."""
-        generator = self.ConcreteClass(controller=self.mock_controller)
+        generator = self.ConcreteClass()
 
         # Should not raise an error
         generator.remove_custom_logic()
 
     def test_block_routine_jsr_is_empty_by_default(self):
         """Test block_routine_jsr is a no-op by default."""
-        generator = self.ConcreteClass(controller=self.mock_controller)
+        generator = self.ConcreteClass()
 
         # Should not raise an error
         generator.block_routine_jsr('TestProgram', 'TestRoutine')
