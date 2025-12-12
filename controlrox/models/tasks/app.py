@@ -30,9 +30,6 @@ class ControllerApplication(
         # Load Application Tasks
         ApplicationTaskFactory.build_tasks(self)
 
-        # Load last opened controller
-        self.load_last_opened_controller()
-
     def invalidate(self) -> None:
         if self.controller:
             self.controller.invalidate()

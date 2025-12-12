@@ -66,19 +66,6 @@ class TestControllerApplication(unittest.TestCase):
 
                 mock_build_tasks.assert_called_once_with(app)
 
-    @patch('controlrox.models.tasks.app.ApplicationTaskFactory.build_tasks')
-    @patch('controlrox.models.tasks.app.get_env')
-    def test_build_calls_load_last_opened_controller(self, mock_get_env, mock_build_tasks):
-        """Test that build calls load_last_opened_controller."""
-        mock_get_env.return_value = None
-
-        with patch.object(ControllerApplication, 'load_last_opened_controller') as mock_load:
-            with patch('pyrox.models.application.Application.build'):  # Skip parent build to avoid GUI
-                app = ControllerApplication()  # type: ignore
-                app.build()
-
-                mock_load.assert_called_once()
-
     def test_invalidate(self):
         """Test invalidate method."""
         app = ControllerApplication()  # type: ignore
