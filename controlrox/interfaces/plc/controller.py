@@ -13,6 +13,7 @@ from .protocols import (
     IHasDatatypes,
     IHasModules,
     IHasPrograms,
+    IHasRevision,
     IHasRoutines,
     IHasTags,
 )
@@ -28,6 +29,7 @@ from .tag import ITag
 
 class IController(
     IPlcObject[dict],
+    IHasRevision,
     IHasAOIs,
     IHasDatatypes,
     IHasModules,
@@ -36,9 +38,24 @@ class IController(
 ):
 
     @property
+    def created_date(self) -> str:
+        """Get the created date of the controller."""
+        return self.get_created_date()
+
+    @property
+    def modified_date(self) -> str:
+        """Get the last modified date of the controller."""
+        return self.get_modified_date()
+
+    @property
     def file_location(self) -> str:
         """Get the file location of the controller."""
         return self.get_file_location()
+
+    @property
+    def processor_type(self) -> str:
+        """Get the processor type of the controller."""
+        return self.get_processor_type()
 
     @property
     def safety_info(self) -> 'IControllerSafetyInfo':
@@ -262,6 +279,15 @@ class IController(
         raise NotImplementedError("This method should be overridden by subclasses to get controller safety info.")
 
     @abstractmethod
+    def get_created_date(self) -> str:
+        """Get the date when the controller was created.
+
+        Returns:
+            str: The creation date.
+        """
+        raise NotImplementedError("This method should be overridden by subclasses to get the creation date.")
+
+    @abstractmethod
     def get_file_location(self) -> str:
         """Get the file location of the controller.
 
@@ -269,6 +295,24 @@ class IController(
             str: The file location.
         """
         raise NotImplementedError("This method should be overridden by subclasses to get the file location.")
+
+    @abstractmethod
+    def get_modified_date(self) -> str:
+        """Get the date when the controller was last modified.
+
+        Returns:
+            str: The last modified date.
+        """
+        raise NotImplementedError("This method should be overridden by subclasses to get the modified date.")
+
+    @abstractmethod
+    def get_processor_type(self) -> str:
+        """Get the processor type of the controller.
+
+        Returns:
+            str: The processor type.
+        """
+        raise NotImplementedError("This method should be overridden by subclasses to get the processor type.")
 
     @abstractmethod
     def get_slot(self) -> int:
@@ -310,6 +354,24 @@ class IController(
             file_location: The file location to set.
         """
         raise NotImplementedError("This method should be overridden by subclasses to set the file location.")
+
+    @abstractmethod
+    def set_modified_date(self, modified_date: str) -> None:
+        """Set the last modified date of the controller.
+
+        Args:
+            modified_date: The modified date to set.
+        """
+        raise NotImplementedError("This method should be overridden by subclasses to set the modified date.")
+
+    @abstractmethod
+    def set_processor_type(self, processor_type: str) -> None:
+        """Set the processor type of the controller.
+
+        Args:
+            processor_type: The processor type to set.
+        """
+        raise NotImplementedError("This method should be overridden by subclasses to set the processor type.")
 
     @abstractmethod
     def set_slot(self, slot: int) -> None:

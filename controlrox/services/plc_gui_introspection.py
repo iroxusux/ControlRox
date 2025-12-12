@@ -232,56 +232,65 @@ def _register_default_attributes():
     # Base PlcObject attributes (already handled in _get_default_attributes)
 
     # AOI-specific attributes
-    PlcGuiIntrospector.register_attributes(RaAddOnInstruction, [
-        GuiAttribute("name", "AOI Name", GuiAttributeType.EDITABLE, "text_entry", group="Identity"),
-        GuiAttribute("description", "Description", GuiAttributeType.EDITABLE, "text_area", group="Identity"),
-        GuiAttribute("controller.name", "Controller", GuiAttributeType.DISPLAY_ONLY, "label", group="Context"),
-    ])
+    PlcGuiIntrospector.register_attributes(
+        RaAddOnInstruction, [
+            GuiAttribute("name", "AOI Name", GuiAttributeType.EDITABLE, "text_entry", group="Identity"),
+            GuiAttribute("description", "Description", GuiAttributeType.EDITABLE, "text_area", group="Identity"),
+            GuiAttribute("controller.name", "Controller", GuiAttributeType.DISPLAY_ONLY, "label", group="Context"),
+        ])
 
     # Controller-specific attributes
-    PlcGuiIntrospector.register_attributes(RaController, [
-        GuiAttribute("name", "Controller Name", GuiAttributeType.EDITABLE, "text_entry", group="Identity"),
-        GuiAttribute("description", "Description", GuiAttributeType.EDITABLE, "text_area", group="Identity"),
-        GuiAttribute("processor_type", "Processor Type", GuiAttributeType.DISPLAY_ONLY, "label", group="Hardware"),
-        GuiAttribute("revision", "Revision", GuiAttributeType.DISPLAY_ONLY, "label", group="Hardware"),
-        GuiAttribute("project_creation_date", "Created", GuiAttributeType.DISPLAY_ONLY, "label", group="Metadata"),
-        GuiAttribute("last_modified_date", "Modified", GuiAttributeType.DISPLAY_ONLY, "label", group="Metadata"),
-    ])
+    PlcGuiIntrospector.register_attributes(
+        RaController, [
+            GuiAttribute("name", "Controller Name", GuiAttributeType.EDITABLE, "text_entry", group="Identity"),
+            GuiAttribute("description", "Description", GuiAttributeType.EDITABLE, "text_area", group="Identity"),
+            GuiAttribute("processor_type", "Processor Type", GuiAttributeType.DISPLAY_ONLY, "label", group="Hardware"),
+            GuiAttribute("revision", "Revision", GuiAttributeType.DISPLAY_ONLY, "label", group="Hardware"),
+            GuiAttribute("created_date", "Created", GuiAttributeType.DISPLAY_ONLY, "label", group="Metadata"),
+            GuiAttribute("modified_date", "Modified", GuiAttributeType.DISPLAY_ONLY, "label", group="Metadata"),
+        ])
 
     # Datatype-specific attributes
-    PlcGuiIntrospector.register_attributes(RaDatatype, [
-        GuiAttribute("name", "Datatype Name", GuiAttributeType.EDITABLE, "text_entry", group="Identity"),
-        GuiAttribute("description", "Description", GuiAttributeType.EDITABLE, "text_area", group="Identity"),
-        GuiAttribute("controller.name", "Controller", GuiAttributeType.DISPLAY_ONLY, "label", group="Context"),
-    ])
+    PlcGuiIntrospector.register_attributes(
+        RaDatatype, [
+            GuiAttribute("name", "Datatype Name", GuiAttributeType.EDITABLE, "text_entry", group="Identity"),
+            GuiAttribute("description", "Description", GuiAttributeType.EDITABLE, "text_area", group="Identity"),
+            GuiAttribute("controller.name", "Controller", GuiAttributeType.DISPLAY_ONLY, "label", group="Context"),
+        ])
 
     # Module-specific attributes
-    PlcGuiIntrospector.register_attributes(RaModule, [
-        GuiAttribute("name", "Module Name", GuiAttributeType.EDITABLE, "text_entry", group="Identity"),
-        GuiAttribute("description", "Description", GuiAttributeType.EDITABLE, "text_area", group="Identity"),
-        GuiAttribute("controller.name", "Controller", GuiAttributeType.DISPLAY_ONLY, "label", group="Context"),
-    ])
+    PlcGuiIntrospector.register_attributes(
+        RaModule, [
+            GuiAttribute("name", "Module Name", GuiAttributeType.EDITABLE, "text_entry", group="Identity"),
+            GuiAttribute("description", "Description", GuiAttributeType.EDITABLE, "text_area", group="Identity"),
+            GuiAttribute("controller.name", "Controller", GuiAttributeType.DISPLAY_ONLY, "label", group="Context"),
+        ])
 
     # Program-specific attributes
-    PlcGuiIntrospector.register_attributes(Program, [
-        GuiAttribute("name", "Program Name", GuiAttributeType.EDITABLE, "text_entry", group="Identity"),
-        GuiAttribute("description", "Description", GuiAttributeType.EDITABLE, "text_area", group="Identity"),
-        GuiAttribute("controller.name", "Controller", GuiAttributeType.DISPLAY_ONLY, "label", group="Context"),
-        GuiAttribute("routines_dict", "routines", GuiAttributeType.DISPLAY_ONLY, "list_view", group="Contents"),
-    ])
+    PlcGuiIntrospector.register_attributes(
+        Program, [
+            GuiAttribute("name", "Program Name", GuiAttributeType.EDITABLE, "text_entry", group="Identity"),
+            GuiAttribute("description", "Description", GuiAttributeType.EDITABLE, "text_area", group="Identity"),
+            GuiAttribute("controller.name", "Controller", GuiAttributeType.DISPLAY_ONLY, "label", group="Context"),
+            GuiAttribute("routines_dict", "routines", GuiAttributeType.DISPLAY_ONLY, "list_view", group="Contents"),
+        ])
 
     # Routine-specific attributes
-    PlcGuiIntrospector.register_attributes(Routine, [])
+    PlcGuiIntrospector.register_attributes(
+        Routine, [
+
+        ])
 
     # Tag-specific attributes
-    PlcGuiIntrospector.register_attributes(RaTag, [
-        GuiAttribute("name", "Tag Name", GuiAttributeType.EDITABLE, "text_entry", group="Identity"),
-        GuiAttribute("description", "Description", GuiAttributeType.EDITABLE, "text_area", group="Identity"),
-        GuiAttribute("tag_type", "Data Type", GuiAttributeType.EDITABLE, "combo_box", group="Configuration"),
-        GuiAttribute("scope", "Scope", GuiAttributeType.DISPLAY_ONLY, "label", group="Configuration"),
-        GuiAttribute("opc_ua_access", "OPC UA Access", GuiAttributeType.DISPLAY_ONLY, "label", group="Access"),
-        GuiAttribute("controller.name", "Controller", GuiAttributeType.DISPLAY_ONLY, "label", group="Context"),
-    ])
+    PlcGuiIntrospector.register_attributes(
+        RaTag, [
+            GuiAttribute("name", "Tag Name", GuiAttributeType.EDITABLE, "text_entry", group="Identity"),
+            GuiAttribute("description", "Description", GuiAttributeType.EDITABLE, "text_area", group="Identity"),
+            GuiAttribute("tag_type", "Data Type", GuiAttributeType.EDITABLE, "combo_box", group="Configuration"),
+            GuiAttribute("scope", "Scope", GuiAttributeType.DISPLAY_ONLY, "label", group="Configuration"),
+            GuiAttribute("opc_ua_access", "OPC UA Access", GuiAttributeType.DISPLAY_ONLY, "label", group="Access"),
+            GuiAttribute("controller.name", "Controller", GuiAttributeType.DISPLAY_ONLY, "label", group="Context"),
+        ])
 
 
 # Initialize default registrations

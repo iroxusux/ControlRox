@@ -244,6 +244,7 @@ class RaController(
         self._safety_info: IControllerSafetyInfo = ControllerSafetyInfo(
             meta_data=self.content_meta_data['Controller'].get('SafetyInfo', None),
         )
+        self._processor_type = self.l5x_meta_data.get('@ProcessorType', '')
 
     @property
     def content_meta_data(self) -> dict:
@@ -618,6 +619,12 @@ class RaController(
                     log(self).warning(f'Failed to add {asset_type[:-1]}:\n{e}')
                     continue
 
+    def get_created_date(self) -> str:
+        return self.l5x_meta_data.get('@ProjectCreationDate', 'N/A?')
+
+    def get_modified_date(self) -> str:
+        return self.l5x_meta_data.get('@LastModifiedDate', 'N/A?')
+
     def get_raw_aois(self) -> List[dict]:
         return self.get_raw_l5x_asset_list(L5X_ASSET_ADDONINSTRUCTIONDEFINITIONS)
 
@@ -632,6 +639,9 @@ class RaController(
 
     def get_raw_tags(self) -> List[dict]:
         return self.get_raw_l5x_asset_list(L5X_ASSET_TAGS)
+
+    def get_revision(self) -> str:
+        return f'{self.major_revision}.{self.minor_revision}'
 
     def rename_asset(
         self,

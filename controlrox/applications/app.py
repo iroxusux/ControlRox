@@ -280,6 +280,8 @@ class App(ControllerApplication):
             return self._populate_context_menu_from_routine(selected_object, context_menu)
 
     def build(self):
+        # begin build with parent class
+        super().build()
 
         # Build
         self.controller_treeview_frame_container = PyroxFrameContainer[ttk.Frame](master=self.workspace.window)
@@ -295,8 +297,8 @@ class App(ControllerApplication):
         self.controller_treeview.subscribe_to_selection(self._handle_treeview_selection)
         self._build_treeview_command_bar()
 
-        # Finalize build
-        super().build()
+        # Load last opened controller
+        self.load_last_opened_controller()
 
         # Set initial status
         self.workspace.set_status("Ready")

@@ -78,6 +78,7 @@ class Controller(
         )
 
         self._file_location, self._comms_path, self._slot = file_location, comms_path, slot
+        self._processor_type: str = ''
 
     @property
     def comms_path(self) -> str:
@@ -343,6 +344,9 @@ class Controller(
     def get_file_location(self) -> str:
         return self._file_location  # type: ignore
 
+    def get_processor_type(self) -> str:
+        return self._processor_type
+
     def get_slot(self) -> int:
         return self._slot
 
@@ -358,6 +362,12 @@ class Controller(
         if file_location is not None and not isinstance(file_location, str):
             raise ValueError('file_location must be a string or None')
         self._file_location = file_location
+
+    def set_processor_type(
+        self,
+        processor_type: str
+    ) -> None:
+        self._processor_type = processor_type
 
     def set_slot(
         self,
@@ -378,3 +388,18 @@ class Controller(
         self.invalidate_modules()
         self.invalidate_programs()
         self.invalidate_tags()
+
+    def get_revision(self) -> str:
+        raise NotImplementedError("get_revision should be overridden by subclasses.")
+
+    def set_revision(self, revision: str) -> None:
+        raise NotImplementedError("set_revision should be overridden by subclasses.")
+
+    def get_created_date(self) -> str:
+        raise NotImplementedError("get_created_date should be overridden by subclasses.")
+
+    def get_modified_date(self) -> str:
+        raise NotImplementedError("get_modified_date should be overridden by subclasses.")
+
+    def set_modified_date(self, modified_date: str) -> None:
+        raise NotImplementedError("set_modified_date should be overridden by subclasses.")

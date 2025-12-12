@@ -82,6 +82,39 @@ class ICanBeSafe(Protocol, metaclass=IFactoryMixinProtocolMeta):
 
 
 @runtime_checkable
+class IHasRevision(
+    Protocol,
+    metaclass=IFactoryMixinProtocolMeta
+):
+    """Protocol for objects that have a revision number."""
+
+    @property
+    def revision(self) -> str:
+        """Get the revision number of this object."""
+        return self.get_revision()
+
+    @revision.setter
+    def revision(self, revision: str) -> None:
+        self.set_revision(revision)
+
+    def get_revision(self) -> str:
+        """Get the revision number of this object.
+
+        Returns:
+            str: The revision number of this object.
+        """
+        ...
+
+    def set_revision(self, revision: str) -> None:
+        """Set the revision number of this object.
+
+        Args:
+            revision (str): The revision number to set.
+        """
+        ...
+
+
+@runtime_checkable
 class IHasController(
     Protocol,
     metaclass=IFactoryMixinProtocolMeta
