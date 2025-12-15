@@ -54,6 +54,24 @@ class Module(
     def get_vendor(self) -> str:
         raise NotImplementedError("This method should be overridden by subclasses to get the vendor.")
 
+    def set_name(
+        self,
+        name: str
+    ) -> None:
+        """Set the name of this object.
+
+        Args:
+            name: The new name for this object.
+
+        Raises:
+            ValueError: If the name is not a valid string.
+        """
+        if not isinstance(name, str):
+            raise self.InvalidNamingException(f"Name must be a string, got {type(name)}")
+        if not self.is_valid_module_string(name):
+            raise self.InvalidNamingException(f"Invalid module name: {name}")
+        self._name = name
+
     def set_catalog_number(
         self,
         catalog_number: str

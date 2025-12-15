@@ -1,13 +1,12 @@
 """Comprehensive unit tests for matcher.py module."""
 import unittest
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
 from controlrox.services import (
     ControllerMatcher,
     ControllerMatcherFactory
 )
 from controlrox.models.plc.rockwell.controller import RaController
-from pyrox.models.abc.meta import PyroxObject
 from pyrox.models.abc.factory import FactoryTypeMeta, MetaFactory
 
 

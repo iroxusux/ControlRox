@@ -2,7 +2,9 @@
 """
 from dataclasses import dataclass, field
 from enum import Enum
+import re
 from typing import (
+    Dict,
     List,
     Optional,
     Union
@@ -11,6 +13,7 @@ from controlrox.interfaces import (
     IRoutine,
     IRung,
     ILogicInstruction,
+    LogicInstructionType
 )
 from .protocols import HasInstructions
 from .meta import PlcObject
@@ -248,7 +251,7 @@ class Rung(
                 self._branches[branch.branch_id].end_position = position
                 if not self._branches[branch.branch_id].nested_branches:
                     # If no nested branches, we need to delete this major branch and reconstruct the rung again
-                    fresh_tokens = self._remove_token_by_index(self._tokenize_rung_text(self.text), position)
+                    fresh_tokens = self._remove_token_by_index(self._tokenize_rung_text(self.rung_text), position)
                     fresh_tokens = self._remove_token_by_index(fresh_tokens, branch.start_position)
                     self.set_rung_text("".join(fresh_tokens))
                     self._refresh_internal_structures()
@@ -347,8 +350,8 @@ class Rung(
         Raises:
             ValueError: If instruction not found or occurrence out of range
         """
-        tokens = self._tokenize_rung_text(self.text)
-        # existing_instructions = re.findall(INST_RE_PATTERN, self.text)
+        tokens = self._tokenize_rung_text(self.rung_text)
+        # existing_instructions = re.findall(INST_RE_PATTERN, self.rung_text)
         matches = [i for i, token in enumerate(tokens) if token == instruction_text]
 
         if not matches:
@@ -384,7 +387,7 @@ class Rung(
         """Parse the rung text to identify instruction sequence and branches."""
         self._refresh_internal_structures()
         self.compile_instructions()
-        self._build_sequence_from_tokens(self._tokenize_rung_text(self.text))
+        self._build_sequence_from_tokens(self._tokenize_rung_text(self.rung_text))
 
     def _tokenize_rung_text(self, text: str) -> List[str]:
         """Tokenize rung text to identify instructions and branch markers."""
@@ -521,7 +524,7 @@ class Rung(
             List[int]: List of positions where the instruction appears
         """
         import re
-        existing_instructions = re.findall(INST_RE_PATTERN, self.text) if self.text else []
+        existing_instructions = re.findall(INST_RE_PATTERN, self.rung_text) if self.rung_text else []
         return [i for i, inst in enumerate(existing_instructions) if inst == instruction_text]
 
     def find_matching_branch_end(self, start_position: int) -> Optional[int]:
@@ -533,10 +536,10 @@ class Rung(
         Returns:
             Optional[int]: Position where branch ends, or None if not found
         """
-        if not self.text:
+        if not self.rung_text:
             return None
 
-        tokens = self._tokenize_rung_text(self.text)
+        tokens = self._tokenize_rung_text(self.rung_text)
         if len(tokens) <= start_position or tokens[start_position] != '[':
             raise ValueError("Start position must be a valid branch start token position.")
 
@@ -565,7 +568,7 @@ class Rung(
         if end_position is None:
             raise ValueError(f"No matching end found for branch starting at position {branch_position}.")
 
-        tokens = self._tokenize_rung_text(self.text)
+        tokens = self._tokenize_rung_text(self.rung_text)
         open_counter, nesting_counter, nesting_level = 0, 0, 0
         indexed_tokens = tokens[branch_position+1:end_position]
         for token in indexed_tokens:
@@ -591,10 +594,10 @@ class Rung(
         Returns:
             int: Nesting level (0 = main line, 1+ = inside branches)
         """
-        if not self.text:
+        if not self.rung_text:
             return 0
 
-        tokens = self._tokenize_rung_text(self.text)
+        tokens = self._tokenize_rung_text(self.rung_text)
         nesting_level = 0
 
         for index, token in enumerate(tokens):
@@ -680,10 +683,10 @@ class Rung(
         Returns:
             int: Maximum branch depth (0 = no branches, 1+ = nested levels)
         """
-        if not self.text:
+        if not self.rung_text:
             return 0
 
-        tokens = self._tokenize_rung_text(self.text)
+        tokens = self._tokenize_rung_text(self.rung_text)
         first_branch_token_found = False
         current_depth = 0
         max_depth = 0
@@ -732,7 +735,7 @@ class Rung(
             ValueError: If positions are invalid
             IndexError: If positions are out of range
         """
-        original_tokens = self._tokenize_rung_text(self.text)
+        original_tokens = self._tokenize_rung_text(self.rung_text)
 
         if start_position < 0 or end_position < 0:
             raise ValueError("Branch positions must be non-negative!")
@@ -793,7 +796,7 @@ class Rung(
         # Reconstruct text
         self.set_rung_text("".join(new_tokens))
 
-    def move_instruction(self, instruction: Union[LogicInstruction, str, int],
+    def move_instruction(self, instruction: Union[ILogicInstruction, str, int],
                          new_position: int, occurrence: int = 0):
         """Move an instruction to a new position in the rung.
 
@@ -802,7 +805,7 @@ class Rung(
             new_position (int): The new position for the instruction
             occurrence (int): Which occurrence to move if there are duplicates (0-based)
         """
-        current_tokens = self._tokenize_rung_text(self.text)
+        current_tokens = self._tokenize_rung_text(self.rung_text)
 
         if not current_tokens:
             raise ValueError("No instructions found in rung!")
@@ -811,7 +814,7 @@ class Rung(
             raise IndexError(f"New position {new_position} out of range!")
 
         # Find the instruction to move
-        if isinstance(instruction, LogicInstruction):
+        if isinstance(instruction, ILogicInstruction):
             try:
                 old_index = self._find_instruction_index_in_text(instruction.meta_data, occurrence)
             except ValueError:
@@ -857,7 +860,7 @@ class Rung(
         if branch.start_position < 0 or branch.end_position < 0:
             raise ValueError("Branch start or end position is invalid!")
 
-        tokens = self._tokenize_rung_text(self.text)
+        tokens = self._tokenize_rung_text(self.rung_text)
         tokens = self._remove_tokens(tokens, branch.start_position, branch.end_position)
         for b in branch.nested_branches:
             if b.branch_id in self._branches:
@@ -865,7 +868,7 @@ class Rung(
         del self._branches[branch_id]
         self.set_rung_text("".join(tokens))
 
-    def replace_instruction(self, old_instruction: Union[LogicInstruction, str, int],
+    def replace_instruction(self, old_instruction: Union[ILogicInstruction, str, int],
                             new_instruction_text: str, occurrence: int = 0):
         """Replace an instruction in this rung.
 
@@ -882,13 +885,13 @@ class Rung(
         if not re.match(INST_RE_PATTERN, new_instruction_text):
             raise ValueError(f"Invalid instruction format: {new_instruction_text}")
 
-        current_tokens = self._tokenize_rung_text(self.text)
+        current_tokens = self._tokenize_rung_text(self.rung_text)
 
         if not current_tokens:
             raise ValueError("No instructions found in rung!")
 
         # Determine which instruction to replace
-        if isinstance(old_instruction, LogicInstruction):
+        if isinstance(old_instruction, ILogicInstruction):
             instruction_text = old_instruction.meta_data
             try:
                 replace_index = self._find_instruction_index_in_text(instruction_text, occurrence)
@@ -920,10 +923,10 @@ class Rung(
         Returns:
             bool: True if branch structure is valid, False otherwise
         """
-        if not self.text:
+        if not self.rung_text:
             return True
 
-        tokens = self._tokenize_rung_text(self.text)
+        tokens = self._tokenize_rung_text(self.rung_text)
         bracket_count = 0
 
         for token in tokens:
@@ -950,10 +953,10 @@ class Rung(
             ValueError: If positions are invalid
             IndexError: If positions are out of range
         """
-        if not self.text:
+        if not self.rung_text:
             raise ValueError("Cannot wrap instructions in empty rung!")
 
-        current_instructions = re.findall(INST_RE_PATTERN, self.text)
+        current_instructions = re.findall(INST_RE_PATTERN, self.rung_text)
         if not current_instructions:
             raise ValueError("No instructions found in rung!")
 
@@ -974,3 +977,11 @@ class Rung(
         self.insert_branch(start_position, start_position)
 
         return ''  # TODO: return branch ID
+
+
+__all__ = [
+    'RungElement',
+    'RungElementType',
+    'RungBranch',
+    'Rung',
+]

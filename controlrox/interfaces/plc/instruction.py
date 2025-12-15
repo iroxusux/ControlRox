@@ -14,6 +14,33 @@ class ILogicInstruction(
     """Logic instruction interface.
     """
 
+    @property
+    def instruction_name(self) -> str:
+        """get the instruction name for this instruction
+
+        Returns:
+            :class:`str`
+        """
+        return self.get_instruction_name()
+
+    @property
+    def instruction_type(self) -> 'LogicInstructionType':
+        """get the instruction type for this instruction
+
+        Returns:
+            :class:`LogixInstructionType`
+        """
+        return self.get_instruction_type()
+
+    @property
+    def rung(self) -> Optional['IRung']:
+        """get the parent rung for this instruction
+
+        Returns:
+            :class:`Optional[IRung]`
+        """
+        return self.get_rung()
+
     @abstractmethod
     def get_instruction_name(self) -> str:
         """get the instruction name for this instruction

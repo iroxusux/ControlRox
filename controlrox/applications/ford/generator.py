@@ -3,7 +3,7 @@ from typing import Optional
 from pyrox.services.logging import log
 from controlrox.models.plc import rockwell as plc
 from controlrox.applications.generator import BaseEmulationGenerator
-from .ford import FordController
+from .ford import FordController, FordProgram
 
 
 class FordEmulationGenerator(BaseEmulationGenerator):
@@ -25,6 +25,9 @@ class FordEmulationGenerator(BaseEmulationGenerator):
         for program in self.controller.programs:
             if not program:
                 raise ValueError('Program cannot be None')
+
+            if not isinstance(program, FordProgram):
+                raise ValueError('Program must be of type FordProgram')
 
             if not program.comm_edit_routine:
                 continue
@@ -52,6 +55,13 @@ class FordEmulationGenerator(BaseEmulationGenerator):
         """Scrape all Comm OK bits from the Comm Edit routine."""
         comm_ok_bits = []
         for program in self.controller.programs:
+
+            if not program:
+                raise ValueError('Program cannot be None')
+
+            if not isinstance(program, FordProgram):
+                raise ValueError('Program must be of type FordProgram')
+
             comm_edit = program.comm_edit_routine
             if not comm_edit:
                 log().debug(f"No Comm Edit routine found in program {program.name}, skipping.")

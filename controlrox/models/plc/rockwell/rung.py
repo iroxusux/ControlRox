@@ -10,7 +10,7 @@ import re
 from pyrox.models.abc.factory import FactoryTypeMeta
 from controlrox.interfaces import LogicInstructionType, ILogicInstruction, IRoutine
 from controlrox.models.plc.rockwell.meta import PLC_RUNG_FILE
-from controlrox.models.plc import LogicInstruction, Rung
+from controlrox.models.plc import LogicInstruction, Rung, RungElement, RungBranch, RungElementType
 from controlrox.services.plc.rung import RungFactory
 from .meta import INST_RE_PATTERN, RaPlcObject
 

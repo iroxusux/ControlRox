@@ -18,7 +18,7 @@ def _get_generator(
     gen_class = EmulationGeneratorFactory.get_registered_type_by_supporting_class(controller)
     if not gen_class or not issubclass(gen_class, IEmulationGenerator):
         raise ValueError('No valid generator found for this controller type!')
-    return gen_class(controller)  # type: ignore[call-arg]
+    return gen_class()  # type: ignore[call-arg]
 
 
 def _work_precheck(
