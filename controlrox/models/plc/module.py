@@ -24,6 +24,9 @@ class Module(
             description=description,
         )
 
+    def compile(self):
+        return self
+
     def get_catalog_number(self) -> str:
         raise NotImplementedError("This method should be overridden by subclasses to get the catalog number.")
 

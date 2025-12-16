@@ -83,6 +83,9 @@ class ControllerApplication(
             log(self).warning('No controller to save.')
             return
 
+        log(self).info('Saving controller...')
+        # self.controller.compile()  # Compile the controller before saving to allow logic to perform any necessary updates.
+
         file_location = file_location or self.controller.file_location
 
         if not file_location or not self.controller or not self.controller.meta_data:
@@ -96,6 +99,9 @@ class ControllerApplication(
                 controller=self.controller,
                 file_location=file_location,
             )
+            log(self).info('Save successful.')
+        except Exception as e:
+            log(self).error(f'Error saving controller: {e}')
         finally:
             self.refresh()
             self.set_app_state_normal()

@@ -132,6 +132,11 @@ class Rung(
         """
         raise NotImplementedError("add_instruction method must be implemented by subclass.")
 
+    def compile(self):
+        """Compile the rung."""
+        self.compile_instructions()
+        return self
+
     def compile_instructions(self) -> None:
         """Compile the instructions."""
         raise NotImplementedError("compile_instructions method must be implemented by subclass.")

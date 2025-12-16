@@ -39,3 +39,6 @@ class Program(
             name=name,
             description=description,
         )
+
+    def compile(self):
+        return self

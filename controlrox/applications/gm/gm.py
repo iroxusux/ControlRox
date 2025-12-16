@@ -4,9 +4,12 @@ from enum import Enum
 import fnmatch
 import re
 from typing import Generic, Optional, TypeVar, Union
-from pyrox.models import HashList
+
 from controlrox.interfaces import META
-from controlrox.interfaces.plc.routine import IRoutine
+from controlrox.interfaces import (
+    IRoutine,
+    IProgram,
+)
 from controlrox.models.plc.rockwell import (
     RaPlcObject,
     RaAddOnInstruction,
@@ -171,7 +174,7 @@ class KDiag(TextListElement):
         return (
             f'KDiag(text={self.text}, '
             f'diag_type={self.diag_type}, '
-            f'col_location={self.col_location}, '
+            f'col_location={self.column_location}, '
             f'number={self.number}, '
             f'parent_offset={self.parent_offset}), '
             f'rung={self.rung}'
@@ -341,13 +344,21 @@ class GmRoutine(
     """General Motors Routine
     """
 
-    @property
-    def kdiags(self) -> list[KDiag]:
-        return self.compile_kdiags_from_rungs()
+    def __init__(
+        self,
+        meta_data: dict | str | None = None,
+        name: str = '',
+        description: str = '',
+        **kwargs
+    ) -> None:
+        super().__init__(meta_data, name, description, **kwargs)
+        self._kdiags: list[KDiag] = []
 
     @property
-    def program(self) -> "GmProgram":
-        return self._program
+    def kdiags(self) -> list[KDiag]:
+        if not self._kdiags:
+            self.compile_kdiags()
+        return self._kdiags
 
     @property
     def rungs(self) -> list[GmRung]:
@@ -360,11 +371,13 @@ class GmRoutine(
             x.extend(rung.text_list_items)
         return x
 
-    def compile_kdiags_from_rungs(self) -> list[KDiag]:
-        kdiags = []
+    def compile_kdiags(self) -> None:
         for rung in self.rungs:
-            kdiags.extend(rung.kdiags)
-        return kdiags
+            self._kdiags.extend(rung.kdiags)
+
+    def invalidate(self) -> None:
+        self._kdiags.clear()
+        return super().invalidate()
 
 
 class GmTag(
@@ -387,6 +400,16 @@ class GmProgram(
 
     PGM_NAME_STR = "MOV(*,HMI.Diag.Pgm.Name.LEN)*"
 
+    def __init__(
+        self,
+        meta_data: dict | str | None = None,
+        name: str = '',
+        description: str = '',
+        **kwargs
+    ) -> None:
+        super().__init__(meta_data, name, description, **kwargs)
+        self._kdiags: list[KDiag] = []
+
     @property
     def is_gm_owned(self) -> bool:
         return len(self.gm_routines) > 0
@@ -398,7 +421,7 @@ class GmProgram(
     @property
     def diag_name(self) -> str:
         if not self.parameter_routine:
-            return None
+            return ''
 
         diag_rung = None
         for rung in self.parameter_routine.rungs:
@@ -407,7 +430,7 @@ class GmProgram(
                 diag_rung = rung
                 break
         if not diag_rung:
-            return None
+            return ''
 
         # Extract the length of the string
         length_match = re.search(r'MOV\((\d+),HMI\.Diag\.Pgm\.Name\.LEN\)', diag_rung.text)
@@ -512,10 +535,9 @@ class GmProgram(
 
     @property
     def kdiags(self) -> list[KDiag]:
-        x = []
-        for routine in self.routines:
-            x.extend(routine.kdiag_rungs)
-        return x
+        if not self._kdiags:
+            self.compile_kdiags()
+        return self._kdiags
 
     @property
     def parameter_offset(self) -> int:
@@ -528,7 +550,7 @@ class GmProgram(
         return 0
 
     @property
-    def parameter_routine(self) -> GmRoutine:
+    def parameter_routine(self) -> Optional[GmRoutine]:
         for routine in self.routines:
             if fnmatch.fnmatch(routine.name, self.PARAM_RTN_STR):
                 return routine
@@ -557,6 +579,19 @@ class GmProgram(
     def user_routines(self) -> list[GmRoutine]:
         return [x for x in self.routines if x.is_user_owned]
 
+    def compile_kdiags(self):
+        """get all kdiags within program
+        """
+        for routine in self.routines:
+            if not isinstance(routine, GmRoutine):
+                raise ValueError('Routine is not a GmRoutine')
+
+            self._kdiags.extend(routine.kdiags)
+
+    def invalidate(self) -> None:
+        self._kdiags.clear()
+        return super().invalidate()
+
 
 class GmController(
     GmPlcObject[dict],
@@ -567,20 +602,19 @@ class GmController(
 
     generator_type = 'GmEmulationGenerator'
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._kdiags = []
+
     @property
     def kdiags(self) -> list[KDiag]:
-        x = []
-        for program in self.programs:
-            x.extend(program.kdiags)
-        return x
+        if not self._kdiags:
+            self.compile_kdiags()
+        return self._kdiags
 
     @property
-    def mcp_program(self) -> Optional[GmProgram]:
+    def mcp_program(self) -> Optional[IProgram]:
         return self.programs.get('MCP', None)
-
-    @property
-    def programs(self) -> HashList[GmProgram]:
-        return super().programs
 
     @property
     def safety_common_program(self) -> Optional[GmProgram]:
@@ -600,12 +634,19 @@ class GmController(
         return [x for x in self.programs if x.is_gm_owned]
 
     @property
-    def modules(self) -> HashList[GmModule]:
-        return super().modules
-
-    @property
     def user_program(self) -> list[GmProgram]:
         return [x for x in self.programs if x.is_user_owned]
+
+    def compile_kdiags(self):
+        """get all kdiags within controller
+        """
+        if self._kdiags:
+            return
+
+        for program in self.programs:
+            if not isinstance(program, GmProgram):
+                raise ValueError('Program is not a GmProgram')
+            self._kdiags.extend(program.kdiags)
 
     def extract_messages(self):
         tl_items = self.text_list_items
@@ -622,6 +663,10 @@ class GmController(
             'duplicates': 'Fix This Method',
             'programs': [x.diag_setup for x in self.programs]
         }
+
+    def invalidate(self) -> None:
+        self._kdiags.clear()
+        return super().invalidate()
 
     def validate_text_lists(self):
         """validate all text lists within controller

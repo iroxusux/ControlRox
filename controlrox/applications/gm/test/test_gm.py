@@ -323,27 +323,33 @@ class TestGmControllerFromMetaData(unittest.TestCase):
                         self.assertIsInstance(rung, GmRung,
                                               f"Expected GmRung but got {type(rung).__name__}")
 
-    def test_from_meta_data_creates_gm_tags(self):
+    @patch('controlrox.models.tasks.app.ControllerInstanceManager.get_controller')
+    def test_from_meta_data_creates_gm_tags(self, mock_get_controller):
         """Test from_meta_data creates GmTag instances."""
         controller = GmController.from_meta_data(self.test_meta_data)
+        mock_get_controller.return_value = controller
 
         self.assertGreater(len(controller.tags), 0)
         for tag in controller.tags:
             self.assertIsInstance(tag, GmTag,
                                   f"Expected GmTag but got {type(tag).__name__}")
 
-    def test_from_meta_data_creates_gm_modules(self):
+    @patch('controlrox.models.tasks.app.ControllerInstanceManager.get_controller')
+    def test_from_meta_data_creates_gm_modules(self, mock_get_controller):
         """Test from_meta_data creates GmModule instances."""
         controller = GmController.from_meta_data(self.test_meta_data)
+        mock_get_controller.return_value = controller
 
         self.assertGreater(len(controller.modules), 0)
         for module in controller.modules:
             self.assertIsInstance(module, GmModule,
                                   f"Expected GmModule but got {type(module).__name__}")
 
-    def test_from_meta_data_creates_gm_datatypes(self):
+    @patch('controlrox.models.tasks.app.ControllerInstanceManager.get_controller')
+    def test_from_meta_data_creates_gm_datatypes(self, mock_get_controller):
         """Test from_meta_data creates GmDatatype instances."""
         controller = GmController.from_meta_data(self.test_meta_data)
+        mock_get_controller.return_value = controller
 
         custom_datatypes = [dt for dt in controller.datatypes
                             if dt.name == 'zz_GmCustomType']
@@ -353,9 +359,11 @@ class TestGmControllerFromMetaData(unittest.TestCase):
             self.assertIsInstance(datatype, GmDatatype,
                                   f"Expected GmDatatype but got {type(datatype).__name__}")
 
-    def test_from_meta_data_creates_gm_aois(self):
+    @patch('controlrox.models.tasks.app.ControllerInstanceManager.get_controller')
+    def test_from_meta_data_creates_gm_aois(self, mock_get_controller):
         """Test from_meta_data creates GmAddOnInstruction instances."""
         controller = GmController.from_meta_data(self.test_meta_data)
+        mock_get_controller.return_value = controller
 
         self.assertGreater(len(controller.aois), 0)
         for aoi in controller.aois:
@@ -705,8 +713,8 @@ class TestGmRoutineProperties(unittest.TestCase):
     @patch('controlrox.models.tasks.app.ControllerInstanceManager.get_controller')
     def test_kdiag_rungs_aggregates_from_all_rungs(self, mock_get_controller):
         """Test kdiag_rungs aggregates KDiag from all rungs in routine."""
-        mock_get_controller.return_value = GmController.from_meta_data(self.test_meta_data)
         controller = GmController.from_meta_data(self.test_meta_data)
+        mock_get_controller.return_value = controller
         program = controller.programs[0]
         routine = program.routines[0]
 

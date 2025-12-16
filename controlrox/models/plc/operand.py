@@ -34,6 +34,9 @@ class LogicOperand(
         self._parents: list[str] = []
         self._trailing_name: str = ''
 
+    def compile(self):
+        return self
+
     def get_all_parent_operands(self) -> list[str]:
         if self._parents:
             return self._parents

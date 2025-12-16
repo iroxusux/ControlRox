@@ -77,6 +77,10 @@ class LogicInstruction(
         """
         return self.get_rung()
 
+    def compile(self):
+        self.compile_operands()
+        return self
+
     def compile_operands(self) -> None:
         """compile the operands for this instruction
         """

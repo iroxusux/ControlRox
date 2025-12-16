@@ -7,14 +7,19 @@ import unittest
 from unittest.mock import Mock, MagicMock, patch
 
 from controlrox.interfaces import (
-    IProgram,
-    IRoutine,
     IRung,
     ITag,
     ILogicInstruction,
 )
 from controlrox.models import ControllerModificationSchema
-from controlrox.applications.ford import FordController, FordEmulationGenerator
+from controlrox.applications.ford.ford import (
+    FordController,
+    FordProgram,
+    FordRoutine,
+    FordRung,
+    FordTag,
+)
+from controlrox.applications.ford.generator import FordEmulationGenerator
 
 
 class TestFordEmulationGeneratorInitialization(unittest.TestCase):
@@ -28,7 +33,7 @@ class TestFordEmulationGeneratorInitialization(unittest.TestCase):
         self.mock_controller.programs = MagicMock()
         self.mock_controller.safety_programs = []
         self.mock_controller.create_tag = Mock(return_value=Mock(spec=ITag))
-        self.mock_controller.create_routine = Mock(return_value=Mock(spec=IRoutine))
+        self.mock_controller.create_routine = Mock(return_value=Mock(spec=FordRoutine))
         self.mock_controller.create_rung = Mock(return_value=Mock(spec=IRung))
 
     @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
@@ -76,7 +81,7 @@ class TestFordEmulationGeneratorConfiguration(unittest.TestCase):
         self.mock_controller.programs = MagicMock()
         self.mock_controller.safety_programs = []
         self.mock_controller.create_tag = Mock(return_value=Mock(spec=ITag))
-        self.mock_controller.create_routine = Mock(return_value=Mock(spec=IRoutine))
+        self.mock_controller.create_routine = Mock(return_value=Mock(spec=FordRoutine))
         self.mock_controller.create_rung = Mock(return_value=Mock(spec=IRung))
 
     @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
@@ -164,10 +169,10 @@ class TestFordEmulationGeneratorCommOkLogic(unittest.TestCase):
         self.mock_controller.safety_programs = []
 
         # Create mock rung with proper structure
-        self.mock_rung = Mock(spec=IRung)
+        self.mock_rung = Mock(spec=FordRung)
         self.mock_controller.create_rung = Mock(return_value=self.mock_rung)
-        self.mock_controller.create_tag = Mock(return_value=Mock(spec=ITag))
-        self.mock_controller.create_routine = Mock(return_value=Mock(spec=IRoutine))
+        self.mock_controller.create_tag = Mock(return_value=Mock(spec=FordTag))
+        self.mock_controller.create_routine = Mock(return_value=Mock(spec=FordRoutine))
 
     @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
     def test_scrape_all_comm_ok_bits_from_single_program(self, mock_get_controller):
@@ -184,11 +189,11 @@ class TestFordEmulationGeneratorCommOkLogic(unittest.TestCase):
         mock_instruction.operands = [mock_operand]
 
         # Create mock routine with instructions
-        mock_routine = Mock(spec=IRoutine)
+        mock_routine = Mock(spec=FordRoutine)
         mock_routine.instructions = [mock_instruction]
 
         # Create mock program with comm_edit_routine
-        mock_program = Mock(spec=IProgram)
+        mock_program = Mock(spec=FordProgram)
         mock_program.name = 'TestProgram'
         mock_program.comm_edit_routine = mock_routine
 
@@ -213,10 +218,10 @@ class TestFordEmulationGeneratorCommOkLogic(unittest.TestCase):
         mock_operand.meta_data = 'Device2.CommOk'
         mock_instruction.operands = [mock_operand]
 
-        mock_routine = Mock(spec=IRoutine)
+        mock_routine = Mock(spec=FordRoutine)
         mock_routine.instructions = [mock_instruction]
 
-        mock_program = Mock(spec=IProgram)
+        mock_program = Mock(spec=FordProgram)
         mock_program.name = 'TestProgram'
         mock_program.comm_edit_routine = mock_routine
 
@@ -238,10 +243,10 @@ class TestFordEmulationGeneratorCommOkLogic(unittest.TestCase):
         mock_instruction.instruction_name = 'OTE'
         mock_instruction.meta_data = 'OTE(Device1.Status)'
 
-        mock_routine = Mock(spec=IRoutine)
+        mock_routine = Mock(spec=FordRoutine)
         mock_routine.instructions = [mock_instruction]
 
-        mock_program = Mock(spec=IProgram)
+        mock_program = Mock(spec=FordProgram)
         mock_program.name = 'TestProgram'
         mock_program.comm_edit_routine = mock_routine
 
@@ -262,10 +267,10 @@ class TestFordEmulationGeneratorCommOkLogic(unittest.TestCase):
         mock_instruction.instruction_name = 'XIC'
         mock_instruction.meta_data = 'XIC(Device1.CommOk)'
 
-        mock_routine = Mock(spec=IRoutine)
+        mock_routine = Mock(spec=FordRoutine)
         mock_routine.instructions = [mock_instruction]
 
-        mock_program = Mock(spec=IProgram)
+        mock_program = Mock(spec=FordProgram)
         mock_program.name = 'TestProgram'
         mock_program.comm_edit_routine = mock_routine
 
@@ -281,7 +286,7 @@ class TestFordEmulationGeneratorCommOkLogic(unittest.TestCase):
         mock_get_controller.return_value = self.mock_controller
         generator = FordEmulationGenerator()
 
-        mock_program = Mock(spec=IProgram)
+        mock_program = Mock(spec=FordProgram)
         mock_program.name = 'TestProgram'
         mock_program.comm_edit_routine = None
 
@@ -305,10 +310,10 @@ class TestFordEmulationGeneratorCommOkLogic(unittest.TestCase):
         mock_operand1.meta_data = 'Device1.CommOk'
         mock_instruction1.operands = [mock_operand1]
 
-        mock_routine1 = Mock(spec=IRoutine)
+        mock_routine1 = Mock(spec=FordRoutine)
         mock_routine1.instructions = [mock_instruction1]
 
-        mock_program1 = Mock(spec=IProgram)
+        mock_program1 = Mock(spec=FordProgram)
         mock_program1.name = 'Program1'
         mock_program1.comm_edit_routine = mock_routine1
 
@@ -320,10 +325,10 @@ class TestFordEmulationGeneratorCommOkLogic(unittest.TestCase):
         mock_operand2.meta_data = 'Device2.CommOk'
         mock_instruction2.operands = [mock_operand2]
 
-        mock_routine2 = Mock(spec=IRoutine)
+        mock_routine2 = Mock(spec=FordRoutine)
         mock_routine2.instructions = [mock_instruction2]
 
-        mock_program2 = Mock(spec=IProgram)
+        mock_program2 = Mock(spec=FordProgram)
         mock_program2.name = 'Program2'
         mock_program2.comm_edit_routine = mock_routine2
 
@@ -356,7 +361,7 @@ class TestFordEmulationGeneratorCustomLogic(unittest.TestCase):
         self.mock_rung = Mock(spec=IRung)
         self.mock_controller.create_rung = Mock(return_value=self.mock_rung)
 
-        self.mock_routine = Mock(spec=IRoutine)
+        self.mock_routine = Mock(spec=FordRoutine)
         self.mock_controller.create_routine = Mock(return_value=self.mock_routine)
 
     @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
@@ -509,9 +514,9 @@ class TestFordEmulationGeneratorCommEditDisable(unittest.TestCase):
         self.mock_controller.modules = []
         self.mock_controller.programs = MagicMock()
         self.mock_controller.safety_programs = []
-        self.mock_controller.create_tag = Mock(return_value=Mock(spec=ITag))
-        self.mock_controller.create_rung = Mock(return_value=Mock(spec=IRung))
-        self.mock_controller.create_routine = Mock(return_value=Mock(spec=IRoutine))
+        self.mock_controller.create_tag = Mock(return_value=Mock(spec=FordTag))
+        self.mock_controller.create_rung = Mock(return_value=Mock(spec=FordRung))
+        self.mock_controller.create_routine = Mock(return_value=Mock(spec=FordRoutine))
 
     @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
     def test_disable_all_comm_edit_routines_blocks_existing_routines(self, mock_get_controller):
@@ -520,10 +525,10 @@ class TestFordEmulationGeneratorCommEditDisable(unittest.TestCase):
         generator = FordEmulationGenerator()
 
         # Create mock program with comm_edit_routine
-        mock_routine = Mock(spec=IRoutine)
+        mock_routine = Mock(spec=FordRoutine)
         mock_routine.name = 'A_Comm_Edit'
 
-        mock_program = Mock(spec=IProgram)
+        mock_program = Mock(spec=FordProgram)
         mock_program.name = 'TestProgram'
         mock_program.comm_edit_routine = mock_routine
         mock_program.block_routine = Mock()
@@ -548,7 +553,7 @@ class TestFordEmulationGeneratorCommEditDisable(unittest.TestCase):
         generator = FordEmulationGenerator()
 
         # Create mock program without comm_edit_routine
-        mock_program = Mock(spec=IProgram)
+        mock_program = Mock(spec=FordProgram)
         mock_program.name = 'TestProgram'
         mock_program.comm_edit_routine = None
         mock_program.block_routine = Mock()
@@ -567,23 +572,23 @@ class TestFordEmulationGeneratorCommEditDisable(unittest.TestCase):
         generator = FordEmulationGenerator()
 
         # Create first program with comm_edit_routine
-        mock_routine1 = Mock(spec=IRoutine)
+        mock_routine1 = Mock(spec=FordRoutine)
         mock_routine1.name = 'A_Comm_Edit'
-        mock_program1 = Mock(spec=IProgram)
+        mock_program1 = Mock(spec=FordProgram)
         mock_program1.name = 'Program1'
         mock_program1.comm_edit_routine = mock_routine1
         mock_program1.block_routine = Mock()
 
         # Create second program without comm_edit_routine
-        mock_program2 = Mock(spec=IProgram)
+        mock_program2 = Mock(spec=FordProgram)
         mock_program2.name = 'Program2'
         mock_program2.comm_edit_routine = None
         mock_program2.block_routine = Mock()
 
         # Create third program with comm_edit_routine
-        mock_routine3 = Mock(spec=IRoutine)
+        mock_routine3 = Mock(spec=FordRoutine)
         mock_routine3.name = 'A_Comm_Edit'
-        mock_program3 = Mock(spec=IProgram)
+        mock_program3 = Mock(spec=FordProgram)
         mock_program3.name = 'Program3'
         mock_program3.comm_edit_routine = mock_routine3
         mock_program3.block_routine = Mock()
@@ -629,9 +634,9 @@ class TestFordEmulationGeneratorIntegration(unittest.TestCase):
         mock_safety_program.name = 'MainProgram_MappingInputs_Edit'
         self.mock_controller.safety_programs = [mock_safety_program]
 
-        self.mock_controller.create_tag = Mock(return_value=Mock(spec=ITag))
-        self.mock_controller.create_rung = Mock(return_value=Mock(spec=IRung))
-        self.mock_controller.create_routine = Mock(return_value=Mock(spec=IRoutine))
+        self.mock_controller.create_tag = Mock(return_value=Mock(spec=FordTag))
+        self.mock_controller.create_rung = Mock(return_value=Mock(spec=FordRung))
+        self.mock_controller.create_routine = Mock(return_value=Mock(spec=FordRoutine))
 
     @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
     def test_full_generation_workflow_without_comm_bits(self, mock_get_controller):
@@ -675,10 +680,10 @@ class TestFordEmulationGeneratorIntegration(unittest.TestCase):
         mock_instruction.operands = [mock_operand]
 
         # Create mock routine and program
-        mock_routine = Mock(spec=IRoutine)
+        mock_routine = Mock(spec=FordRoutine)
         mock_routine.instructions = [mock_instruction]
 
-        mock_program = Mock(spec=IProgram)
+        mock_program = Mock(spec=FordProgram)
         mock_program.name = 'TestProgram'
         mock_program.comm_edit_routine = mock_routine
         mock_program.block_routine = Mock()
@@ -735,7 +740,7 @@ class TestFordEmulationGeneratorEdgeCases(unittest.TestCase):
         self.mock_controller.safety_programs = []
         self.mock_controller.create_tag = Mock(return_value=Mock(spec=ITag))
         self.mock_controller.create_rung = Mock(return_value=Mock(spec=IRung))
-        self.mock_controller.create_routine = Mock(return_value=Mock(spec=IRoutine))
+        self.mock_controller.create_routine = Mock(return_value=Mock(spec=FordRoutine))
 
     @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
     def test_generate_custom_logic_with_empty_programs_list(self, mock_get_controller):
@@ -763,10 +768,10 @@ class TestFordEmulationGeneratorEdgeCases(unittest.TestCase):
         mock_instruction.meta_data = 'OTE(Device.CommOk)'
         mock_instruction.operands = []  # Empty operands
 
-        mock_routine = Mock(spec=IRoutine)
+        mock_routine = Mock(spec=FordRoutine)
         mock_routine.instructions = [mock_instruction]
 
-        mock_program = Mock(spec=IProgram)
+        mock_program = Mock(spec=FordProgram)
         mock_program.name = 'TestProgram'
         mock_program.comm_edit_routine = mock_routine
 
@@ -839,7 +844,7 @@ class TestFordEmulationGeneratorRockwellSpecific(unittest.TestCase):
         self.mock_controller.safety_programs = []
         self.mock_controller.create_tag = Mock(return_value=Mock(spec=ITag))
         self.mock_controller.create_rung = Mock(return_value=Mock(spec=IRung))
-        self.mock_controller.create_routine = Mock(return_value=Mock(spec=IRoutine))
+        self.mock_controller.create_routine = Mock(return_value=Mock(spec=FordRoutine))
 
     @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
     def test_ford_controller_type_compatibility(self, mock_get_controller):
@@ -886,11 +891,11 @@ class TestFordEmulationGeneratorRockwellSpecific(unittest.TestCase):
         generator = FordEmulationGenerator()
 
         # Create mock program
-        mock_program = Mock(spec=IProgram)
+        mock_program = Mock(spec=FordProgram)
         mock_program.name = 'TestProgram'
 
         # Ford uses A_Comm_Edit naming convention
-        mock_routine = Mock(spec=IRoutine)
+        mock_routine = Mock(spec=FordRoutine)
         mock_routine.name = 'A_Comm_Edit'
         mock_program.comm_edit_routine = mock_routine
         mock_program.block_routine = Mock()

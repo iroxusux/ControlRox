@@ -45,6 +45,10 @@ class Tag(
             raise ValueError("Container not set for this tag")
         return self._container
 
+    def compile(self):
+        raise NotImplementedError("compile method must be implemented by subclass.")
+        return self
+
     def get_alias_for_tag(self) -> ITag:
         if not self._aliased_tag:
             self.compile()
