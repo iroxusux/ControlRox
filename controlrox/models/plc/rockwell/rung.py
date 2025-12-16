@@ -1,51 +1,18 @@
 """Rung model for PLC.
 """
-from enum import Enum
 from typing import (
     Dict,
     List,
     Optional,
     Union
 )
-from dataclasses import dataclass, field
 import re
 from pyrox.models.abc.factory import FactoryTypeMeta
 from controlrox.interfaces import LogicInstructionType, ILogicInstruction, IRoutine
 from controlrox.models.plc.rockwell.meta import PLC_RUNG_FILE
-from controlrox.models.plc import LogicInstruction, Rung
+from controlrox.models.plc import LogicInstruction, Rung, RungElement, RungBranch, RungElementType
 from controlrox.services.plc.rung import RungFactory
 from .meta import INST_RE_PATTERN, RaPlcObject
-
-
-class RungElementType(Enum):
-    """Types of elements in a rung sequence."""
-    INSTRUCTION = "instruction"
-    BRANCH_START = "branch_start"
-    BRANCH_END = "branch_end"
-    BRANCH_NEXT = "branch_next"
-
-
-@dataclass
-class RungElement:
-    """Represents an element in the rung sequence."""
-    element_type: RungElementType
-    instruction: Optional[ILogicInstruction] = None
-    branch_id: Optional[str] = None
-    root_branch_id: Optional[str] = None  # ID of the parent branch if this is a nested branch
-    branch_level: Optional[int] = 0  # Level of the branch in the rung
-    position: int = 0  # Sequential position in rung
-    rung: Optional['Rung'] = None  # Reference to the Rung this element belongs to
-    rung_number: int = 0  # Rung number this element belongs to
-
-
-@dataclass
-class RungBranch:
-    """Represents a branch structure in the rung."""
-    branch_id: str
-    start_position: int
-    end_position: int
-    root_branch_id: Optional[str] = None  # ID of the parent branch
-    nested_branches: List['RungBranch'] = field(default_factory=list)
 
 
 class RaRung(
@@ -74,9 +41,6 @@ class RaRung(
             routine=routine,
             rung_text=rung_text,
         )
-
-        self._rung_sequence: List[RungElement] = []
-        self._branches: Dict[str, RungBranch] = {}
 
         if rung_text:
             self.set_rung_text(rung_text)
@@ -109,16 +73,6 @@ class RaRung(
     @property
     def type(self) -> str:
         return self['@Type']
-
-    @property
-    def rung_sequence(self) -> List[RungElement]:
-        """Get the sequential elements of this rung including branches."""
-        return self._rung_sequence
-
-    @property
-    def branches(self) -> Dict[str, RungBranch]:
-        """Get all branches in this rung."""
-        return self._branches
 
     @staticmethod
     def _extract_instructions(

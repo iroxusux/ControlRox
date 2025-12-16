@@ -169,7 +169,9 @@ class RaAddOnInstruction(
         if not isinstance(value, str):
             raise ValueError("Revision extension must be a string!")
 
-        self['@RevisionExtension'] = value.replace('<', '&lt;')
+        value = value.replace('<', '&lt;')
+
+        self['@RevisionExtension'] = value
 
     @property
     def revision_note(self) -> str:
@@ -213,6 +215,24 @@ class RaAddOnInstruction(
     def get_factory(cls):
         return AOIFactory
 
+    def get_raw_routines(self) -> list[dict]:
+        if not self['Routines']:
+            return []
+
+        if not isinstance(self['Routines']['Routine'], list):
+            return [self['Routines']['Routine']]
+        return self['Routines']['Routine']
+
+    def compile(self):
+        """Compile the AOI and its components.
+
+        This method compiles the AOI's tags, routines, and instructions.
+        """
+        self.compile_tags()
+        self.compile_routines()
+        self.compile_instructions()
+        return self
+
     def compile_tags(self) -> None:
         """Compile the tags (local tags) for this AOI.
 
@@ -253,6 +273,25 @@ class RaAddOnInstruction(
             self._instructions.extend(routine.get_instructions())
             self._input_instructions.extend(routine.get_input_instructions())
             self._output_instructions.extend(routine.get_output_instructions())
+
+    def compile_routines(self) -> None:
+        """Compile routines for this AOI.
+
+        Overrides HasRoutines.compile_routines to handle the specific structure
+        of AOI routines and compile them with appropriate container reference.
+        """
+        ctrl = ControllerInstanceManager.get_controller()
+        if not ctrl:
+            raise RuntimeError("No controller instance available for routine compilation.")
+
+        self._routines.clear()
+
+        for routine_meta in self.raw_routines:
+            routine = ctrl.create_routine(
+                meta_data=routine_meta,
+                container=self
+            )
+            self._routines.append(routine)
 
     def block_routine(
         self,

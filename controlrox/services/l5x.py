@@ -10,7 +10,7 @@ from typing import Optional, Union
 from pathlib import Path
 import xmltodict
 import lxml.etree
-from xml.sax.saxutils import unescape
+# from xml.sax.saxutils import unescape
 
 from pyrox.services.logging import log
 
@@ -75,16 +75,42 @@ def dict_to_l5x_file(
         controller (dict): dictionary of parsed xml controller
         file_location (str): location to save controller .l5x to
     """
+    xml_string = xmltodict.unparse(
+        controller,
+        preprocessor=preprocessor,
+        pretty=True
+    )
+
+    # Fix any double-escaped entities (if dictionary already had escaped values)
+    xml_string = xml_string.replace('&amp;amp;', '&amp;')
+    xml_string = xml_string.replace('&amp;lt;', '&lt;')
+    xml_string = xml_string.replace('&amp;gt;', '&gt;')
+    xml_string = xml_string.replace('&amp;quot;', '&quot;')
+    xml_string = xml_string.replace('&amp;apos;', '&apos;')
+
+    # Fix CDATA sections: unescape the markers AND the content inside
+    def unescape_cdata(match):
+        content = match.group(1)
+        # Unescape content inside CDATA
+        content = content.replace('&amp;', '&')
+        content = content.replace('&lt;', '<')
+        content = content.replace('&gt;', '>')
+        content = content.replace('&quot;', '"')
+        content = content.replace('&apos;', "'")
+        return '<![CDATA[' + content + ']]>'
+
+    xml_string = re.sub(
+        r'&lt;!\[CDATA\[(.*?)]]&gt;',
+        unescape_cdata,
+        xml_string,
+        flags=re.DOTALL
+    )
+
     save_file(
         file_location,
         '.L5X',
         'w',
-        unescape(
-            xmltodict.unparse(
-                controller,
-                preprocessor=preprocessor,
-                pretty=True)
-        )
+        xml_string
     )
 
 

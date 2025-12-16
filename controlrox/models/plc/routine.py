@@ -47,6 +47,10 @@ class Routine(
     ) -> bool:
         raise NotImplementedError("check_for_jsr method must be implemented by subclass.")
 
+    def compile(self):
+        self.compile_rungs()
+        return self
+
     def compile_rungs(self):
         """compile the rungs in this routine
 

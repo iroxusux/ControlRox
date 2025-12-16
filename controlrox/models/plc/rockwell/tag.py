@@ -19,7 +19,7 @@ from controlrox.services.plc.tag import TagFactory
 from .meta import RaPlcObject
 
 
-class DataValueMember(RaPlcObject):
+class DataValueMember(RaPlcObject[dict]):
     """type class for plc Tag DataValueMember
 
         Args:
@@ -38,6 +38,9 @@ class DataValueMember(RaPlcObject):
         if not meta_data:
             raise ValueError('Cannot have an empty DataValueMember!')
 
+        if not isinstance(meta_data, dict):
+            raise ValueError('DataValueMember meta_data must be a dict!')
+
         if not parent:
             raise ValueError('Cannot have a datavalue member without a parent!')
 
@@ -48,6 +51,23 @@ class DataValueMember(RaPlcObject):
         )
 
         self._parent = parent
+        if self.value:
+            self.set_value(self.value)  # set the value to ensure it is valid escaped data
+
+    @property
+    def value(self) -> str:
+        return self.get_value()
+
+    def get_value(self) -> str:
+        return self.meta_data.get('@Value', '')
+
+    def set_value(self, value: str):
+        if not isinstance(value, str):
+            raise ValueError("Value must be a string!")
+
+        value = value.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+
+        self['@Value'] = value
 
     @property
     def parent(self) -> Union['RaTag', Self]:
@@ -128,6 +148,8 @@ class RaTag(
             self.constant = constant
         if external_access:
             self.external_access = external_access
+
+        self._datavalue_members: list[DataValueMember] = []
 
     @property
     def dict_key_order(self) -> list[str]:
@@ -212,22 +234,9 @@ class RaTag(
 
     @property
     def datavalue_members(self) -> list[DataValueMember]:
-        if not self.decorated_data:
-            return []
-
-        if not self.decorated_data.get('Structure', None):
-            return []
-
-        if not self.decorated_data['Structure'].get('DataValueMember', None):
-            return []
-
-        return [
-            DataValueMember(
-                meta_data=x,
-                parent=self
-            )
-            for x in self.decorated_data['Structure']['DataValueMember']
-        ]
+        if not self._datavalue_members:
+            self.compile_datavalue_members()
+        return self._datavalue_members
 
     @property
     def decorated_data(self) -> Optional[dict]:
@@ -330,6 +339,21 @@ class RaTag(
 
         self['@TagType'] = value
 
+    def compile(self):
+        if not self.container:
+            raise ValueError('Cannot compile a tag without a container!')
+
+        self.compile_datavalue_members()
+        return self
+
+    def compile_datavalue_members(self):
+        for raw_member in self.get_raw_datavalue_members():
+            member = DataValueMember(
+                meta_data=raw_member,
+                parent=self
+            )
+            self._datavalue_members.append(member)
+
     @classmethod
     def get_factory(cls):
         return TagFactory
@@ -395,3 +419,22 @@ class RaTag(
             return None
 
         return alias
+
+    def get_raw_datavalue_members(self) -> list[dict]:
+        if not self.decorated_data:
+            return []
+
+        if not self.decorated_data.get('Structure', None):
+            return []
+
+        if not self.decorated_data['Structure'].get('DataValueMember', None):
+            return []
+
+        if not isinstance(self.decorated_data['Structure']['DataValueMember'], list):
+            return [self.decorated_data['Structure']['DataValueMember']]
+
+        return self.decorated_data['Structure']['DataValueMember']
+
+    def invalidate(self):
+        self._datavalue_members.clear()
+        super().invalidate()

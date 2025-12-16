@@ -319,27 +319,33 @@ class TestFordControllerFromMetaData(unittest.TestCase):
                         self.assertIsInstance(rung, FordRung,
                                               f"Expected FordRung but got {type(rung).__name__}")
 
-    def test_from_meta_data_creates_ford_tags(self):
+    @patch('controlrox.models.tasks.app.ControllerInstanceManager.get_controller')
+    def test_from_meta_data_creates_ford_tags(self, mock_get_controller):
         """Test from_meta_data creates FordTag instances."""
         controller = FordController.from_meta_data(self.test_meta_data)
+        mock_get_controller.return_value = controller
 
         self.assertGreater(len(controller.tags), 0)
         for tag in controller.tags:
             self.assertIsInstance(tag, FordTag,
                                   f"Expected FordTag but got {type(tag).__name__}")
 
-    def test_from_meta_data_creates_ford_modules(self):
+    @patch('controlrox.models.tasks.app.ControllerInstanceManager.get_controller')
+    def test_from_meta_data_creates_ford_modules(self, mock_get_controller):
         """Test from_meta_data creates FordModule instances."""
         controller = FordController.from_meta_data(self.test_meta_data)
+        mock_get_controller.return_value = controller
 
         self.assertGreater(len(controller.modules), 0)
         for module in controller.modules:
             self.assertIsInstance(module, FordModule,
                                   f"Expected FordModule but got {type(module).__name__}")
 
-    def test_from_meta_data_creates_ford_datatypes(self):
+    @patch('controlrox.models.tasks.app.ControllerInstanceManager.get_controller')
+    def test_from_meta_data_creates_ford_datatypes(self, mock_get_controller):
         """Test from_meta_data creates FordDatatype instances."""
         controller = FordController.from_meta_data(self.test_meta_data)
+        mock_get_controller.return_value = controller
 
         custom_datatypes = [dt for dt in controller.datatypes
                             if dt.name == 'FordCustomType']
@@ -349,9 +355,11 @@ class TestFordControllerFromMetaData(unittest.TestCase):
             self.assertIsInstance(datatype, FordDatatype,
                                   f"Expected FordDatatype but got {type(datatype).__name__}")
 
-    def test_from_meta_data_creates_ford_aois(self):
+    @patch('controlrox.models.tasks.app.ControllerInstanceManager.get_controller')
+    def test_from_meta_data_creates_ford_aois(self, mock_get_controller):
         """Test from_meta_data creates FordAddOnInstruction instances."""
         controller = FordController.from_meta_data(self.test_meta_data)
+        mock_get_controller.return_value = controller
 
         self.assertGreater(len(controller.aois), 0)
         for aoi in controller.aois:
@@ -456,7 +464,8 @@ class TestFordControllerCompileMethods(unittest.TestCase):
         from controlrox.applications.ford.ford import FordDatatype
         self.assertIsInstance(custom_datatypes[0], FordDatatype)
 
-    def test_compile_aois_uses_ford_aoi_type(self):
+    @patch('controlrox.models.tasks.app.ControllerInstanceManager.get_controller')
+    def test_compile_aois_uses_ford_aoi_type(self, mock_get_controller):
         """Test compile_aois creates FordAddOnInstruction instances."""
         test_data = self.minimal_meta_data.copy()
         test_data['RSLogix5000Content']['Controller']['AddOnInstructionDefinitions'] = {
@@ -466,6 +475,7 @@ class TestFordControllerCompileMethods(unittest.TestCase):
         }
 
         controller = FordController(meta_data=test_data)
+        mock_get_controller.return_value = controller
         controller.compile_aois()
 
         self.assertEqual(len(controller.aois), 1)

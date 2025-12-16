@@ -5,7 +5,6 @@ from typing import (
 )
 
 from pyrox.models import HashList
-from pyrox.services.logging import log
 
 from controlrox.interfaces import (
     IAddOnInstruction,
@@ -114,7 +113,7 @@ class Controller(
         self,
         target_list: HashList,
         target_meta_list: list,
-        item_class: type,
+        item_class: type[PlcObject],
         **kwargs
     ) -> None:
         """Compile a common HashList from meta data.
@@ -127,13 +126,11 @@ class Controller(
         target_list.clear()
         for item in target_meta_list:
             if isinstance(item, dict):
-                target_list.append(
-                    item_class(
-                        meta_data=item,
-                        **kwargs
-                    ))
+                common_object = item_class(meta_data=item, **kwargs)
+                target_list.append(common_object)
+                common_object.compile()  # Compile the object to ensure all necessary data is set
             else:
-                log(self).warning(f'Invalid item data: {item}. Skipping...')
+                raise ValueError('Meta data item must be a dictionary')
 
     def compile(self) -> 'Controller':
         self.compile_aois()

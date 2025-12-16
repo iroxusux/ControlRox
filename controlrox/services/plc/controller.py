@@ -454,6 +454,7 @@ class ControllerInstanceManager:
 
         write_dict = copy.deepcopy(meta_data)
         remove_none_values_inplace(write_dict)
+        
         dict_to_l5x_file(
             write_dict,
             file_location

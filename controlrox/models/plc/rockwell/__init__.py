@@ -22,7 +22,7 @@ from .module import RaModule, RaModuleControlsType
 from .operand import LogixOperand
 from .program import RaProgram
 from .routine import RaRoutine
-from .rung import RaRung, RungElementType
+from .rung import RaRung
 from .tag import RaTag, TagEndpoint, DataValueMember
 
 # Controller
@@ -53,7 +53,6 @@ __all__ = (
     'RaModuleControlsType',
     'RaProgram',
     'RaRoutine',
-    'RungElementType',
     'RaRung',
     'RaTag',
     'TagEndpoint',

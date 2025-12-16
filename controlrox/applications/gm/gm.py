@@ -2,14 +2,26 @@
     """
 from enum import Enum
 import fnmatch
-from pyrox.models import HashList
-from controlrox.models import plc
-from controlrox.models.tasks import ControllerValidator
-from controlrox.services import ControllerMatcher
 import re
-from typing import Optional, TypeVar, Union
+from typing import Generic, Optional, TypeVar, Union
 
-from .generator import BaseEmulationGenerator
+from controlrox.interfaces import META
+from controlrox.interfaces import (
+    IRoutine,
+    IProgram,
+)
+from controlrox.models.plc.rockwell import (
+    RaPlcObject,
+    RaAddOnInstruction,
+    RaController,
+    RaDatatype,
+    RaModule,
+    RaProgram,
+    RaRung,
+    RaRoutine,
+    RaTag,
+)
+
 
 GM_CTRL = TypeVar('GM_CTRL', bound='GmController')
 
@@ -24,7 +36,7 @@ DIAG_RE_PATTERN:    str = r"(<.+\[\d*\].*>)"
 TL_RE_PATTERN:      str = r"(?:.*)(<.*\[\d*\]:.*>)(?:.*)"
 TL_ID_PATTERN:      str = r"(?:.*<)(.*)(?:\[\d*\]:.*>.*)"
 DIAG_NUM_RE_PATTERN: str = r"(?:<.*\[)(\d*)(?:\].*>)"
-COLUMN_RE_PATTERN:   str = r"(?:<.*\[\d+\]:\s)(@[a-zA-Z]+\d+)(?:.*)>"
+COLUMN_RE_PATTERN:   str = r"(?:<.*\[\d+\]:)(@[a-zA-Z]+\d+)(?:.*)"
 DIAG_NAME_RE_PATTER: str = r"(?!MOV\(\d*,HMI\.Diag\.Pgm\.Name\.LEN\))(MOV\(.*?,HMI\.Diag\.Pgm\.Name\.DATA\[\d*?\])"
 
 
@@ -32,9 +44,11 @@ class TextListElement:
     """General Motors Text List Generic Element
     """
 
-    def __init__(self,
-                 text: str,
-                 rung: 'GmRung'):
+    def __init__(
+        self,
+        text: str,
+        rung: 'GmRung'
+    ):
         self._text:      str = self._get_diag_text(text)
         self._text_list_id: str = self._get_tl_id()
         self._number:    int = self._get_diag_number()
@@ -126,16 +140,21 @@ class KDiag(TextListElement):
                  text: str,
                  parent_offset: Optional[Union[str, int]],
                  rung: 'GmRung'):
+
         if diag_type is KDiagType.NA:
             raise ValueError('Cannot be NA!')
+
         if parent_offset is None:
             parent_offset = 0
-        super().__init__(text=text,
-                         rung=rung)
+
+        super().__init__(
+            text=text,
+            rung=rung
+        )
 
         self.diag_type: KDiagType = diag_type
-        self.col_location:    str = self._get_col_location()
         self.parent_offset:   int = int(parent_offset)
+        self._col_location = ''
 
     def __eq__(self, other):
         if isinstance(other, KDiag):
@@ -143,48 +162,62 @@ class KDiag(TextListElement):
         return False
 
     def __hash__(self):
-        return hash((self.text, self.diag_type.value, self.col_location, self.number, self.parent_offset))
+        return hash((
+            self.text,
+            self.diag_type.value,
+            self.column_location,
+            self.number,
+            self.parent_offset
+        ))
 
     def __repr__(self) -> str:
         return (
             f'KDiag(text={self.text}, '
             f'diag_type={self.diag_type}, '
-            f'col_location={self.col_location}, '
+            f'col_location={self.column_location}, '
             f'number={self.number}, '
             f'parent_offset={self.parent_offset}), '
             f'rung={self.rung}'
         )
 
     @property
+    def column_location(self) -> str:
+        if not self._col_location:
+            self._get_col_location()
+        return self._col_location
+
+    @property
     def global_number(self) -> int:
         return self.number + self.parent_offset
 
-    def _get_col_location(self):
+    def _get_col_location(self) -> None:
+        self._col_location = ''
         col_match = re.search(COLUMN_RE_PATTERN, self.text)
         if col_match:
-            return col_match.groups()[0]
+            self._col_location = col_match.groups()[0]
+            return
 
-        return None
 
-
-class GmPlcObject(plc.rockwell.RaPlcObject):
+class GmPlcObject(
+    RaPlcObject[META],
+    Generic[META]
+):
     """Gm Plc Object
-    """
-
-
-class NamedGmPlcObject(GmPlcObject):
-    """General Motors Named Plc Object
     """
 
     @property
     def is_gm_owned(self) -> bool:
-        return True if (self.name.lower().startswith(GM_CHAR)
-                        or self.name.lower().startswith(GM_SAFE_CHAR)) else False
+        return True if (
+            self.name.lower().startswith(GM_CHAR)
+            or self.name.lower().startswith(GM_SAFE_CHAR)
+        ) else False
 
     @property
     def is_user_owned(self) -> bool:
-        return True if (self.name.lower().startswith(USER_CHAR)
-                        or self.name.lower().startswith(USER_SAFE_CHAR)) else False
+        return True if (
+            self.name.lower().startswith(USER_CHAR)
+            or self.name.lower().startswith(USER_SAFE_CHAR)
+        ) else False
 
     @property
     def process_name(self) -> str:
@@ -194,54 +227,60 @@ class NamedGmPlcObject(GmPlcObject):
         return self.name
 
 
-class GmAddOnInstruction(NamedGmPlcObject, plc.rockwell.RaAddOnInstruction):
+class GmAddOnInstruction(
+    GmPlcObject[dict],
+    RaAddOnInstruction
+):
     """General Motors AddOn Instruction Definition
     """
 
 
-class GmDatatype(NamedGmPlcObject, plc.rockwell.RaDatatype):
+class GmDatatype(
+    GmPlcObject[dict],
+    RaDatatype
+):
     """General Motors Datatype
     """
 
 
-class GmModule(NamedGmPlcObject, plc.rockwell.RaModule):
+class GmModule(
+    GmPlcObject[dict],
+    RaModule
+):
     """General Motors Module
     """
 
 
-class GmRung(GmPlcObject, plc.rockwell.RaRung):
+class GmRung(
+    GmPlcObject[dict],
+    RaRung
+):
     """General Motors Rung
     """
+
+    def __init__(
+        self,
+        meta_data: dict | None = None,
+        routine: IRoutine | None = None,
+        rung_number: int | str = 0,
+        rung_text: str = '',
+        comment: str = ''
+    ) -> None:
+        super().__init__(meta_data, routine, rung_number, rung_text, comment)
+        self._kdiags: list[KDiag] = []
 
     @property
     def has_kdiag(self) -> bool:
         if not self.comment:
             return False
 
-        return True if '<@DIAG>' in self.comment else False
+        return '<@DIAG>' in self.comment
 
     @property
     def kdiags(self) -> list[KDiag]:
-        if not self.comment:
-            return []
-
-        comment_lines = self.comment.splitlines()
-        ret_list = []
-
-        for line in comment_lines:
-            if fnmatch.fnmatch(line, ALARM_PATTERN):
-                ret_list.append(KDiag(KDiagType.ALARM,
-                                      line,
-                                      self.routine.program.parameter_offset,
-                                      self))
-
-            elif fnmatch.fnmatch(line, PROMPT_PATTERN):
-                ret_list.append(KDiag(KDiagType.PROMPT,
-                                      line,
-                                      self.routine.program.parameter_offset,
-                                      self))
-
-        return ret_list
+        if not self._kdiags:
+            self.get_kdiags()
+        return self._kdiags
 
     @property
     def text_list_items(self) -> list[TextListElement]:
@@ -258,21 +297,68 @@ class GmRung(GmPlcObject, plc.rockwell.RaRung):
 
         return ret_list
 
+    def get_kdiags(self) -> None:
+        self._kdiags.clear()
 
-class GmRoutine(NamedGmPlcObject, plc.Routine):
+        if not self.comment:
+            return
+
+        comment_lines = self.comment.splitlines()
+
+        if not self.routine:
+            raise ValueError("Routine is None")
+
+        container = self.routine.get_container()
+        if not container:
+            raise ValueError("Routine container is None")
+
+        if not isinstance(container, GmProgram):
+            return
+
+        for line in comment_lines:
+            if fnmatch.fnmatch(line, ALARM_PATTERN):
+                self._kdiags.append(
+                    KDiag(
+                        KDiagType.ALARM,
+                        line,
+                        container.parameter_offset,
+                        self
+                    )
+                )
+
+            elif fnmatch.fnmatch(line, PROMPT_PATTERN):
+                self._kdiags.append(
+                    KDiag(
+                        KDiagType.PROMPT,
+                        line,
+                        container.parameter_offset,
+                        self
+                    )
+                )
+
+
+class GmRoutine(
+    GmPlcObject[dict],
+    RaRoutine
+):
     """General Motors Routine
     """
 
-    @property
-    def kdiag_rungs(self) -> list[KDiag]:
-        x = []
-        for rung in self.rungs:
-            x.extend(rung.kdiags)
-        return x
+    def __init__(
+        self,
+        meta_data: dict | str | None = None,
+        name: str = '',
+        description: str = '',
+        **kwargs
+    ) -> None:
+        super().__init__(meta_data, name, description, **kwargs)
+        self._kdiags: list[KDiag] = []
 
     @property
-    def program(self) -> "GmProgram":
-        return self._program
+    def kdiags(self) -> list[KDiag]:
+        if not self._kdiags:
+            self.compile_kdiags()
+        return self._kdiags
 
     @property
     def rungs(self) -> list[GmRung]:
@@ -285,13 +371,27 @@ class GmRoutine(NamedGmPlcObject, plc.Routine):
             x.extend(rung.text_list_items)
         return x
 
+    def compile_kdiags(self) -> None:
+        for rung in self.rungs:
+            self._kdiags.extend(rung.kdiags)
 
-class GmTag(NamedGmPlcObject, plc.rockwell.RaTag):
+    def invalidate(self) -> None:
+        self._kdiags.clear()
+        return super().invalidate()
+
+
+class GmTag(
+    GmPlcObject[dict],
+    RaTag
+):
     """General Motors Tag
     """
 
 
-class GmProgram(NamedGmPlcObject, plc.Program):
+class GmProgram(
+    GmPlcObject[dict],
+    RaProgram
+):
     """General Motors Program
     """
     PARAM_RTN_STR = 'B*_Parameters'
@@ -299,6 +399,16 @@ class GmProgram(NamedGmPlcObject, plc.Program):
     PARAM_MATCH_STR = "MOV(*,HMI.Diag.Pgm.MsgOffset);"
 
     PGM_NAME_STR = "MOV(*,HMI.Diag.Pgm.Name.LEN)*"
+
+    def __init__(
+        self,
+        meta_data: dict | str | None = None,
+        name: str = '',
+        description: str = '',
+        **kwargs
+    ) -> None:
+        super().__init__(meta_data, name, description, **kwargs)
+        self._kdiags: list[KDiag] = []
 
     @property
     def is_gm_owned(self) -> bool:
@@ -311,7 +421,7 @@ class GmProgram(NamedGmPlcObject, plc.Program):
     @property
     def diag_name(self) -> str:
         if not self.parameter_routine:
-            return None
+            return ''
 
         diag_rung = None
         for rung in self.parameter_routine.rungs:
@@ -320,7 +430,7 @@ class GmProgram(NamedGmPlcObject, plc.Program):
                 diag_rung = rung
                 break
         if not diag_rung:
-            return None
+            return ''
 
         # Extract the length of the string
         length_match = re.search(r'MOV\((\d+),HMI\.Diag\.Pgm\.Name\.LEN\)', diag_rung.text)
@@ -425,10 +535,9 @@ class GmProgram(NamedGmPlcObject, plc.Program):
 
     @property
     def kdiags(self) -> list[KDiag]:
-        x = []
-        for routine in self.routines:
-            x.extend(routine.kdiag_rungs)
-        return x
+        if not self._kdiags:
+            self.compile_kdiags()
+        return self._kdiags
 
     @property
     def parameter_offset(self) -> int:
@@ -441,7 +550,7 @@ class GmProgram(NamedGmPlcObject, plc.Program):
         return 0
 
     @property
-    def parameter_routine(self) -> GmRoutine:
+    def parameter_routine(self) -> Optional[GmRoutine]:
         for routine in self.routines:
             if fnmatch.fnmatch(routine.name, self.PARAM_RTN_STR):
                 return routine
@@ -470,27 +579,42 @@ class GmProgram(NamedGmPlcObject, plc.Program):
     def user_routines(self) -> list[GmRoutine]:
         return [x for x in self.routines if x.is_user_owned]
 
+    def compile_kdiags(self):
+        """get all kdiags within program
+        """
+        for routine in self.routines:
+            if not isinstance(routine, GmRoutine):
+                raise ValueError('Routine is not a GmRoutine')
 
-class GmController(NamedGmPlcObject, plc.rockwell.RaController):
+            self._kdiags.extend(routine.kdiags)
+
+    def invalidate(self) -> None:
+        self._kdiags.clear()
+        return super().invalidate()
+
+
+class GmController(
+    GmPlcObject[dict],
+    RaController
+):
     """General Motors Plc Controller
     """
 
     generator_type = 'GmEmulationGenerator'
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._kdiags = []
+
     @property
     def kdiags(self) -> list[KDiag]:
-        x = []
-        for program in self.programs:
-            x.extend(program.kdiags)
-        return x
+        if not self._kdiags:
+            self.compile_kdiags()
+        return self._kdiags
 
     @property
-    def mcp_program(self) -> Optional[GmProgram]:
+    def mcp_program(self) -> Optional[IProgram]:
         return self.programs.get('MCP', None)
-
-    @property
-    def programs(self) -> HashList[GmProgram]:
-        return super().programs
 
     @property
     def safety_common_program(self) -> Optional[GmProgram]:
@@ -510,12 +634,19 @@ class GmController(NamedGmPlcObject, plc.rockwell.RaController):
         return [x for x in self.programs if x.is_gm_owned]
 
     @property
-    def modules(self) -> HashList[GmModule]:
-        return super().modules
-
-    @property
     def user_program(self) -> list[GmProgram]:
         return [x for x in self.programs if x.is_user_owned]
+
+    def compile_kdiags(self):
+        """get all kdiags within controller
+        """
+        if self._kdiags:
+            return
+
+        for program in self.programs:
+            if not isinstance(program, GmProgram):
+                raise ValueError('Program is not a GmProgram')
+            self._kdiags.extend(program.kdiags)
 
     def extract_messages(self):
         tl_items = self.text_list_items
@@ -533,6 +664,10 @@ class GmController(NamedGmPlcObject, plc.rockwell.RaController):
             'programs': [x.diag_setup for x in self.programs]
         }
 
+    def invalidate(self) -> None:
+        self._kdiags.clear()
+        return super().invalidate()
+
     def validate_text_lists(self):
         """validate all text lists within controller
         """
@@ -541,117 +676,4 @@ class GmController(NamedGmPlcObject, plc.rockwell.RaController):
         return duplicate_diags
 
 
-class GmControllerMatcher(ControllerMatcher):
-    """Matcher for GM controllers."""
-
-    @classmethod
-    def get_controller_constructor(cls):
-        return GmController
-
-    @classmethod
-    def get_datatype_patterns(cls) -> list[str]:
-        return [
-            'zz_Version',
-            'zz_Prompt',
-            'zz_PFEAlarm',
-            'za_Toggle'
-        ]
-
-    @classmethod
-    def get_module_patterns(cls) -> list[str]:
-        return [
-            'sz_*',
-            'zz_*',
-            'cg_*',
-            'zs_*'
-        ]
-
-    @classmethod
-    def get_program_patterns(cls) -> list[str]:
-        return [
-            'MCP',
-            'PFE',
-            'GROUP1',
-            'GROUP2',
-            'HMI1',
-            'HMI2',
-        ]
-
-    @classmethod
-    def get_safety_program_patterns(cls) -> list[str]:
-        return [
-            's_Common',
-            's_Segment1',
-            's_Segment2',
-        ]
-
-    @classmethod
-    def get_tag_patterns(cls) -> list[str]:
-        return [
-            'z_FifoDataElement',
-            'z_JunkData',
-            'z_NoData'
-        ]
-
-
-class GmEmulationGenerator(BaseEmulationGenerator):
-    """General Motors specific emulation logic generator."""
-
-    supporting_class = GmController
-
-    @property
-    def controller(self) -> GmController:
-        return self.controller
-
-    @controller.setter
-    def controller(self, value: GmController):
-        if value.__class__.__name__ != self.supporting_class:
-            raise TypeError(f'Controller must be of type {self.supporting_class}, got {value.__class__.__name__} instead.')
-        self._generator_object = value
-
-    @property
-    def custom_tags(self) -> list[tuple[str, str, str]]:
-        """List of custom tags specific to the controller type.
-
-        Returns:
-            list[str]: List of tuples (tag_name, datatype, description, dimensions).
-        """
-        return [
-            ('DeviceDataSize', 'DINT', 'Size of the DeviceData array.', None),
-            ('LoopPtr', 'DINT', 'Pointer for looping through devices.', None),
-        ]
-
-    @property
-    def emulation_safety_program_name(self) -> str:
-        return self.controller.safety_common_program.name
-
-    @property
-    def emulation_standard_program_name(self) -> str:
-        return self.controller.mcp_program.name
-
-    def _generate_custom_standard_rungs(self):
-        rung = self.controller.config.rung_type(
-            controller=self.controller,
-            text='XIC(Flash.Norm)OTE(Flash.Fast);',
-            comment='// Reduce fast flash rate to limit communication issues with the 3d model.'
-        )
-        self.add_rung_to_standard_routine(rung)
-
-        rung = self.controller.config.rung_type(
-            controller=self.controller,
-            text='SIZE(EnetStorage.DeviceData,0,DeviceDataSize)SUB(DeviceDataSize,1,DeviceDataSize)CLR(LoopPtr);',
-            comment='// Prepare device data sizes for communications processing.'
-        )
-        self.add_rung_to_standard_routine(rung)
-
-        rung = self.controller.config.rung_type(
-            controller=self.controller,
-            text=f'LBL(Loop)XIC({self.toggle_inhibit_tag})LES(LoopPtr,DeviceDataSize)ADD(LoopPtr,1,LoopPtr)OTU(EnetStorage.DeviceData[LoopPtr].Connected)OTL(EnetStorage.DeviceData[LoopPtr].LinkStatusAvail)OTL(EnetStorage.DeviceData[LoopPtr].Link.Scanned)JMP(Loop);',  # noqa: E501
-            comment='Loop through the devices to force the GM Network model to accept all ethernet connections as "OK".'
-        )
-        self.add_rung_to_standard_routine(rung)
-
-
-class GmControllerValidator(ControllerValidator):
-    """Validator for GM controllers."""
-    supporting_class = GmController
+GmPlcObject.supporting_class = GmController

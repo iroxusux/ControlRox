@@ -9,11 +9,13 @@ from tkinter import ttk, Canvas
 from typing import Any, Optional, Dict, List, Literal, Union
 
 from controlrox.interfaces import (
+    IController,
     ILogicInstruction,
     IRoutine
 )
 from pyrox.services.logging import log
 from pyrox.models.gui.frame import TaskFrame
+from controlrox.services import ControllerInstanceManager
 
 
 THEME: dict = {
@@ -217,6 +219,9 @@ class LadderCanvas(Canvas):
         # Add keyboard navigation bindings
         self.bind('<KeyPress>', self._on_key_press)
         self.focus_set()  # Allow canvas to receive keyboard events
+
+        # Controller instance memory
+        self._controller = ControllerInstanceManager.get_controller()
 
         if self._routine:
             self._draw_routine()
@@ -760,7 +765,7 @@ class LadderCanvas(Canvas):
             ).pack(anchor="w")
 
         if element.instruction:
-            header_text = f"{element.instruction.instruction_name}"
+            header_text = f"{element.instruction.name}"
         else:
             header_text = f"{element.element_type.replace('_', ' ').title()}"
 
@@ -1249,7 +1254,7 @@ class LadderCanvas(Canvas):
     def _create_end_rung(self) -> plc.rung.RungElement:
         """Create an end rung element."""
         routine = self._get_routine()
-        return controller.Rung(
+        return self.controll.Rung(
             meta_data=None,
             controller=routine.controller,
             routine=routine,
@@ -4639,15 +4644,19 @@ class LadderCanvas(Canvas):
 class LadderEditorTaskFrame(TaskFrame):
     """Main task frame for the ladder logic editor."""
 
-    def __init__(self,
-                 master,
-                 routine: Optional[IRoutine] = None,
-                 controller: Optional[controller.RaController] = None,
-                 **kwargs):
+    def __init__(
+        self,
+        master,
+        routine: Optional[IRoutine] = None,
+        controller: Optional[IController] = None,
+        **kwargs
+    ):
         name = f"Ladder Editor - {routine.name if routine else 'New Routine'}"
-        super().__init__(master,
-                         name=name,
-                         **kwargs)
+        super().__init__(
+            master,
+            name=name,
+            **kwargs
+        )
 
         self._routine = routine
         self._controller = controller
@@ -4723,8 +4732,10 @@ class LadderEditorTaskFrame(TaskFrame):
         editor_frame.pack(fill='both', expand=True)
 
         # Create canvas with scrollbars
-        self._ladder_canvas = LadderCanvas(editor_frame,
-                                           routine=self._routine)
+        self._ladder_canvas = LadderCanvas(
+            editor_frame,
+            routine=self._routine
+        )
 
         # Vertical scrollbar
         v_scrollbar = tk.Scrollbar(editor_frame, orient='vertical',
