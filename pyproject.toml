@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "ControlRox"
-version = "2.2.016"
+version = "2.2.017"
 authors = [
   { name="Brian LaFond", email="Brian.L.LaFond@gmail.com" },
 ]
@@ -29,7 +29,7 @@ classifiers = [
   "Programming Language :: Python :: 3.13",
 ]
 dependencies = [
-  "pyrox @ file:..//Pyrox",
+  "pyrox @ git+https://github.com/iroxusux/Pyrox.git@main",
   "debugpy",
 ]
 
