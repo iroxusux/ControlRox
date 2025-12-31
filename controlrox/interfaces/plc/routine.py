@@ -11,6 +11,15 @@ class IRoutine(
     IHasRungs,
 ):
 
+    @property
+    def container(self) -> IHasRoutines:
+        """Container of this routine.
+
+        Returns:
+            IHasRoutines: The container that holds this routine.
+        """
+        return self.get_container()
+
     @abstractmethod
     def block(self) -> None:
         """Block this routine.

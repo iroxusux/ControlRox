@@ -16,6 +16,7 @@ class EPlanImportTask(ControllerApplicationTask):
         eplan.import_eplan(self.controller)
 
     def inject(self) -> None:
+        return  # TODO: Disable for now
         tools_menu = self.application.menu.get_tools_menu()
         if not tools_menu:
             return

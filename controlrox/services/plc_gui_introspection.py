@@ -272,7 +272,7 @@ def _register_default_attributes():
             GuiAttribute("name", "Program Name", GuiAttributeType.EDITABLE, "text_entry", group="Identity"),
             GuiAttribute("description", "Description", GuiAttributeType.EDITABLE, "text_area", group="Identity"),
             GuiAttribute("controller.name", "Controller", GuiAttributeType.DISPLAY_ONLY, "label", group="Context"),
-            GuiAttribute("routines_dict", "routines", GuiAttributeType.DISPLAY_ONLY, "list_view", group="Contents"),
+            GuiAttribute("routines", "routines", GuiAttributeType.DISPLAY_ONLY, "list_view", group="Contents"),
         ])
 
     # Routine-specific attributes

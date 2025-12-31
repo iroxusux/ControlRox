@@ -7,6 +7,12 @@ from . import (
     l5x,
 )
 
+# Design services
+from .design import (
+    convert_markdown_to_html,
+    render_checklist,
+)
+
 # Plc service classes
 from .plc import (
     # Factory imports
@@ -30,6 +36,9 @@ from .plc import (
     create_checklist_from_template,
     inject_emulation_routine,
     remove_emulation_routine,
+
+    # instruction extraction function
+    extract_instruction_strings,
 )
 
 
@@ -39,6 +48,10 @@ __all__ = (
     # 'eplan',
     'generator',
     'l5x',
+
+    # Design services
+    'convert_markdown_to_html',
+    'render_checklist',
 
     # Plc Factory services
     'AOIFactory',
@@ -60,4 +73,7 @@ __all__ = (
     'create_checklist_from_template',
     'inject_emulation_routine',
     'remove_emulation_routine',
+
+    # Instruction extraction function
+    'extract_instruction_strings',
 )

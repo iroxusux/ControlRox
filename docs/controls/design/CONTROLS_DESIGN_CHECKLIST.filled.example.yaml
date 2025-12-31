@@ -1,0 +1,389 @@
+# Example filled file (minimal). Copy and expand for a real project.
+meta:
+  document_id: "EX-001"
+  project_name: "Example Project"
+  system_name: "Cell A"
+  customer_end_user: "Example Customer"
+  site_location: "Example Site"
+  system_type: "New system"
+  project_manager: ""
+  project_engineer: ""
+  date: "2025-12-31"
+  revision: "A"
+  document_revision: "v1.00.00"
+
+project_summary_scope:
+  system_overview:
+    process_cell_description: "An example process cell for demonstration."
+    primary_objectives: "Filling and packaging products."
+    key_constraints: "Engineers understanding this example and document"
+    logical_cell_count: "1"
+    logical_station_count: "2"
+    logical_hmi_count: "1"
+    interlocked_system_count: "2"
+  in_scope_equipment_reference: "2"
+  out_of_scope_items: "1"
+
+stakeholders_communication:
+  customer_contacts: 
+    - role: "Operations"
+      name: "Smith, Jordan"
+      phone: "+1 (260) 555-0101"
+      email: "jordan.smith@customer.com"
+      notes: "Day shift lead; approves downtime windows"
+    - role: "Maintenance"
+      name: "Lee, Morgan"
+      phone: "+1 (260) 555-0123"
+      email: "lee.morgan@customer.com"
+    - role: "IT"
+      name: "Patel, Asha"
+      phone: "+1 (260) 555-0199"
+      email: "asha.patel@customer.com"
+      notes: "VLANs, firewall rules, remote access"
+    - role: "Safety"
+      name: "Garcia, Luis"
+      phone: "+1 (260) 555-0177"
+      email: "luis.garcia@customer.com"
+  integrator_contacts: 
+    - role: "Project Manager"
+      name: "Taylor, Alex"
+      phone: "+1 (260) 555-0144"
+      email: "alex.taylor@integrator.com"
+      notes: "Primary PM contact for scheduling and changes"
+    - role: "Controls Lead"
+      name: "Jordan, Casey"
+      phone: "+1 (260) 555-0166"
+      email: "casey.jordan@integrator.com"
+      notes: "Don't talk to, spooks easily."
+    - role: "Robotics Lead"
+      name: "Davis, Riley"
+      phone: "+1 (260) 555-0188"
+      email: "riley.davis@robots.com"
+      notes: "Sometimes barks like a dog, but for real."
+    - role: "Mechanical Lead"
+      name: "Morgan, Jamie"
+      phone: "+1 (260) 555-0155"
+      email: "jamie.morgan@hammer.com"
+      notes: "Loves to talk about wrenches."
+    - role: "Electrical Lead"
+      name: "Carter, Taylor"
+      phone: "+1 (260) 555-0133"
+      email: "taylor.cater@zappy.com"
+      notes: "Always shocked to hear from you."
+    - role: "Pneumatics Lead"
+      name: "Jordan, Avery"
+      phone: "+1 (260) 555-0111"
+      email: "avery.jordan@hiss.com"
+      notes: "Hisses when stressed."
+  misc_contacts:
+    - role: "Safety Standards Consultant"
+      name: "Nguyen, Kim"
+      phone: "+1 (260) 555-0198"
+      email: "kim.nguyen@safe.com"
+      notes: "Helps with safety standards interpretation."
+
+customer_software_standards_templates:
+  standards_received:
+    customer_blockpoint_received: true
+    customer_naming_convention_received: true
+    customer_alarm_factory_information_philosophy_received: true
+    customer_programming_standard_received: true
+    customer_hmi_standards_received: true
+    customer_network_cybersecurity_standard_received: true
+    customer_plc_to_plc_interlocking_standards_received: true
+  templates_paths:
+    design_documentation: 
+      label: "Design Document"
+      link: "https://duckduckgo.com/?q=design+document&atb=v510-1&ia=web"
+    blockpoint_schedule: 
+      label: "Blockpoint Document"
+      link: https://duckduckgo.com/?q=blockpoint+document&atb=v510-1&ia=web
+    template_plc_code:
+      label: "Template PLC Project"
+      link: "https://duckduckgo.com/?q=template+plc+document&atb=v510-1&ia=web"
+    template_hmi_project: 
+      label: "Template HMI Project"
+      link: "https://duckduckgo.com/?q=template+hmi+document&atb=v510-1&ia=web"
+    template_drive_configuration_files: 
+      label: "Drive Config Files"
+      link: "https://duckduckgo.com/?q=template+drive+document&atb=v510-1&ia=web"
+    other_templates: 
+      - label: "Network Diagram Template"
+        link: "https://duckduckgo.com/?q=network+diagram+document&atb=v510-1&ia=web"
+  template_gaps_deviations:
+    deviations_required: false
+    deviation_details: ""
+    customer_approval_required: false
+    who_when: ""
+
+blockpoint_specifications:
+  plc_baseline: 
+    - item: "Primary PLC"
+      manufacturer: "ExamplePLCCo"
+      model: "ExPLC-1000"
+      hardware_rev: "A"
+      firmware_rev: "1.0.0"
+      software_rev: "v1.00.00"
+      options_notes: "Base model with standard I/O"
+    - item: "Safety PLC"
+      manufacturer: "SafePLCInc"
+      model: "SafePLC-2000"
+      hardware_rev: "B"
+      firmware_rev: "2.1.0"
+      software_rev: "v2.00.00"
+      options_notes: "Includes safety I/O modules"
+    - item: "Remote I/O"
+      manufacturer: "RemoteIOLtd"
+      model: "RemIO-500"
+      hardware_rev: "C"
+      firmware_rev: "3.2.1"
+      software_rev: "v3.00.00"
+      options_notes: "Distributed I/O modules"
+    - item: "Comm Module"
+      manufacturer: "CommModulesInc"
+      model: "CommMod-300"
+      hardware_rev: "D"
+      firmware_rev: "4.0.0"
+      software_rev: "v4.00.00"
+      options_notes: "Ethernet communication module"
+
+  hmi_scada_baseline: 
+    - item: "HMI Panel"
+      platform: "ExampleHMIOS"
+      model_runtime: "ExHMI-1500 / v5.0"
+      hardware_rev: "E"
+      firmware_rev: "5.1.0"
+      software_rev: "v5.00.00"
+      runtime_version: "v5.0"
+      notes: "15-inch touchscreen panel"
+    - item: "SCADA Server"
+      platform: "ExampleSCADAOS"
+      model_runtime: "ExSCADA-Server / v10.0"
+      hardware_rev: "F"
+      firmware_rev: "10.2.0"
+      software_rev: "v10.00.00"
+      runtime_version: "v10.0"
+      notes: "Central SCADA server"
+
+  drives_baseline: 
+    - item: "Main Drive"
+      manufacturer: "DriveMakersCo"
+      model: "DriveX-4000"
+      hardware_rev: "G"
+      firmware_rev: "6.0.0"
+      software_rev: "v6.00.00"
+      options_notes: "Standard VFD for motor control"
+    - item: "Auxiliary Drive"
+      manufacturer: "SpeedyDrivesInc"
+      model: "SpeedDrive-2500"
+      hardware_rev: "H"
+      firmware_rev: "7.1.0"
+      software_rev: "v7.00.00"
+      options_notes: "High-performance drive for conveyors"
+
+  robots_baseline: 
+    - item: "Articulated Robot"
+      manufacturer: "RoboMation"
+      model: "RoboArt-6Axis"
+      hardware_rev: "I"
+      firmware_rev: "8.0.0"
+      software_rev: "v8.00.00"
+      options_notes: "6-axis robot for assembly tasks"
+    - item: "SCARA Robot"
+      manufacturer: "FastBots"
+      model: "FastSCARA-300"
+      hardware_rev: "J"
+      firmware_rev: "9.1.0"
+      software_rev: "v9.00.00"
+      options_notes: "SCARA robot for pick-and-place operations"
+
+  vision_baseline: 
+    - item: "Vision System"
+      manufacturer: "VisionTech"
+      model: "VisionSys-1000"
+      hardware_rev: "K"
+      firmware_rev: "1.0.0"
+      software_rev: "v1.00.00"
+      options_notes: "Machine vision system for quality inspection"
+    
+  other_critical_baselines:
+    motion_servos: ""
+    barcode_rfid: ""
+    safety_devices: ""
+    other: ""
+  baseline_verification:
+    baselines_match_purchased_hardware_bom: false
+    baselines_match_plant_standards: false
+    mismatches_documented_and_approved: false
+
+hardware_drawings_documents_received: []
+hardware_span_of_controls:
+  control_architecture_summary:
+    plc_count: ""
+    remote_io_count: ""
+    hmi_scada_nodes: ""
+    networks: []
+    time_sync_method: ""
+  equipment_span: []
+  io_summary_approx:
+    di: ""
+    do: ""
+    ai: ""
+    ao: ""
+    specialty_io: ""
+  field_device_assumptions:
+    sensor_types_ranges: ""
+    valve_types_fail_positions: ""
+    motor_starters_vfd_control_method: ""
+
+safety_span_of_controls:
+  safety_basis:
+    safety_documentation_references: ""
+    target_standards_approach: ""
+    required_performance_level_sil_targets: ""
+  safety_architecture:
+    safety_controllers_relays: ""
+    safety_networks: ""
+    safety_zones_boundaries: ""
+  safety_devices_inventory: []
+  safety_functions_high_level: []
+  safety_validation_documentation:
+    safety_io_checkout_plan_defined: false
+    safety_function_test_procedure_defined: false
+    safety_acceptance_criteria_defined: false
+    safety_validation_results_captured_archived: false
+
+interlock_specifications:
+  interlock_philosophy:
+    interlock_types_used: []
+    bypass_policy: ""
+    reset_philosophy: ""
+  interlock_matrix: []
+  interlock_implementation_notes:
+    standard_pattern_used: ""
+    where_enforced: ""
+    latched_vs_non_latched_criteria: ""
+
+controls_software_design_plc:
+  project_structure:
+    program_organization: ""
+    aoi_fb_strategy: ""
+    data_structures_naming_versioning: ""
+  tagging_naming:
+    naming_convention_reference: ""
+    io_naming_mapping_strategy: ""
+  state_models_sequencing:
+    modes_supported: []
+    sequence_description_reference: ""
+    fault_handling_strategy: ""
+  diagnostics_maintainability:
+    standard_device_diagnostics_implemented: false
+    clear_fault_text_corrective_actions_defined: false
+    first_out_root_cause_capture_where_applicable: false
+  simulation_offline_testing:
+    simulation_approach: ""
+    sim_boundaries_assumptions: ""
+
+hmi_scada_design:
+  hmi_scope:
+    screen_list_navigation_map_reference: ""
+    user_roles_security_levels: ""
+  standards:
+    alarm_colors_conform_to_customer_standards: false
+    faceplates_objects_conform_to_customer_templates: false
+    units_ranges_scaling_defined: false
+  alarm_management:
+    alarm_philosophy_reference: ""
+    alarm_priorities_defined: false
+    shelving_suppression_requirements: ""
+  data_logging_historian:
+    tags_to_log_and_rates: ""
+    batch_lot_traceability_requirements: ""
+
+drive_configuration_integration:
+  control_method:
+    hardwired_io_control: false
+    fieldbus_control: false
+    safety_integration_details: ""
+  standard_parameters:
+    speed_limits_accel_decel_torque_limits: ""
+    motor_nameplate_data_source: ""
+  config_management:
+    config_file_naming_convention: ""
+    storage_location_version_control_location: ""
+
+communications_networking_cybersecurity:
+  network_inventory: []
+  ip_addressing_naming:
+    ip_plan_reference: ""
+    hostname_device_name_plan: ""
+  cybersecurity_baseline:
+    accounts_roles_defined: false
+    backup_restore_procedure_defined: false
+    remote_access_method_approved: false
+    antivirus_whitelisting_expectations_aligned_with_customer: false
+
+timeline_milestones: []
+
+testing_fat_sat_acceptance_criteria:
+  test_scope_strategy:
+    io_checkout_plan_reference: ""
+    interlock_test_procedure_reference: ""
+    sequence_recipe_test_plan_reference: ""
+  acceptance_criteria:
+    customer_acceptance_criteria_document: ""
+    punchlist_process_and_closure_criteria: ""
+
+deliverables_backups_handover:
+  deliverables:
+    plc_source_and_compiled_artifact: false
+    hmi_scada_project_source_and_runtime_package: false
+    drive_configuration_backups: false
+    network_ip_plan: false
+    operator_and_maintenance_documentation: false
+    as_built_drawings_or_redlines: false
+  backup_restore:
+    backup_location: ""
+    restore_validation_performed: false
+    restore_validation_notes: ""
+
+open_items_risks_decisions: []
+
+approvals_signoff:
+  phases:
+    pre_design:
+      controls_lead: { name: "", date: "", signature_initials: "" }
+      project_manager: { name: "", date: "", signature_initials: "" }
+      safety_optional: { name: "", date: "", signature_initials: "" }
+      customer_representative_optional: { name: "", date: "", signature_initials: "" }
+    functional_design_check_50:
+      controls_lead: { name: "", date: "", signature_initials: "" }
+      project_manager: { name: "", date: "", signature_initials: "" }
+      safety_optional: { name: "", date: "", signature_initials: "" }
+      customer_representative_optional: { name: "", date: "", signature_initials: "" }
+    post_design_check_90:
+      controls_lead: { name: "", date: "", signature_initials: "" }
+      project_manager: { name: "", date: "", signature_initials: "" }
+      safety_optional: { name: "", date: "", signature_initials: "" }
+      customer_representative_optional: { name: "", date: "", signature_initials: "" }
+    integration_motion_and_safety_check:
+      controls_lead: { name: "", date: "", signature_initials: "" }
+      project_manager: { name: "", date: "", signature_initials: "" }
+      safety_optional: { name: "", date: "", signature_initials: "" }
+      customer_representative_optional: { name: "", date: "", signature_initials: "" }
+    site_acceptance_optional:
+      controls_lead: { name: "", date: "", signature_initials: "" }
+      project_manager: { name: "", date: "", signature_initials: "" }
+      safety_optional: { name: "", date: "", signature_initials: "" }
+      customer_representative_optional: { name: "", date: "", signature_initials: "" }
+    factory_acceptance:
+      controls_lead: { name: "", date: "", signature_initials: "" }
+      project_manager: { name: "", date: "", signature_initials: "" }
+      safety_optional: { name: "", date: "", signature_initials: "" }
+      customer_representative_optional: { name: "", date: "", signature_initials: "" }
+
+appendix_links_references:
+  customer_standards: ""
+  drawings_folder: ""
+  code_repository_tag: ""
+  fat_sat_reports: ""

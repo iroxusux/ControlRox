@@ -33,6 +33,22 @@ class LogixOperand(
         self._as_qualified: str = ''
         self._instruction_type: LogicInstructionType = LogicInstructionType.UNKNOWN
 
+    @property
+    def alias(self) -> str:
+        """Return alias of the operand.
+
+        Returns:
+            str: Alias of the operand
+        """
+        if self._as_aliased:
+            return self._as_aliased
+        return self.get_alias_name()
+
+    def get_alias_name(self) -> str:
+        print('not yet implemented')
+        self._as_aliased = 'not yet implemented'
+        return self._as_aliased
+
     def get_base_name(self) -> str:
         if self._base_name:
             return self._base_name

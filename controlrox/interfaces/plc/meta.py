@@ -189,6 +189,7 @@ class LogicInstructionType(Enum):
     OUTPUT = 2
     UNKNOWN = 3
     JSR = 4
+    AOI = 5
 
 
 class LogicAssetType(Enum):

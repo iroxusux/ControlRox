@@ -1,0 +1,512 @@
+# Controls Software Design Checklist (Structured Template)
+# Auto-regenerated to mirror CONTROLS_DESIGN_CHECKLIST.md headings/tables.
+# Fill out a COPY per project for a consistent, parseable record.
+
+meta:
+  document_id: ""
+  project_name: ""
+  system_name: ""
+  customer_end_user: ""
+  site_location: ""
+  system_type: "" # New system | Retrofit | Expansion | Other
+  project_manager: ""
+  project_engineer: ""
+  date: "" # YYYY-MM-DD
+  revision: ""
+  document_revision: "" # e.g., v1.00.00
+
+project_summary_scope:
+  system_overview:
+    process_cell_description: ""
+    primary_objectives: ""
+    key_constraints: ""
+    logical_cell_count: ""
+    logical_station_count: ""
+    logical_hmi_count: ""
+    interlocked_system_count: ""
+  in_scope_equipment_reference: ""
+  out_of_scope_items: ""
+
+stakeholders_communication:
+  customer_contacts:
+    - role: "Operations"
+      name: ""
+      phone: ""
+      email: ""
+      notes: ""
+    - role: "Maintenance"
+      name: ""
+      phone: ""
+      email: ""
+      notes: ""
+    - role: "IT"
+      name: ""
+      phone: ""
+      email: ""
+      notes: ""
+    - role: "Safety"
+      name: ""
+      phone: ""
+      email: ""
+      notes: ""
+  integrator_contacts:
+    - role: "Project Manager"
+      name: ""
+      phone: ""
+      email: ""
+      notes: ""
+    - role: "Controls"
+      name: ""
+      phone: ""
+      email: ""
+      notes: ""
+    - role: "Robotics"
+      name: ""
+      phone: ""
+      email: ""
+      notes: ""
+    - role: "Mechanical"
+      name: ""
+      phone: ""
+      email: ""
+      notes: ""
+    - role: "Electrical"
+      name: ""
+      phone: ""
+      email: ""
+      notes: ""
+    - role: "Pneumatic"
+      name: ""
+      phone: ""
+      email: ""
+      notes: ""
+  misc_contacts:
+    - role: ""
+      name: ""
+      phone: ""
+      email: ""
+      notes: ""
+
+customer_software_standards_templates:
+  standards_received:
+    customer_blockpoint_received: false
+    customer_naming_convention_received: false
+    customer_alarm_factory_information_philosophy_received: false
+    customer_programming_standard_received: false
+    customer_hmi_standards_received: false
+    customer_network_cybersecurity_standard_received: false
+    customer_plc_to_plc_interlocking_standards_received: false
+  templates_paths:
+    design_documentation: "" # Excel/Word/PDF/PPT
+    blockpoint_schedule: ""
+    template_plc_code: "" # AOIs/UDTs/base project
+    template_hmi_project: ""
+    template_drive_configuration_files: ""
+    other_templates: []
+  template_gaps_deviations:
+    deviations_required: false
+    deviation_details: ""
+    customer_approval_required: false
+    who_when: ""
+
+blockpoint_specifications:
+  plc_baseline:
+    - item: "Primary PLC"
+      manufacturer: ""
+      model: ""
+      hardware_rev: ""
+      firmware_rev: ""
+      software_ide_version: ""
+      options_notes: ""
+    - item: "Safety PLC (if separate)"
+      manufacturer: ""
+      model: ""
+      hardware_rev: ""
+      firmware_rev: ""
+      software_ide_version: ""
+      options_notes: ""
+    - item: "Remote I/O Adapter(s)"
+      manufacturer: ""
+      model: ""
+      hardware_rev: ""
+      firmware_rev: ""
+      software_ide_version: ""
+      options_notes: ""
+    - item: "Comms Module(s)"
+      manufacturer: ""
+      model: ""
+      hardware_rev: ""
+      firmware_rev: ""
+      software_ide_version: ""
+      options_notes: ""
+  hmi_scada_baseline:
+    - item: "Panel HMI"
+      platform: ""
+      model_runtime: ""
+      hardware_rev: ""
+      firmware_rev: ""
+      dev_software_version: ""
+      runtime_version: ""
+      notes: ""
+    - item: "SCADA Node"
+      platform: ""
+      model_runtime: ""
+      hardware_rev: ""
+      firmware_rev: ""
+      dev_software_version: ""
+      runtime_version: ""
+      notes: ""
+  drives_baseline:
+    - item: "VFD"
+      manufacturer: ""
+      model: ""
+      frame_hp: ""
+      firmware_rev: ""
+      config_tool_version: ""
+      config_file_name_id: ""
+      notes: ""
+    - item: "Motor Starter"
+      manufacturer: ""
+      model: ""
+      frame_hp: ""
+      firmware_rev: ""
+      config_tool_version: ""
+      config_file_name_id: ""
+      notes: ""
+  robots_baseline:
+    - item: "Material Handler"
+      manufacturer: ""
+      model: ""
+      hardware_rev: ""
+      firmware_rev: ""
+      software_ide_version: ""
+      options_notes: ""
+  vision_baseline:
+    - item: "Smart camera / sensor"
+      manufacturer: ""
+      model: ""
+      hardware_rev: ""
+      firmware_rev: ""
+      software_runtime_version: ""
+      config_project_file_name_id: ""
+      notes: ""
+    - item: "Vision controller / IPC"
+      manufacturer: ""
+      model: ""
+      hardware_rev: ""
+      firmware_rev: ""
+      software_runtime_version: "" # OS/Image/etc.
+      config_project_file_name_id: ""
+      notes: ""
+    - item: "Vision software package"
+      manufacturer: ""
+      model: ""
+      hardware_rev: "N/A"
+      firmware_rev: "N/A"
+      software_runtime_version: ""
+      config_project_file_name_id: ""
+      notes: ""
+    - item: "Camera lens"
+      manufacturer: ""
+      model: ""
+      hardware_rev: ""
+      firmware_rev: "N/A"
+      software_runtime_version: "N/A"
+      config_project_file_name_id: "N/A"
+      notes: "Focal length: ____ / Filter: ____"
+    - item: "Light / illuminator"
+      manufacturer: ""
+      model: ""
+      hardware_rev: ""
+      firmware_rev: ""
+      software_runtime_version: "N/A"
+      config_project_file_name_id: "N/A"
+      notes: "Color/wavelength: ____ / Driver: ____"
+    - item: "Trigger / strobe controller"
+      manufacturer: ""
+      model: ""
+      hardware_rev: ""
+      firmware_rev: ""
+      software_runtime_version: ""
+      config_project_file_name_id: ""
+      notes: "If separate from camera/controller"
+    - item: "Encoder / timing source"
+      manufacturer: ""
+      model: ""
+      hardware_rev: ""
+      firmware_rev: ""
+      software_runtime_version: "N/A"
+      config_project_file_name_id: "N/A"
+      notes: "PPR: ____"
+    - item: "Network switch / PoE injector"
+      manufacturer: ""
+      model: ""
+      hardware_rev: ""
+      firmware_rev: ""
+      software_runtime_version: "N/A"
+      config_project_file_name_id: "N/A"
+      notes: "VLAN/QoS notes: ____"
+  other_critical_baselines:
+    motion_servos: ""
+    barcode_rfid: ""
+    safety_devices: ""
+    other: ""
+  baseline_verification:
+    baselines_match_purchased_hardware_bom: false
+    baselines_match_plant_standards: false
+    mismatches_documented_and_approved: false
+
+hardware_drawings_documents_received:
+  - document: "Electrical schematics"
+    rev: ""
+    date_received: "" # YYYY-MM-DD
+    source: "" # Customer/OEM/ECAD
+    used_for: ""
+    notes: ""
+  - document: "Panel layout"
+    rev: ""
+    date_received: "" # YYYY-MM-DD
+    source: ""
+    used_for: ""
+    notes: ""
+  - document: "Network diagram"
+    rev: ""
+    date_received: "" # YYYY-MM-DD
+    source: ""
+    used_for: ""
+    notes: ""
+  - document: "Instrument list"
+    rev: ""
+    date_received: "" # YYYY-MM-DD
+    source: ""
+    used_for: ""
+    notes: ""
+  - document: "P&IDs"
+    rev: ""
+    date_received: "" # YYYY-MM-DD
+    source: ""
+    used_for: ""
+    notes: ""
+  - document: "Safety documents (RA / SR)"
+    rev: ""
+    date_received: "" # YYYY-MM-DD
+    source: ""
+    used_for: ""
+    notes: ""
+
+hardware_span_of_controls:
+  control_architecture_summary:
+    plc_count: ""
+    remote_io_count: ""
+    hmi_scada_nodes: ""
+    networks: [] # EtherNet/IP, Profinet, Modbus, etc.
+    time_sync_method: "" # NTP/PTP/GPS/none
+  equipment_span:
+    - equipment_area: ""
+      control_owner_plc_panel: ""
+      local_controls: ""
+      sensors_actuators_summary: ""
+      special_notes: ""
+  io_summary_approx:
+    di: ""
+    do: ""
+    ai: ""
+    ao: ""
+    specialty_io: "" # HSI/encoder/safety IO/motion
+  field_device_assumptions:
+    sensor_types_ranges: ""
+    valve_types_fail_positions: ""
+    motor_starters_vfd_control_method: "" # IO/fieldbus
+
+safety_span_of_controls:
+  safety_basis:
+    safety_documentation_references: ""
+    target_standards_approach: ""
+    required_performance_level_sil_targets: ""
+  safety_architecture:
+    safety_controllers_relays: ""
+    safety_networks: ""
+    safety_zones_boundaries: ""
+  safety_devices_inventory:
+    - device_type: "E-Stop"
+      location_zone: ""
+      tag_id: ""
+      reset_method: ""
+      notes: ""
+  safety_functions_high_level:
+    - safety_function_id: ""
+      description: ""
+      inputs: ""
+      outputs: ""
+      pl_sil_target: ""
+      validation_method: ""
+  safety_validation_documentation:
+    safety_io_checkout_plan_defined: false
+    safety_function_test_procedure_defined: false
+    safety_acceptance_criteria_defined: false
+    safety_validation_results_captured_archived: false
+
+interlock_specifications:
+  interlock_philosophy:
+    interlock_types_used: [] # permissive/inhibit/trip/warning-only
+    bypass_policy: "" # none allowed/key-switch/password/maintenance mode
+    reset_philosophy: "" # auto/manual reset/fault acknowledge then reset
+  interlock_matrix:
+    - interlock_id: ""
+      applies_to: ""
+      condition_inputs: ""
+      action_outputs: ""
+      reset_requirement: ""
+      bypass_allowed: false
+      hmi_indication: ""
+      test_verification: ""
+  interlock_implementation_notes:
+    standard_pattern_used: "" # AOI/FB/state machine
+    where_enforced: "" # PLC vs drive vs safety
+    latched_vs_non_latched_criteria: ""
+
+controls_software_design_plc:
+  project_structure:
+    program_organization: "" # tasks/programs/routines
+    aoi_fb_strategy: "" # faceplates/diagnostics/simulation hooks
+    data_structures_naming_versioning: "" # UDTs/DBs
+  tagging_naming:
+    naming_convention_reference: ""
+    io_naming_mapping_strategy: "" # per schematics
+  state_models_sequencing:
+    modes_supported: [] # Auto/Manual/Jog/Maintenance/Simulation
+    sequence_description_reference: ""
+    fault_handling_strategy: "" # stop category/recovery
+  diagnostics_maintainability:
+    standard_device_diagnostics_implemented: false
+    clear_fault_text_corrective_actions_defined: false
+    first_out_root_cause_capture_where_applicable: false
+  simulation_offline_testing:
+    simulation_approach: "" # built-in sim tags/emulation/test harness
+    sim_boundaries_assumptions: ""
+
+hmi_scada_design:
+  hmi_scope:
+    screen_list_navigation_map_reference: ""
+    user_roles_security_levels: ""
+  standards:
+    alarm_colors_conform_to_customer_standards: false
+    faceplates_objects_conform_to_customer_templates: false
+    units_ranges_scaling_defined: false
+  alarm_management:
+    alarm_philosophy_reference: ""
+    alarm_priorities_defined: false
+    shelving_suppression_requirements: ""
+  data_logging_historian:
+    tags_to_log_and_rates: ""
+    batch_lot_traceability_requirements: ""
+
+drive_configuration_integration:
+  control_method:
+    hardwired_io_control: false
+    fieldbus_control: false
+    safety_integration_details: "" # STO/SS1/etc.
+  standard_parameters:
+    speed_limits_accel_decel_torque_limits: ""
+    motor_nameplate_data_source: ""
+  config_management:
+    config_file_naming_convention: ""
+    storage_location_version_control_location: ""
+
+communications_networking_cybersecurity:
+  network_inventory:
+    - network: ""
+      subnet_vlan: ""
+      devices: ""
+      managed_by: "" # IT/OT/Controls Integrator
+      notes: ""
+  ip_addressing_naming:
+    ip_plan_reference: ""
+    hostname_device_name_plan: ""
+  cybersecurity_baseline:
+    accounts_roles_defined: false
+    backup_restore_procedure_defined: false
+    remote_access_method_approved: false
+    antivirus_whitelisting_expectations_aligned_with_customer: false
+
+timeline_milestones:
+  - milestone: "Design kickoff complete"
+    planned_date: "" # YYYY-MM-DD
+    actual_date: "" # YYYY-MM-DD
+    owner: ""
+    notes_blockers: ""
+
+testing_fat_sat_acceptance_criteria:
+  test_scope_strategy:
+    io_checkout_plan_reference: ""
+    interlock_test_procedure_reference: ""
+    sequence_recipe_test_plan_reference: ""
+  acceptance_criteria:
+    customer_acceptance_criteria_document: ""
+    punchlist_process_and_closure_criteria: ""
+
+deliverables_backups_handover:
+  deliverables:
+    plc_source_and_compiled_artifact: false
+    hmi_scada_project_source_and_runtime_package: false
+    drive_configuration_backups: false
+    network_ip_plan: false
+    operator_and_maintenance_documentation: false
+    as_built_drawings_or_redlines: false
+  backup_restore:
+    backup_location: ""
+    restore_validation_performed: false
+    restore_validation_notes: ""
+
+open_items_risks_decisions:
+  - item: ""
+    owner: ""
+    due_date: "" # YYYY-MM-DD
+    risk_level: "" # L/M/H
+    mitigation_notes: ""
+
+approvals_signoff:
+  descriptions:
+    pre_design: "Before development begins, this document is filled to satisfy internal quality control."
+    functional_design_check_50: "Midway check to verify development direction before customer-facing design documentation."
+    post_design_check_90: "Final off-site check that software structure matches this documentation and customer expectations."
+    integration_motion_safety_check: "Integration of controls equipment successful before automatic motion occurs."
+    site_acceptance_optional: "If built/tested at integrator floor before shipping, ensure integrating mechanical company is satisfied."
+    factory_acceptance: "Final system check; all previous checks complete; issues closed; ready for customer purchase."
+  phases:
+    pre_design:
+      controls_lead: { name: "", date: "", signature_initials: "" }
+      project_manager: { name: "", date: "", signature_initials: "" }
+      safety_optional: { name: "", date: "", signature_initials: "" }
+      customer_representative_optional: { name: "", date: "", signature_initials: "" }
+    functional_design_check_50:
+      controls_lead: { name: "", date: "", signature_initials: "" }
+      project_manager: { name: "", date: "", signature_initials: "" }
+      safety_optional: { name: "", date: "", signature_initials: "" }
+      customer_representative_optional: { name: "", date: "", signature_initials: "" }
+    post_design_check_90:
+      controls_lead: { name: "", date: "", signature_initials: "" }
+      project_manager: { name: "", date: "", signature_initials: "" }
+      safety_optional: { name: "", date: "", signature_initials: "" }
+      customer_representative_optional: { name: "", date: "", signature_initials: "" }
+    integration_motion_and_safety_check:
+      controls_lead: { name: "", date: "", signature_initials: "" }
+      project_manager: { name: "", date: "", signature_initials: "" }
+      safety_optional: { name: "", date: "", signature_initials: "" }
+      customer_representative_optional: { name: "", date: "", signature_initials: "" }
+    site_acceptance_optional:
+      controls_lead: { name: "", date: "", signature_initials: "" }
+      project_manager: { name: "", date: "", signature_initials: "" }
+      safety_optional: { name: "", date: "", signature_initials: "" }
+      customer_representative_optional: { name: "", date: "", signature_initials: "" }
+    factory_acceptance:
+      controls_lead: { name: "", date: "", signature_initials: "" }
+      project_manager: { name: "", date: "", signature_initials: "" }
+      safety_optional: { name: "", date: "", signature_initials: "" }
+      customer_representative_optional: { name: "", date: "", signature_initials: "" }
+
+appendix_links_references:
+  customer_standards: ""
+  drawings_folder: ""
+  code_repository_tag: ""
+  fat_sat_reports: ""

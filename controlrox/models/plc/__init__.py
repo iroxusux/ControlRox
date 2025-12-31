@@ -28,12 +28,7 @@ from .module import Module
 from .operand import LogicOperand
 from .program import Program
 from .routine import Routine
-from .rung import (
-    Rung,
-    RungBranch,
-    RungElement,
-    RungElementType
-)
+from .rung import Rung
 from .tag import Tag
 
 # Controller
@@ -70,9 +65,6 @@ __all__ = (
     'Program',
     'Routine',
     'Rung',
-    'RungBranch',
-    'RungElement',
-    'RungElementType',
     'Tag',
 
     # Controller types

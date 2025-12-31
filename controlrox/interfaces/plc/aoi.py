@@ -26,7 +26,35 @@ class IAddOnInstruction(
         Returns:
             str: The revision string.
         """
-        raise NotImplementedError("This property should be overridden by subclasses to get the revision.")
+        return self.get_revision()
+
+    @property
+    @abstractmethod
+    def parameters(self) -> list[dict]:
+        """Get the parameters of the Add-On Instruction.
+
+        Returns:
+            list[dict]: The list of parameter definitions.
+        """
+        return self.get_parameters()
+
+    @abstractmethod
+    def get_parameters(self) -> list[dict]:
+        """Get the parameters of the Add-On Instruction.
+
+        Returns:
+            list[dict]: The list of parameter definitions.
+        """
+        raise NotImplementedError("This method should be overridden by subclasses to get the parameters.")
+
+    @abstractmethod
+    def set_parameters(self, parameters: list[dict]) -> None:
+        """Set the parameters of the Add-On Instruction.
+
+        Args:
+            parameters: The list of parameter definitions to set.
+        """
+        raise NotImplementedError("This method should be overridden by subclasses to set the parameters.")
 
     @abstractmethod
     def get_revision(self) -> str:

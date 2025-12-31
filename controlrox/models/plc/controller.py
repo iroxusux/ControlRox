@@ -11,6 +11,7 @@ from controlrox.interfaces import (
     IController,
     IControllerSafetyInfo,
     IDatatype,
+    ILogicInstruction,
     IHasRoutines,
     IHasTags,
     IModule,
@@ -27,7 +28,8 @@ from controlrox.services import (
     ProgramFactory,
     RoutineFactory,
     RungFactory,
-    TagFactory
+    TagFactory,
+    InstructionFactory
 )
 
 from .protocols import (
@@ -227,6 +229,24 @@ class Controller(
             name=name,
             description=description,
             meta_data=meta_data
+        )
+
+    def create_instruction(
+        self,
+        name: Optional[str] = None,
+        description: Optional[str] = None,
+        meta_data: Optional[str] = None,
+        rung: Optional[IRung] = None,
+    ) -> ILogicInstruction:
+        constructor = InstructionFactory.get_registered_type_by_supporting_class(self.__class__)
+        if not constructor:
+            raise RuntimeError('No Instruction constructor found for this controller type!')
+
+        return constructor(
+            name=name,
+            description=description,
+            meta_data=meta_data,
+            rung=rung
         )
 
     def create_module(

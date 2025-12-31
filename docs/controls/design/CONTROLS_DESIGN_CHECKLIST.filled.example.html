@@ -1,0 +1,1396 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>docs/controls/design/CONTROLS_DESIGN_CHECKLIST.filled.example.md</title>
+  <style>
+
+:root {
+    color-scheme: dark;
+}
+
+html, body {
+    height: 100%;
+}
+
+body {
+    margin: 0;
+    background: #0d1117;
+    color: #c9d1d9;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+}
+
+a { color: #58a6ff; }
+a:visited { color: #8e96f0; }
+
+.markdown-body {
+    box-sizing: border-box;
+    min-width: 200px;
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 32px 24px;
+}
+
+hr {
+    border: 0;
+    border-top: 1px solid #30363d;
+}
+
+blockquote {
+    margin: 0;
+    padding: 0 1em;
+    color: #8b949e;
+    border-left: 0.25em solid #30363d;
+}
+
+pre, code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+code {
+    padding: 0.2em 0.4em;
+    border-radius: 6px;
+    background: rgba(110, 118, 129, 0.2);
+}
+
+pre {
+    padding: 16px;
+    overflow: auto;
+    border-radius: 6px;
+    background: #161b22;
+    border: 1px solid #30363d;
+}
+
+pre code {
+    padding: 0;
+    background: transparent;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+table th, table td {
+    border: 1px solid #30363d;
+    padding: 6px 13px;
+}
+
+table tr:nth-child(2n) {
+    background: #161b22;
+}
+
+  </style>
+</head>
+<body>
+  <main class="markdown-body">
+<section id="controls-software-design-checklist-fillable"
+data-align="center">
+<h1>Controls Software Design Checklist (Fillable)</h1>
+<p><strong>A comprehensive internal checklist and design guide for
+controls automation engineers</strong></p>
+<figure>
+<img src="https://img.shields.io/badge/version-1.00.00-blue.svg"
+alt="Version" />
+<figcaption aria-hidden="true">Version</figcaption>
+</figure>
+<p><a href="#1-project-summary--scope">Project Summary &amp; Scope</a> •
+<a href="#13-stakeholders--communication">Stakeholders &amp;
+communication</a> • <a
+href="#2-customer-software-standards--templates-end-customer-specifications">Customer
+Standards</a> • <a
+href="#3-blockpoint-specifications-software-hardware-firmware-revisions">Blockpoint</a>
+• <a href="#5-hardware-drawings--documents-received-and-dates">Hardware
+Drawings</a> • <a
+href="#6-hardware-span-of-controls-operational-equipment-scope">Hardware
+Span</a> • <a href="#7-safety-span-of-controls-system-wide">Safety
+Span</a></p>
+</section>
+<p><strong>Document ID:</strong> EX-001<br />
+<strong>Project Name:</strong> Example Project<br />
+<strong>System Name:</strong> Cell A<br />
+<strong>Customer / End User:</strong> Example Customer<br />
+<strong>Site / Location:</strong> Example Site<br />
+<strong>System Type:</strong> New system<br />
+<strong>Project Manager:</strong> ____________________<br />
+<strong>Project Engineer:</strong> ____________________<br />
+<strong>Date: (yyyy-mm-dd)</strong> 2025-12-31<br />
+<strong>Revision:</strong> A<br />
+<strong>Document Revision:</strong> <em>v1.00.00</em></p>
+<hr />
+<section id="how-to-use-this-checklist"
+style="background-color: darkblue; padding: 2px; border-radius: 5px;">
+<h2>0) How to use this checklist</h2>
+</section>
+<ul>
+<li>Fill this out during design and keep it updated through
+FAT/SAT.</li>
+<li>If a section is not applicable, mark it <strong>N/A</strong> and
+briefly explain why.</li>
+<li>Attach/Link supporting documents (customer standards, drawings,
+network diagrams, safety docs, etc.).</li>
+</ul>
+<hr />
+<section id="project-summary-scope"
+style="background-color: darkblue; padding: 2px; border-radius: 5px;">
+<h2>1) Project Summary &amp; Scope</h2>
+</section>
+<section id="system-overview"
+style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+<h3>1.1 System overview</h3>
+</section>
+<ul>
+<li><strong>Process / cell description:</strong> An example process cell
+for demonstration.</li>
+<li><strong>Primary objectives:</strong> Filling and packaging
+products.</li>
+<li><strong>Key constraints:</strong> Engineers understanding this
+example and document</li>
+<li><strong>Logical ‘Cell’ count:</strong> 1</li>
+<li><strong>Logical ‘Station’ count:</strong> 2</li>
+<li><strong>Logical ‘HMI’ count:</strong> 1</li>
+<li><strong>Interlocked # of systems:</strong> 2</li>
+</ul>
+<section id="in-scope-equipment-areas"
+style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+<h3>1.2 In-scope equipment / areas</h3>
+</section>
+<ul>
+<li><strong>Equipment list or reference:</strong> 2</li>
+<li><strong>Out-of-scope items:</strong> 1</li>
+</ul>
+<section id="stakeholders-communication"
+style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+<h3>1.3 Stakeholders &amp; communication</h3>
+</section>
+<section id="customer-contacts"
+style="background-color: darkred; padding: 2px; border-radius: 5px;">
+<h4>1.3.1 Customer Contacts</h4>
+</section>
+<table>
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+</colgroup>
+<thead>
+<tr>
+<th>Role</th>
+<th>Name</th>
+<th>Phone</th>
+<th>Email</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Operations</td>
+<td>Smith, Jordan</td>
+<td>+1 (260) 555-0101</td>
+<td>jordan.smith@customer.com</td>
+<td>Day shift lead; approves downtime windows</td>
+</tr>
+<tr>
+<td>Maintenance</td>
+<td>Lee, Morgan</td>
+<td>+1 (260) 555-0123</td>
+<td>lee.morgan@customer.com</td>
+<td></td>
+</tr>
+<tr>
+<td>IT</td>
+<td>Patel, Asha</td>
+<td>+1 (260) 555-0199</td>
+<td>asha.patel@customer.com</td>
+<td>VLANs, firewall rules, remote access</td>
+</tr>
+<tr>
+<td>Safety</td>
+<td>Garcia, Luis</td>
+<td>+1 (260) 555-0177</td>
+<td>luis.garcia@customer.com</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<section id="integrator-contacts"
+style="background-color: darkred; padding: 2px; border-radius: 5px;">
+<h4>1.3.2 Integrator Contacts</h4>
+</section>
+<table>
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+</colgroup>
+<thead>
+<tr>
+<th>Role</th>
+<th>Name</th>
+<th>Phone</th>
+<th>Email</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Project Manager</td>
+<td>Taylor, Alex</td>
+<td>+1 (260) 555-0144</td>
+<td>alex.taylor@integrator.com</td>
+<td>Primary PM contact for scheduling and changes</td>
+</tr>
+<tr>
+<td>Controls Lead</td>
+<td>Jordan, Casey</td>
+<td>+1 (260) 555-0166</td>
+<td>casey.jordan@integrator.com</td>
+<td>Don’t talk to, spooks easily.</td>
+</tr>
+<tr>
+<td>Robotics Lead</td>
+<td>Davis, Riley</td>
+<td>+1 (260) 555-0188</td>
+<td>riley.davis@robots.com</td>
+<td>Sometimes barks like a dog, but for real.</td>
+</tr>
+<tr>
+<td>Mechanical Lead</td>
+<td>Morgan, Jamie</td>
+<td>+1 (260) 555-0155</td>
+<td>jamie.morgan@hammer.com</td>
+<td>Loves to talk about wrenches.</td>
+</tr>
+<tr>
+<td>Electrical Lead</td>
+<td>Carter, Taylor</td>
+<td>+1 (260) 555-0133</td>
+<td>taylor.cater@zappy.com</td>
+<td>Always shocked to hear from you.</td>
+</tr>
+<tr>
+<td>Pneumatics Lead</td>
+<td>Jordan, Avery</td>
+<td>+1 (260) 555-0111</td>
+<td>avery.jordan@hiss.com</td>
+<td>Hisses when stressed.</td>
+</tr>
+</tbody>
+</table>
+<section id="misc-contacts"
+style="background-color: darkred; padding: 2px; border-radius: 5px;">
+<h4>1.3.3 Misc Contacts</h4>
+</section>
+<blockquote>
+<p>Note💡 Include vendors, integrators, etc. for interlocks or job
+specific needs.</p>
+</blockquote>
+<table>
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+</colgroup>
+<thead>
+<tr>
+<th>Role</th>
+<th>Name</th>
+<th>Phone</th>
+<th>Email</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Safety Standards Consultant</td>
+<td>Nguyen, Kim</td>
+<td>+1 (260) 555-0198</td>
+<td>kim.nguyen@safe.com</td>
+<td>Helps with safety standards interpretation.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<section
+id="customer-software-standards-templates-end-customer-specifications"
+style="background-color: darkblue; padding: 2px; border-radius: 5px;">
+<h2>2) Customer software standards &amp; templates (End-customer
+specifications)</h2>
+</section>
+<section id="customer-standards"
+style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+<h3>2.1 Customer standards</h3>
+</section>
+<ul>
+<li>Customer blockpoint received: ☑</li>
+<li>Customer naming convention received: ☑</li>
+<li>Customer alarm / factory information philosophy received: ☑</li>
+<li>Customer programming standard received: ☑</li>
+<li>Customer HMI standards received: ☑</li>
+<li>Customer network / cybersecurity standard received: ☑</li>
+<li>Customer plc-&gt;plc interlocking standards received: ☑</li>
+</ul>
+<section id="customer-provided-templates-paths"
+style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+<h3>2.2 Customer-provided templates (paths)</h3>
+</section>
+<ul>
+<li>Design documentation: <a
+href="https://duckduckgo.com/?q=design+document&amp;atb=v510-1&amp;ia=web">Design
+Document</a></li>
+<li>Blockpoint Schedule: <a
+href="https://duckduckgo.com/?q=blockpoint+document&amp;atb=v510-1&amp;ia=web">Blockpoint
+Document</a></li>
+<li>Template PLC code: <a
+href="https://duckduckgo.com/?q=template+plc+document&amp;atb=v510-1&amp;ia=web">Template
+PLC Project</a></li>
+<li>Template HMI project: <a
+href="https://duckduckgo.com/?q=template+hmi+document&amp;atb=v510-1&amp;ia=web">Template
+HMI Project</a></li>
+<li>Template drive configuration files: <a
+href="https://duckduckgo.com/?q=template+drive+document&amp;atb=v510-1&amp;ia=web">Drive
+Config Files</a></li>
+<li>Other templates:
+<ul>
+<li><a
+href="https://duckduckgo.com/?q=network+diagram+document&amp;atb=v510-1&amp;ia=web">Network
+Diagram Template</a></li>
+</ul></li>
+</ul>
+<section id="template-gaps-deviations"
+style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+<h3>2.3 Template gaps / deviations</h3>
+</section>
+<ul>
+<li>Deviations required: ☐</li>
+<li>Deviation details:</li>
+<li>Customer approval required: ☐</li>
+<li>Who/when:</li>
+</ul>
+<hr />
+<section
+id="blockpoint-specifications-software-hardware-firmware-revisions"
+style="background-color: darkblue; padding: 2px; border-radius: 5px;">
+<h2>3) Blockpoint specifications (software, hardware, firmware
+revisions)</h2>
+</section>
+<blockquote>
+<p>Goal: lock the “known-good” baseline for PLCs, HMIs, drives, and key
+components.</p>
+</blockquote>
+<section id="plc-baseline"
+style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+<h3>3.1 PLC baseline</h3>
+</section>
+<table style="width:100%;">
+<colgroup>
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+</colgroup>
+<thead>
+<tr>
+<th>Item</th>
+<th>Manufacturer</th>
+<th>Model</th>
+<th>Hardware Rev</th>
+<th>Firmware Rev</th>
+<th>Software / IDE Version</th>
+<th>Options / Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Primary PLC</td>
+<td>ExamplePLCCo</td>
+<td>ExPLC-1000</td>
+<td>A</td>
+<td>1.0.0</td>
+<td>v1.00.00</td>
+<td>Base model with standard I/O</td>
+</tr>
+<tr>
+<td>Safety PLC</td>
+<td>SafePLCInc</td>
+<td>SafePLC-2000</td>
+<td>B</td>
+<td>2.1.0</td>
+<td>v2.00.00</td>
+<td>Includes safety I/O modules</td>
+</tr>
+<tr>
+<td>Remote I/O</td>
+<td>RemoteIOLtd</td>
+<td>RemIO-500</td>
+<td>C</td>
+<td>3.2.1</td>
+<td>v3.00.00</td>
+<td>Distributed I/O modules</td>
+</tr>
+<tr>
+<td>Comm Module</td>
+<td>CommModulesInc</td>
+<td>CommMod-300</td>
+<td>D</td>
+<td>4.0.0</td>
+<td>v4.00.00</td>
+<td>Ethernet communication module</td>
+</tr>
+</tbody>
+</table>
+<section id="hmi-scada-baseline"
+style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+<h3>3.2 HMI / SCADA baseline</h3>
+</section>
+<table>
+<colgroup>
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+</colgroup>
+<thead>
+<tr>
+<th>Item</th>
+<th>Platform</th>
+<th>Model / Runtime</th>
+<th>Hardware Rev</th>
+<th>Firmware Rev</th>
+<th>Dev Software Version</th>
+<th>Runtime Version</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>HMI Panel</td>
+<td>ExampleHMIOS</td>
+<td>ExHMI-1500 / v5.0</td>
+<td>E</td>
+<td>5.1.0</td>
+<td>v5.00.00</td>
+<td>v5.0</td>
+<td>15-inch touchscreen panel</td>
+</tr>
+<tr>
+<td>SCADA Server</td>
+<td>ExampleSCADAOS</td>
+<td>ExSCADA-Server / v10.0</td>
+<td>F</td>
+<td>10.2.0</td>
+<td>v10.00.00</td>
+<td>v10.0</td>
+<td>Central SCADA server</td>
+</tr>
+</tbody>
+</table>
+<section id="drives-baseline"
+style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+<h3>3.3 Drives baseline</h3>
+</section>
+<table>
+<colgroup>
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+</colgroup>
+<thead>
+<tr>
+<th>Item</th>
+<th>Manufacturer</th>
+<th>Model</th>
+<th>Frame / HP</th>
+<th>Firmware Rev</th>
+<th>Config Tool Version</th>
+<th>Config File Name/ID</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Main Drive</td>
+<td>DriveMakersCo</td>
+<td>DriveX-4000</td>
+<td></td>
+<td>6.0.0</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Auxiliary Drive</td>
+<td>SpeedyDrivesInc</td>
+<td>SpeedDrive-2500</td>
+<td></td>
+<td>7.1.0</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<section id="robots-baseline"
+style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+<h3>3.4 Robots baseline</h3>
+</section>
+<table style="width:100%;">
+<colgroup>
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+</colgroup>
+<thead>
+<tr>
+<th>Item</th>
+<th>Manufacturer</th>
+<th>Model</th>
+<th>Hardware Rev</th>
+<th>Firmware Rev</th>
+<th>Software / IDE Version</th>
+<th>Options / Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Articulated Robot</td>
+<td>RoboMation</td>
+<td>RoboArt-6Axis</td>
+<td>I</td>
+<td>8.0.0</td>
+<td></td>
+<td>6-axis robot for assembly tasks</td>
+</tr>
+<tr>
+<td>SCARA Robot</td>
+<td>FastBots</td>
+<td>FastSCARA-300</td>
+<td>J</td>
+<td>9.1.0</td>
+<td></td>
+<td>SCARA robot for pick-and-place operations</td>
+</tr>
+</tbody>
+</table>
+<section id="vision-baseline"
+style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+<h3>3.5 Vision baseline</h3>
+</section>
+<table>
+<colgroup>
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+</colgroup>
+<thead>
+<tr>
+<th>Item</th>
+<th>Manufacturer</th>
+<th>Model</th>
+<th>Hardware Rev</th>
+<th>Firmware Rev</th>
+<th>Software / Runtime Version</th>
+<th>Config / Project File Name/ID</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Vision System</td>
+<td>VisionTech</td>
+<td>VisionSys-1000</td>
+<td>K</td>
+<td>1.0.0</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<section id="other-critical-baselines-as-applicable"
+style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+<h3>3.6 Other critical baselines (as applicable)</h3>
+</section>
+<ul>
+<li>Motion / servos:</li>
+<li>Barcode / RFID:</li>
+<li>Safety devices (relays, scanners):</li>
+<li>Other:</li>
+</ul>
+<section id="baseline-verification"
+style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+<h3>3.7 Baseline verification</h3>
+</section>
+<ul>
+<li>Baselines match purchased hardware BOM: ☐</li>
+<li>Baselines match plant standards: ☐</li>
+<li>Any mismatches documented &amp; approved: ☐</li>
+</ul>
+<hr />
+<section id="hardware-drawings-documents-received-and-dates"
+style="background-color: darkblue; padding: 2px; border-radius: 5px;">
+<h2>4) Hardware drawings &amp; documents received (and dates)</h2>
+</section>
+<blockquote>
+<p>Record exactly what drawings were received and which revisions were
+used.</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>Document</th>
+<th>Rev</th>
+<th>Date Received</th>
+<th>Source</th>
+<th>Used For</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+</tbody>
+</table>
+<hr />
+<section id="hardware-span-of-controls-operational-equipment-scope"
+style="background-color: darkblue; padding: 2px; border-radius: 5px;">
+<h2>5) Hardware span of controls (operational equipment scope)</h2>
+</section>
+<section id="control-architecture-summary"
+style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+<h3>5.1 Control architecture summary</h3>
+</section>
+<ul>
+<li>PLC count:</li>
+<li>Remote I/O count:</li>
+<li>HMI/SCADA nodes:</li>
+<li>Networks: []</li>
+<li>Time sync method:</li>
+</ul>
+<section id="equipment-span-table"
+style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+<h3>5.2 Equipment span table</h3>
+</section>
+<table>
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+</colgroup>
+<thead>
+<tr>
+<th>Equipment / Area</th>
+<th>Control Owner (PLC/Panel)</th>
+<th>Local Controls (PBs, selectors)</th>
+<th>Sensors / Actuators Summary</th>
+<th>Special Notes</th>
+</tr>
+</thead>
+<tbody>
+</tbody>
+</table>
+<section id="io-summary-approx."
+style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+<h3>5.3 IO summary (approx.)</h3>
+</section>
+<ul>
+<li>DI: DO: AI: AO:</li>
+<li>Specialty IO:</li>
+</ul>
+<section id="field-device-assumptions"
+style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+<h3>5.4 Field device assumptions</h3>
+</section>
+<ul>
+<li>Sensor types / ranges:</li>
+<li>Valve types / fail positions:</li>
+<li>Motor starters / VFD control method:</li>
+</ul>
+<hr />
+<section id="safety-span-of-controls-system-wide"
+style="background-color: darkblue; padding: 2px; border-radius: 5px;">
+<h2>6) Safety span of controls (system-wide)</h2>
+</section>
+<blockquote>
+<p>This section should align with the project’s risk assessment / safety
+requirement specification.</p>
+</blockquote>
+<section id="safety-basis"
+style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+<h3>6.1 Safety basis</h3>
+</section>
+<ul>
+<li>Safety documentation reference(s):</li>
+<li>Target standard(s) / approach:</li>
+<li>Required Performance Level / SIL targets:</li>
+</ul>
+<section id="safety-architecture"
+style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+<h3>6.2 Safety architecture</h3>
+</section>
+<ul>
+<li>Safety controller(s) / relay(s):</li>
+<li>Safety networks (if any):</li>
+<li>Safety zones / boundaries:</li>
+</ul>
+<section id="safety-devices-inventory"
+style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+<h3>6.3 Safety devices inventory</h3>
+</section>
+<table>
+<thead>
+<tr>
+<th>Device Type</th>
+<th>Location / Zone</th>
+<th>Tag / ID</th>
+<th>Reset Method</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+</tbody>
+</table>
+<section id="safety-functions-list-high-level"
+style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+<h3>6.4 Safety functions list (high-level)</h3>
+</section>
+<table style="width:100%;">
+<colgroup>
+<col style="width: 16%" />
+<col style="width: 16%" />
+<col style="width: 16%" />
+<col style="width: 16%" />
+<col style="width: 16%" />
+<col style="width: 16%" />
+</colgroup>
+<thead>
+<tr>
+<th>Safety Function ID</th>
+<th>Description</th>
+<th>Inputs</th>
+<th>Outputs</th>
+<th>PL/SIL Target</th>
+<th>Validation Method</th>
+</tr>
+</thead>
+<tbody>
+</tbody>
+</table>
+<section id="safety-validation-documentation"
+style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+<h3>6.5 Safety validation &amp; documentation</h3>
+</section>
+<ul>
+<li>Safety IO checkout plan defined: ☐</li>
+<li>Safety function test procedure defined: ☐</li>
+<li>Safety acceptance criteria defined: ☐</li>
+<li>Safety validation results captured and archived: ☐</li>
+</ul>
+<hr />
+<section id="interlock-specifications-details"
+style="background-color: darkblue; padding: 2px; border-radius: 5px;">
+<h2>7) Interlock specifications &amp; details</h2>
+</section>
+<blockquote>
+<p>Capture all process, equipment, and safety-related interlocks. This
+becomes your implementation and test source-of-truth.</p>
+</blockquote>
+<section id="interlock-philosophy"
+style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+<h3>7.1 Interlock philosophy</h3>
+</section>
+<ul>
+<li>Interlock types used: []</li>
+<li>Bypass policy:</li>
+<li>Reset philosophy:</li>
+</ul>
+<section id="interlock-matrix-summary"
+style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+<h3>7.2 Interlock matrix (summary)</h3>
+</section>
+<table>
+<colgroup>
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+</colgroup>
+<thead>
+<tr>
+<th>Interlock ID</th>
+<th>Applies To</th>
+<th>Condition / Inputs</th>
+<th>Action / Outputs</th>
+<th>Reset Requirement</th>
+<th>Bypass Allowed</th>
+<th>HMI Indication</th>
+<th>Test / Verification</th>
+</tr>
+</thead>
+<tbody>
+</tbody>
+</table>
+<section id="interlock-implementation-notes"
+style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+<h3>7.3 Interlock implementation notes</h3>
+</section>
+<ul>
+<li>Standard pattern used:</li>
+<li>Where interlocks are enforced:</li>
+<li>Latched vs non-latched criteria:</li>
+</ul>
+<hr />
+<section id="controls-software-design-plc"
+style="background-color: darkblue; padding: 2px; border-radius: 5px;">
+<h2>8) Controls software design (PLC)</h2>
+</section>
+<section id="project-structure"
+style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+<h3>8.1 Project structure</h3>
+</section>
+<ul>
+<li>Program organization:</li>
+<li>AOI/FB strategy:</li>
+<li>Data structures naming/versioning:</li>
+</ul>
+<section id="tagging-naming"
+style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+<h3>8.2 Tagging &amp; naming</h3>
+</section>
+<ul>
+<li>Naming convention reference:</li>
+<li>IO naming mapping strategy:</li>
+</ul>
+<section id="state-models-sequencing"
+style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+<h3>8.3 State models &amp; sequencing</h3>
+</section>
+<ul>
+<li>Modes supported: []</li>
+<li>Sequence description / reference:</li>
+<li>Fault handling strategy:</li>
+</ul>
+<section id="diagnostics-maintainability"
+style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+<h3>8.4 Diagnostics &amp; maintainability</h3>
+</section>
+<ul>
+<li>Standard device diagnostics implemented: ☐</li>
+<li>Clear fault text and corrective actions defined: ☐</li>
+<li>First-out / root-cause capture: ☐</li>
+</ul>
+<section id="simulation-offline-testing"
+style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+<h3>8.5 Simulation / offline testing</h3>
+</section>
+<ul>
+<li>Simulation approach:</li>
+<li>Sim boundaries &amp; assumptions:</li>
+</ul>
+<hr />
+<section id="hmi-scada-design"
+style="background-color: darkblue; padding: 2px; border-radius: 5px;">
+<h2>9) HMI / SCADA design</h2>
+</section>
+<section id="hmi-scope"
+style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+<h3>9.1 HMI scope</h3>
+</section>
+<ul>
+<li>Screen list / navigation map reference:</li>
+<li>User roles / security levels:</li>
+</ul>
+<section id="standards"
+style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+<h3>9.2 Standards</h3>
+</section>
+<ul>
+<li>Alarm colors conform: ☐</li>
+<li>Faceplates/objects conform: ☐</li>
+<li>Units/ranges/scaling defined: ☐</li>
+</ul>
+<section id="alarm-management"
+style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+<h3>9.3 Alarm management</h3>
+</section>
+<ul>
+<li>Alarm philosophy reference:</li>
+<li>Alarm priorities defined: ☐</li>
+<li>Shelving/suppression requirements:</li>
+</ul>
+<section id="data-logging-historian-if-applicable"
+style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+<h3>9.4 Data logging / historian (if applicable)</h3>
+</section>
+<ul>
+<li>Tags to log + rates:</li>
+<li>Batch/lot/traceability requirements:</li>
+</ul>
+<hr />
+<section id="drive-configuration-integration"
+style="background-color: darkblue; padding: 2px; border-radius: 5px;">
+<h2>10) Drive configuration &amp; integration</h2>
+</section>
+<section id="control-method"
+style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+<h3>10.1 Control method</h3>
+</section>
+<ul>
+<li>Hardwired IO control: ☐</li>
+<li>Fieldbus control: ☐</li>
+<li>Safety integration details:</li>
+</ul>
+<section id="standard-parameters"
+style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+<h3>10.2 Standard parameters</h3>
+</section>
+<ul>
+<li>Speed/accel/decel/torque limits:</li>
+<li>Motor nameplate data source:</li>
+</ul>
+<section id="config-management"
+style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+<h3>10.3 Config management</h3>
+</section>
+<ul>
+<li>Config file naming convention:</li>
+<li>Storage / version control location:</li>
+</ul>
+<hr />
+<section id="communications-networking-and-cybersecurity"
+style="background-color: darkblue; padding: 2px; border-radius: 5px;">
+<h2>11) Communications, networking, and cybersecurity</h2>
+</section>
+<section id="network-inventory"
+style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+<h3>11.1 Network inventory</h3>
+</section>
+<table>
+<thead>
+<tr>
+<th>Network</th>
+<th>Subnet/VLAN</th>
+<th>Devices</th>
+<th>Managed By</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+</tbody>
+</table>
+<section id="ip-addressing-naming"
+style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+<h3>11.2 IP addressing &amp; naming</h3>
+</section>
+<ul>
+<li>IP plan reference:</li>
+<li>Hostname/device name plan:</li>
+</ul>
+<section id="cybersecurity-baseline-project-appropriate"
+style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+<h3>11.3 Cybersecurity baseline (project-appropriate)</h3>
+</section>
+<ul>
+<li>Accounts/roles defined: ☐</li>
+<li>Backup/restore procedure defined: ☐</li>
+<li>Remote access method approved: ☐</li>
+<li>Antivirus/whitelisting aligned: ☐</li>
+</ul>
+<hr />
+<section id="timeline-milestones-planned-vs-actual"
+style="background-color: darkblue; padding: 2px; border-radius: 5px;">
+<h2>12) Timeline &amp; milestones (planned vs actual)</h2>
+</section>
+<table>
+<thead>
+<tr>
+<th>Milestone</th>
+<th>Planned Date</th>
+<th>Actual Date</th>
+<th>Owner</th>
+<th>Notes / Blockers</th>
+</tr>
+</thead>
+<tbody>
+</tbody>
+</table>
+<hr />
+<section id="testing-fatsat-and-acceptance-criteria"
+style="background-color: darkblue; padding: 2px; border-radius: 5px;">
+<h2>13) Testing, FAT/SAT, and acceptance criteria</h2>
+</section>
+<section id="test-scope-strategy"
+style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+<h3>13.1 Test scope &amp; strategy</h3>
+</section>
+<ul>
+<li>IO checkout plan reference:</li>
+<li>Interlock test procedure reference:</li>
+<li>Sequence / recipe test plan reference:</li>
+</ul>
+<section id="acceptance-criteria"
+style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+<h3>13.2 Acceptance criteria</h3>
+</section>
+<ul>
+<li>Customer acceptance criteria document:</li>
+<li>Punchlist closure criteria:</li>
+</ul>
+<hr />
+<section id="deliverables-backups-and-handover"
+style="background-color: darkblue; padding: 2px; border-radius: 5px;">
+<h2>14) Deliverables, backups, and handover</h2>
+</section>
+<section id="deliverables"
+style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+<h3>14.1 Deliverables</h3>
+</section>
+<ul>
+<li>PLC source + compiled artifact: ☐</li>
+<li>HMI/SCADA source + runtime package: ☐</li>
+<li>Drive configuration backups: ☐</li>
+<li>Network/IP plan: ☐</li>
+<li>Operator/maintenance documentation: ☐</li>
+<li>As-built drawings (or redlines): ☐</li>
+</ul>
+<section id="backup-restore"
+style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+<h3>14.2 Backup &amp; restore</h3>
+</section>
+<ul>
+<li>Backup location:</li>
+<li>Restore validation performed: ☐</li>
+<li>Notes:</li>
+</ul>
+<hr />
+<section id="open-items-risks-decisions"
+style="background-color: darkblue; padding: 2px; border-radius: 5px;">
+<h2>15) Open items / risks / decisions</h2>
+</section>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Owner</th>
+<th>Due Date</th>
+<th>Risk Level (L/M/H)</th>
+<th>Mitigation / Notes</th>
+</tr>
+</thead>
+<tbody>
+</tbody>
+</table>
+<hr />
+<section id="approvals-sign-off"
+style="background-color: darkblue; padding: 2px; border-radius: 5px;">
+<h2>16) Approvals / Sign-off</h2>
+</section>
+<ul>
+<li>Pre-Design: Before development begins, this document has been filled
+to satisfy internal quality control members to continue with
+design.</li>
+<li>Functional Design Check: Midway check to verify development is
+progressing in the correct direction. This is performed before customers
+get any design documentations.</li>
+<li>Post Desgin Check: Final off-site check to validate the structure of
+the software matches what is expetected by this documentation, internal
+QC engineers, and the customer.</li>
+<li>Integration Motion and Safety Check: Integration of controls
+equipment successful. This check occurs before automatic motion occurs
+in a system.</li>
+<li>Site Acceptance (optional): If the system is built on the floor of
+an integrator to test before shipping to production facilities, this
+check is to ensure the integrating mechanical company is satisfied with
+the equipment.</li>
+<li>Factory Acceptance: The final system check. All previous checks
+complete, system ready for purchase by customer. All issues closed and
+ready to sell.</li>
+</ul>
+<section id="pre-design"
+style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+<h3>16.1 Pre-Design</h3>
+</section>
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th>Name</th>
+<th>Date</th>
+<th>Signature / Initials</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Controls Lead</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Project Manager</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Safety (optional)</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Customer Representative (optional)</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<section id="functional-design-check-50"
+style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+<h3>16.2 Functional Design Check (50%)</h3>
+</section>
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th>Name</th>
+<th>Date</th>
+<th>Signature / Initials</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Controls Lead</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Project Manager</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Safety (optional)</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Customer Representative (optional)</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<section id="post-design-check-90"
+style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+<h3>16.3 Post Design Check (90%)</h3>
+</section>
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th>Name</th>
+<th>Date</th>
+<th>Signature / Initials</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Controls Lead</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Project Manager</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Safety (optional)</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Customer Representative (optional)</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<section id="integration-motion-and-safety-check"
+style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+<h3>16.4 Integration Motion and Safety Check</h3>
+</section>
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th>Name</th>
+<th>Date</th>
+<th>Signature / Initials</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Controls Lead</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Project Manager</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Safety (optional)</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Customer Representative (optional)</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<section id="site-acceptance-optional"
+style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+<h3>16.5 Site Acceptance (optional)</h3>
+</section>
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th>Name</th>
+<th>Date</th>
+<th>Signature / Initials</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Controls Lead</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Project Manager</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Safety (optional)</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Customer Representative (optional)</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<section id="factory-acceptance"
+style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+<h3>16.6 Factory Acceptance</h3>
+</section>
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th>Name</th>
+<th>Date</th>
+<th>Signature / Initials</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Controls Lead</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Project Manager</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Safety (optional)</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Customer Representative (optional)</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<section id="appendix-links-references"
+style="background-color: darkblue; padding: 2px; border-radius: 5px;">
+<h2>17) Appendix (links / references)</h2>
+</section>
+<ul>
+<li>Customer standards:</li>
+<li>Drawings folder:</li>
+<li>Code repository / tag:</li>
+<li>FAT/SAT reports:</li>
+</ul>
+
+  </main>
+</body>
+</html>
