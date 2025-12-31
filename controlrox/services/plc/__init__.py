@@ -1,7 +1,7 @@
 # Factory imports
 from .aoi import AOIFactory
 from .datatype import DatatypeFactory
-from .instruction import InstructionFactory
+from .instruction import InstructionFactory, extract_instruction_strings
 from .module import ModuleFactory
 from .program import ProgramFactory
 from .routine import RoutineFactory
@@ -44,4 +44,7 @@ __all__ = (
     'create_checklist_from_template',
     'inject_emulation_routine',
     'remove_emulation_routine',
+
+    # Instruction extraction function
+    'extract_instruction_strings',
 )

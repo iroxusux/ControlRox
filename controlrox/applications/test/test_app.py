@@ -32,10 +32,17 @@ class TestApp(unittest.TestCase):
         self.mock_gui_manager.unsafe_get_backend.return_value = mock_backend
         self.mock_gui_manager.is_gui_available.return_value = True
 
-        # Mock environment variable for GUI
-        self.env_patcher = patch('pyrox.models.application.get_env')
+        # Mock environment variable for GUI with side_effect to return correct types
+        self.env_patcher = patch('pyrox.models.application.EnvManager.get')
         self.mock_get_env = self.env_patcher.start()
-        self.mock_get_env.return_value = True  # is_gui_enabled
+        def env_side_effect(key, default=None, *args, **kwargs):
+            # Return True for GUI setting, but strings for logging settings
+            if 'gui' in str(key).lower():
+                return True
+            elif 'log' in str(key).lower() or 'format' in str(key).lower():
+                return default if isinstance(default, str) else '%(asctime)s | %(name)s | %(levelname)s | %(message)s'
+            return default
+        self.mock_get_env.side_effect = env_side_effect
 
         # Create app with mocked GUI
         self.app = App()
@@ -56,7 +63,7 @@ class TestApp(unittest.TestCase):
     def test_init(self):
         """Test initialization of App."""
         with patch('pyrox.services.gui.GuiManager'):
-            with patch('pyrox.models.application.get_env', return_value=False):  # Disable GUI for this test
+            with patch('pyrox.models.application.EnvManager.get', return_value=False):  # Disable GUI for this test
                 app = App()
 
         self.assertIsInstance(app._object_lookup_cache, dict)

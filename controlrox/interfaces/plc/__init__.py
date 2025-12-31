@@ -19,6 +19,7 @@ from .protocols import (
     IHasController,
     IHasDatatypes,
     IHasInstructions,
+    IHasSequencedInstructions,
     IHasMetaData,
     IHasModules,
     IHasRevision,
@@ -79,6 +80,9 @@ from .routine import (
 
 from .rung import (
     IRung,
+    RungElement,
+    RungElementType,
+    RungBranch,
 )
 
 from .introspective import (
@@ -116,6 +120,7 @@ __all__ = (
     "IHasConnectionTags",
     "IHasDatatypes",
     "IHasInstructions",
+    "IHasSequencedInstructions",
     "IHasMetaData",
     "IHasModules",
     "IHasRevision",
@@ -170,6 +175,9 @@ __all__ = (
 
     # Rung section
     "IRung",
+    "RungElementType",
+    "RungElement",
+    "RungBranch",
 
     # Introspective section
     "IIntrospectiveModule",

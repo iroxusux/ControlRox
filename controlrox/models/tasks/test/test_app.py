@@ -30,7 +30,7 @@ class TestControllerApplication(unittest.TestCase):
         self.mock_gui_manager.is_gui_available.return_value = True
 
         # Mock environment variable for GUI - handle all parameter variations
-        self.env_patcher = patch('pyrox.models.application.get_env')
+        self.env_patcher = patch('pyrox.models.application.EnvManager.get')
         self.mock_get_env = self.env_patcher.start()
 
         def mock_get_env_impl(*args, **kwargs):  # type: ignore

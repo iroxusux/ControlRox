@@ -44,7 +44,10 @@ class App(ControllerApplication):
         self.treeview_commandbar.add_button(commandbar.CommandButton(
             id='view_tags',
             text='Tags',
-            command=self._display_controller_tags_in_treeview,
+            command=lambda: self._display_common_list_in_treeview(
+                item_attr_name='tags',
+                tab_to_select=TreeViewMode.TAGS
+            ),
             tooltip='View controller tags',
             selectable=True
         ))
@@ -52,7 +55,10 @@ class App(ControllerApplication):
         self.treeview_commandbar.add_button(commandbar.CommandButton(
             id='view_programs',
             text='Programs',
-            command=self._display_controller_programs_in_treeview,
+            command=lambda: self._display_common_list_in_treeview(
+                item_attr_name='programs',
+                tab_to_select=TreeViewMode.PROGRAMS
+            ),
             tooltip='View controller programs',
             selectable=True
         ))
@@ -60,7 +66,10 @@ class App(ControllerApplication):
         self.treeview_commandbar.add_button(commandbar.CommandButton(
             id='view_aois',
             text='AOIs',
-            command=self._display_controller_aois_in_treeview,
+            command=lambda: self._display_common_list_in_treeview(
+                item_attr_name='aois',
+                tab_to_select=TreeViewMode.AOIS
+            ),
             tooltip='View controller AddOnInstructions',
             selectable=True
         ))
@@ -68,7 +77,10 @@ class App(ControllerApplication):
         self.treeview_commandbar.add_button(commandbar.CommandButton(
             id='view_datatypes',
             text='Data Types',
-            command=self._display_controller_datatypes_in_treeview,
+            command=lambda: self._display_common_list_in_treeview(
+                item_attr_name='datatypes',
+                tab_to_select=TreeViewMode.DATATYPES
+            ),
             tooltip='View controller Data Types',
             selectable=True
         ))
@@ -100,12 +112,22 @@ class App(ControllerApplication):
 
     def _display_common_list_in_treeview(
         self,
-        items: Optional[Union[list[Any], HashList[Any]]]
+        items: Optional[Union[list[Any], HashList[Any]]] = None,
+        item_attr_name: Optional[str] = None,
+        tab_to_select: Optional[TreeViewMode] = None
     ) -> None:
         """Display a common list of PLC objects in the treeview."""
-        if not self.controller or not items:
+        if not self.controller:
             self.controller_treeview.clear()
             return
+
+        if not items:
+            items = getattr(self.controller, item_attr_name, None) if item_attr_name else None
+
+        if not items:
+            self.controller_treeview.clear()
+            return
+
         data = {}
         for obj in items:
             data[getattr(obj, 'name', str(obj))] = plc_gui_introspection.create_attribute_value_dict(obj)
@@ -114,23 +136,10 @@ class App(ControllerApplication):
             force_open=True
         )
 
-    def _display_controller_aois_in_treeview(self) -> None:
-        """Display the controller AddOnInstructions in the treeview.
-        """
-        if not self.controller:
-            self.controller_treeview.clear()
-            return
-
-        self._display_common_list_in_treeview(self.controller.aois)
-        self.treeview_commandbar.set_selected(TreeViewMode.AOIS, True)
-
-    def _display_controller_datatypes_in_treeview(self) -> None:
-        """Display the controller datatypes in the treeview."""
-        if not self.controller:
-            self.controller_treeview.clear()
-            return
-        self._display_common_list_in_treeview(self.controller.datatypes)
-        self.treeview_commandbar.set_selected(TreeViewMode.DATATYPES, True)
+        if tab_to_select:
+            self.treeview_commandbar.set_selected(tab_to_select, True)
+        else:
+            self.treeview_commandbar.set_selected(TreeViewMode.PROPERTIES, True)
 
     def _display_controller_properties_in_treeview(self) -> None:
         """Display the controller properties in the treeview."""
@@ -142,22 +151,6 @@ class App(ControllerApplication):
             force_open=True
         )
         self.treeview_commandbar.set_selected(TreeViewMode.PROPERTIES, True)
-
-    def _display_controller_programs_in_treeview(self) -> None:
-        """Display the controller programs in the treeview."""
-        if not self.controller:
-            self.controller_treeview.clear()
-            return
-        self._display_common_list_in_treeview(self.controller.programs)
-        self.treeview_commandbar.set_selected(TreeViewMode.PROGRAMS, True)
-
-    def _display_controller_tags_in_treeview(self) -> None:
-        """Display the controller tags in the treeview."""
-        if not self.controller:
-            self.controller_treeview.clear()
-            return
-        self._display_common_list_in_treeview(self.controller.tags)
-        self.treeview_commandbar.set_selected(TreeViewMode.TAGS, True)
 
     def _get_plc_object_from_selected_tree_item(
         self,

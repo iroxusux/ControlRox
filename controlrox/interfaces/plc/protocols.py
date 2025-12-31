@@ -269,6 +269,17 @@ class IHasInstructions(
         """
         ...
 
+    def remove_instruction_by_index(
+        self,
+        index: int,
+    ) -> None:
+        """Remove an instruction from this container by index.
+
+        Args:
+            index: The index of the instruction to remove.
+        """
+        ...
+
     def remove_instructions(
         self,
         instructions: list['ILogicInstruction']
@@ -289,6 +300,23 @@ class IHasInstructions(
         Args:
             instructions (list): The list of instructions to set.
         """
+        ...
+
+
+@runtime_checkable
+class IHasSequencedInstructions(
+    IHasInstructions,
+    Protocol,
+    metaclass=IFactoryMixinProtocolMeta
+):
+    """Protocol for objects that have sequenced instructions."""
+
+    def compile_instruction_sequence(self) -> None:
+        """Compile the instruction sequence from the current instructions."""
+        ...
+
+    def tokenize_instruction_sequence(self) -> list[str]:
+        """Tokenize the instruction sequence for easier processing."""
         ...
 
 

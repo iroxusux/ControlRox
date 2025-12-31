@@ -1,0 +1,801 @@
+<div align="center">
+
+# Controls Software Design Checklist (Fillable)
+
+**A comprehensive internal checklist and design guide for controls automation engineers**
+
+{% set _doc_rev = meta.document_revision | val("v1.00.00") -%}
+{% set _badge_ver = _doc_rev | replace("v", "", 1) -%}
+![Version](https://img.shields.io/badge/version-{{ _badge_ver }}-blue.svg)
+
+[Project Summary & Scope](#1-project-summary--scope) • [Stakeholders & communication](#13-stakeholders--communication) • [Customer Standards](#2-customer-software-standards--templates-end-customer-specifications) • [Blockpoint](#3-blockpoint-specifications-software-hardware-firmware-revisions) • [Hardware Drawings](#5-hardware-drawings--documents-received-and-dates) • [Hardware Span](#6-hardware-span-of-controls-operational-equipment-scope) • [Safety Span](#7-safety-span-of-controls-system-wide)
+
+</div>
+
+**Document ID:** {{ meta.document_id | val("____________________") }}  
+**Project Name:** {{ meta.project_name | val("____________________") }}  
+**System Name:** {{ meta.system_name | val("____________________") }}  
+**Customer / End User:** {{ meta.customer_end_user | val("____________________") }}  
+**Site / Location:** {{ meta.site_location | val("____________________") }}  
+**System Type:** {{ meta.system_type | val("____________________") }}  
+**Project Manager:** {{ meta.project_manager | val("____________________") }}  
+**Project Engineer:** {{ meta.project_engineer | val("____________________") }}  
+**Date: (yyyy-mm-dd)** {{ meta.date | val("____-__-__") }}  
+**Revision:** {{ meta.revision | val("____________________") }}  
+**Document Revision:** *{{ meta.document_revision | val("v1.00.00") }}*  
+
+---
+
+<div style="background-color: darkblue; padding: 2px; border-radius: 5px;">
+
+## 0) How to use this checklist
+
+</div>
+
+- Fill this out during design and keep it updated through FAT/SAT.
+- If a section is not applicable, mark it **N/A** and briefly explain why.
+- Attach/Link supporting documents (customer standards, drawings, network diagrams, safety docs, etc.).
+
+---
+
+<div style="background-color: darkblue; padding: 2px; border-radius: 5px;">
+
+## 1) Project Summary & Scope
+
+</div>
+
+<div style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+
+### 1.1 System overview
+
+</div>
+
+- **Process / cell description:** {{ project_summary_scope.system_overview.process_cell_description | val("") }}
+- **Primary objectives:** {{ project_summary_scope.system_overview.primary_objectives | val("") }}
+- **Key constraints:** {{ project_summary_scope.system_overview.key_constraints | val("") }}
+- **Logical 'Cell' count:** {{ project_summary_scope.system_overview.logical_cell_count | val("") }}
+- **Logical 'Station' count:** {{ project_summary_scope.system_overview.logical_station_count | val("") }}
+- **Logical 'HMI' count:** {{ project_summary_scope.system_overview.logical_hmi_count | val("") }}
+- **Interlocked # of systems:** {{ project_summary_scope.system_overview.interlocked_system_count | val("") }}
+
+<div style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+
+### 1.2 In-scope equipment / areas
+
+</div>
+
+- **Equipment list or reference:** {{ project_summary_scope.in_scope_equipment_reference | val("") }}
+- **Out-of-scope items:** {{ project_summary_scope.out_of_scope_items | val("") }}
+
+<div style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+
+### 1.3 Stakeholders & communication
+
+</div>
+
+<div style="background-color: darkred; padding: 2px; border-radius: 5px;">
+
+#### 1.3.1 Customer Contacts
+
+</div>
+
+| Role | Name | Phone | Email | Notes |
+| --- | --- | --- | --- | --- |
+{% for c in stakeholders_communication.customer_contacts -%}
+| {{ c.role | val("") }} | {{ c.name | val("") }} | {{ c.phone | val("") }} | {{ c.email | val("") }} | {{ c.notes | val("") }} |
+{% endfor %}
+
+<div style="background-color: darkred; padding: 2px; border-radius: 5px;">
+
+#### 1.3.2 Integrator Contacts
+
+</div>
+
+| Role | Name | Phone | Email | Notes |
+| --- | --- | --- | --- | --- |
+{% for c in stakeholders_communication.integrator_contacts -%}
+| {{ c.role | val("") }} | {{ c.name | val("") }} | {{ c.phone | val("") }} | {{ c.email | val("") }} | {{ c.notes | val("") }} |
+{% endfor %}
+
+<div style="background-color: darkred; padding: 2px; border-radius: 5px;">
+
+#### 1.3.3 Misc Contacts
+
+</div>
+
+> Note💡 Include vendors, integrators, etc. for interlocks or job specific needs.
+
+| Role | Name | Phone | Email | Notes |
+| --- | --- | --- | --- | --- |
+{% for c in stakeholders_communication.misc_contacts -%}
+| {{ c.role | val("") }} | {{ c.name | val("") }} | {{ c.phone | val("") }} | {{ c.email | val("") }} | {{ c.notes | val("") }} |
+{% endfor %}
+
+---
+
+<div style="background-color: darkblue; padding: 2px; border-radius: 5px;">
+
+## 2) Customer software standards & templates (End-customer specifications)
+
+</div>
+
+<div style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+
+### 2.1 Customer standards
+
+</div>
+
+- Customer blockpoint received: {{ customer_software_standards_templates.standards_received.customer_blockpoint_received | yn }}
+- Customer naming convention received: {{ customer_software_standards_templates.standards_received.customer_naming_convention_received | yn }}
+- Customer alarm / factory information philosophy received: {{ customer_software_standards_templates.standards_received.customer_alarm_factory_information_philosophy_received | yn }}
+- Customer programming standard received: {{ customer_software_standards_templates.standards_received.customer_programming_standard_received | yn }}
+- Customer HMI standards received: {{ customer_software_standards_templates.standards_received.customer_hmi_standards_received | yn }}
+- Customer network / cybersecurity standard received: {{ customer_software_standards_templates.standards_received.customer_network_cybersecurity_standard_received | yn }}
+- Customer plc->plc interlocking standards received: {{ customer_software_standards_templates.standards_received.customer_plc_to_plc_interlocking_standards_received | yn }}
+
+<div style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+
+### 2.2 Customer-provided templates (paths)
+
+</div>
+
+- Design documentation: {{ customer_software_standards_templates.templates_paths.design_documentation | mdlink }}
+- Blockpoint Schedule: {{ customer_software_standards_templates.templates_paths.blockpoint_schedule | mdlink }}
+- Template PLC code: {{ customer_software_standards_templates.templates_paths.template_plc_code | mdlink }}
+- Template HMI project: {{ customer_software_standards_templates.templates_paths.template_hmi_project | mdlink }}
+- Template drive configuration files: {{ customer_software_standards_templates.templates_paths.template_drive_configuration_files | mdlink }}
+- Other templates:
+{% set other_templates = customer_software_standards_templates.templates_paths.other_templates %}
+{% if other_templates %}
+{% for t in other_templates %}
+	- {{ t | mdlink }}
+{% endfor %}
+{% else %}
+	- 
+{% endif %}
+
+<div style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+
+### 2.3 Template gaps / deviations
+
+</div>
+
+- Deviations required: {{ customer_software_standards_templates.template_gaps_deviations.deviations_required | yn }}
+- Deviation details: {{ customer_software_standards_templates.template_gaps_deviations.deviation_details | val("") }}
+- Customer approval required: {{ customer_software_standards_templates.template_gaps_deviations.customer_approval_required | yn }}
+- Who/when: {{ customer_software_standards_templates.template_gaps_deviations.who_when | val("") }}
+
+---
+
+<div style="background-color: darkblue; padding: 2px; border-radius: 5px;">
+
+## 3) Blockpoint specifications (software, hardware, firmware revisions)
+
+</div>
+
+> Goal: lock the “known-good” baseline for PLCs, HMIs, drives, and key components.
+
+<div style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+
+### 3.1 PLC baseline
+
+</div>
+
+| Item | Manufacturer | Model | Hardware Rev | Firmware Rev | Software / IDE Version | Options / Notes |
+| --- | --- | --- | --- | --- | --- | --- |
+{% for row in blockpoint_specifications.plc_baseline -%}
+| {{ row.item | val("") }} | {{ row.manufacturer | val("") }} | {{ row.model | val("") }} | {{ row.hardware_rev | val("") }} | {{ row.firmware_rev | val("") }} | {{ row.software_rev | val("") }} | {{ row.options_notes | val("") }} |
+{% endfor %}
+
+<div style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+
+### 3.2 HMI / SCADA baseline
+
+</div>
+
+| Item | Platform | Model / Runtime | Hardware Rev | Firmware Rev | Dev Software Version | Runtime Version | Notes |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+{% for row in blockpoint_specifications.hmi_scada_baseline -%}
+| {{ row.item | val("") }} | {{ row.platform | val("") }} | {{ row.model_runtime | val("") }} | {{ row.hardware_rev | val("") }} | {{ row.firmware_rev | val("") }} | {{ row.software_rev | val("") }} | {{ row.runtime_version | val("") }} | {{ row.notes | val("") }} |
+{% endfor %}
+
+<div style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+
+### 3.3 Drives baseline
+
+</div>
+
+| Item | Manufacturer | Model | Frame / HP | Firmware Rev | Config Tool Version | Config File Name/ID | Notes |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+{% for row in blockpoint_specifications.drives_baseline -%}
+| {{ row.item | val("") }} | {{ row.manufacturer | val("") }} | {{ row.model | val("") }} | {{ row.frame_hp | val("") }} | {{ row.firmware_rev | val("") }} | {{ row.config_tool_version | val("") }} | {{ row.config_file_name_id | val("") }} | {{ row.notes | val("") }} |
+{% endfor %}
+
+<div style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+
+### 3.4 Robots baseline
+
+</div>
+
+| Item | Manufacturer | Model | Hardware Rev | Firmware Rev | Software / IDE Version | Options / Notes |
+| --- | --- | --- | --- | --- | --- | --- |
+{% for row in blockpoint_specifications.robots_baseline -%}
+| {{ row.item | val("") }} | {{ row.manufacturer | val("") }} | {{ row.model | val("") }} | {{ row.hardware_rev | val("") }} | {{ row.firmware_rev | val("") }} | {{ row.software_ide_version | val("") }} | {{ row.options_notes | val("") }} |
+{% endfor %}
+
+<div style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+
+### 3.5 Vision baseline
+
+</div>
+
+| Item | Manufacturer | Model | Hardware Rev | Firmware Rev | Software / Runtime Version | Config / Project File Name/ID | Notes |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+{% for row in blockpoint_specifications.vision_baseline -%}
+| {{ row.item | val("") }} | {{ row.manufacturer | val("") }} | {{ row.model | val("") }} | {{ row.hardware_rev | val("") }} | {{ row.firmware_rev | val("") }} | {{ row.software_runtime_version | val("") }} | {{ row.config_project_file_name_id | val("") }} | {{ row.notes | val("") }} |
+{% endfor %}
+
+<div style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+
+### 3.6 Other critical baselines (as applicable)
+
+</div>
+
+- Motion / servos: {{ blockpoint_specifications.other_critical_baselines.motion_servos | val("") }}
+- Barcode / RFID: {{ blockpoint_specifications.other_critical_baselines.barcode_rfid | val("") }}
+- Safety devices (relays, scanners): {{ blockpoint_specifications.other_critical_baselines.safety_devices | val("") }}
+- Other: {{ blockpoint_specifications.other_critical_baselines.other | val("") }}
+
+<div style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+
+### 3.7 Baseline verification
+
+</div>
+
+- Baselines match purchased hardware BOM: {{ blockpoint_specifications.baseline_verification.baselines_match_purchased_hardware_bom | yn }}
+- Baselines match plant standards: {{ blockpoint_specifications.baseline_verification.baselines_match_plant_standards | yn }}
+- Any mismatches documented & approved: {{ blockpoint_specifications.baseline_verification.mismatches_documented_and_approved | yn }}
+
+---
+
+<div style="background-color: darkblue; padding: 2px; border-radius: 5px;">
+
+## 4) Hardware drawings & documents received (and dates)
+
+</div>
+
+> Record exactly what drawings were received and which revisions were used.
+
+| Document | Rev | Date Received | Source | Used For | Notes |
+| --- | --- | --- | --- | --- | --- |
+{% for row in hardware_drawings_documents_received -%}
+| {{ row.document | val("") }} | {{ row.rev | val("") }} | {{ row.date_received | val("") }} | {{ row.source | val("") }} | {{ row.used_for | val("") }} | {{ row.notes | val("") }} |
+{% endfor %}
+
+---
+
+<div style="background-color: darkblue; padding: 2px; border-radius: 5px;">
+
+## 5) Hardware span of controls (operational equipment scope)
+
+</div>
+
+<div style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+
+### 5.1 Control architecture summary
+
+</div>
+
+- PLC count: {{ hardware_span_of_controls.control_architecture_summary.plc_count | val("") }}
+- Remote I/O count: {{ hardware_span_of_controls.control_architecture_summary.remote_io_count | val("") }}
+- HMI/SCADA nodes: {{ hardware_span_of_controls.control_architecture_summary.hmi_scada_nodes | val("") }}
+- Networks: {{ hardware_span_of_controls.control_architecture_summary.networks | val([]) }}
+- Time sync method: {{ hardware_span_of_controls.control_architecture_summary.time_sync_method | val("") }}
+
+<div style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+
+### 5.2 Equipment span table
+
+</div>
+
+| Equipment / Area | Control Owner (PLC/Panel) | Local Controls (PBs, selectors) | Sensors / Actuators Summary | Special Notes |
+| --- | --- | --- | --- | --- |
+{% for row in hardware_span_of_controls.equipment_span -%}
+| {{ row.equipment_area | val("") }} | {{ row.control_owner_plc_panel | val("") }} | {{ row.local_controls | val("") }} | {{ row.sensors_actuators_summary | val("") }} | {{ row.special_notes | val("") }} |
+{% endfor %}
+
+<div style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+
+### 5.3 IO summary (approx.)
+
+</div>
+
+- DI: {{ hardware_span_of_controls.io_summary_approx.di | val("") }}  DO: {{ hardware_span_of_controls.io_summary_approx.do | val("") }}  AI: {{ hardware_span_of_controls.io_summary_approx.ai | val("") }}  AO: {{ hardware_span_of_controls.io_summary_approx.ao | val("") }}
+- Specialty IO: {{ hardware_span_of_controls.io_summary_approx.specialty_io | val("") }}
+
+<div style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+
+### 5.4 Field device assumptions
+
+</div>
+
+- Sensor types / ranges: {{ hardware_span_of_controls.field_device_assumptions.sensor_types_ranges | val("") }}
+- Valve types / fail positions: {{ hardware_span_of_controls.field_device_assumptions.valve_types_fail_positions | val("") }}
+- Motor starters / VFD control method: {{ hardware_span_of_controls.field_device_assumptions.motor_starters_vfd_control_method | val("") }}
+
+---
+
+<div style="background-color: darkblue; padding: 2px; border-radius: 5px;">
+
+## 6) Safety span of controls (system-wide)
+
+</div>
+
+> This section should align with the project’s risk assessment / safety requirement specification.
+
+<div style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+
+### 6.1 Safety basis
+
+</div>
+
+- Safety documentation reference(s): {{ safety_span_of_controls.safety_basis.safety_documentation_references | val("") }}
+- Target standard(s) / approach: {{ safety_span_of_controls.safety_basis.target_standards_approach | val("") }}
+- Required Performance Level / SIL targets: {{ safety_span_of_controls.safety_basis.required_performance_level_sil_targets | val("") }}
+
+<div style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+
+### 6.2 Safety architecture
+
+</div>
+
+- Safety controller(s) / relay(s): {{ safety_span_of_controls.safety_architecture.safety_controllers_relays | val("") }}
+- Safety networks (if any): {{ safety_span_of_controls.safety_architecture.safety_networks | val("") }}
+- Safety zones / boundaries: {{ safety_span_of_controls.safety_architecture.safety_zones_boundaries | val("") }}
+
+<div style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+
+### 6.3 Safety devices inventory
+
+</div>
+
+| Device Type | Location / Zone | Tag / ID | Reset Method | Notes |
+| --- | --- | --- | --- | --- |
+{% for row in safety_span_of_controls.safety_devices_inventory -%}
+| {{ row.device_type | val("") }} | {{ row.location_zone | val("") }} | {{ row.tag_id | val("") }} | {{ row.reset_method | val("") }} | {{ row.notes | val("") }} |
+{% endfor %}
+
+<div style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+
+### 6.4 Safety functions list (high-level)
+
+</div>
+
+| Safety Function ID | Description | Inputs | Outputs | PL/SIL Target | Validation Method |
+| --- | --- | --- | --- | --- | --- |
+{% for row in safety_span_of_controls.safety_functions_high_level -%}
+| {{ row.safety_function_id | val("") }} | {{ row.description | val("") }} | {{ row.inputs | val("") }} | {{ row.outputs | val("") }} | {{ row.pl_sil_target | val("") }} | {{ row.validation_method | val("") }} |
+{% endfor %}
+
+<div style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+
+### 6.5 Safety validation & documentation
+
+</div>
+
+- Safety IO checkout plan defined: {{ safety_span_of_controls.safety_validation_documentation.safety_io_checkout_plan_defined | yn }}
+- Safety function test procedure defined: {{ safety_span_of_controls.safety_validation_documentation.safety_function_test_procedure_defined | yn }}
+- Safety acceptance criteria defined: {{ safety_span_of_controls.safety_validation_documentation.safety_acceptance_criteria_defined | yn }}
+- Safety validation results captured and archived: {{ safety_span_of_controls.safety_validation_documentation.safety_validation_results_captured_archived | yn }}
+
+---
+
+<div style="background-color: darkblue; padding: 2px; border-radius: 5px;">
+
+## 7) Interlock specifications & details
+
+</div>
+
+> Capture all process, equipment, and safety-related interlocks. This becomes your implementation and test source-of-truth.
+
+<div style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+
+### 7.1 Interlock philosophy
+
+</div>
+
+- Interlock types used: {{ interlock_specifications.interlock_philosophy.interlock_types_used | val([]) }}
+- Bypass policy: {{ interlock_specifications.interlock_philosophy.bypass_policy | val("") }}
+- Reset philosophy: {{ interlock_specifications.interlock_philosophy.reset_philosophy | val("") }}
+
+<div style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+
+### 7.2 Interlock matrix (summary)
+
+</div>
+
+| Interlock ID | Applies To | Condition / Inputs | Action / Outputs | Reset Requirement | Bypass Allowed | HMI Indication | Test / Verification |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+{% for row in interlock_specifications.interlock_matrix -%}
+| {{ row.interlock_id | val("") }} | {{ row.applies_to | val("") }} | {{ row.condition_inputs | val("") }} | {{ row.action_outputs | val("") }} | {{ row.reset_requirement | val("") }} | {{ row.bypass_allowed | yn }} | {{ row.hmi_indication | val("") }} | {{ row.test_verification | val("") }} |
+{% endfor %}
+
+<div style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+
+### 7.3 Interlock implementation notes
+
+</div>
+
+- Standard pattern used: {{ interlock_specifications.interlock_implementation_notes.standard_pattern_used | val("") }}
+- Where interlocks are enforced: {{ interlock_specifications.interlock_implementation_notes.where_enforced | val("") }}
+- Latched vs non-latched criteria: {{ interlock_specifications.interlock_implementation_notes.latched_vs_non_latched_criteria | val("") }}
+
+---
+
+<div style="background-color: darkblue; padding: 2px; border-radius: 5px;">
+
+## 8) Controls software design (PLC)
+
+</div>
+
+<div style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+
+### 8.1 Project structure
+
+</div>
+
+- Program organization: {{ controls_software_design_plc.project_structure.program_organization | val("") }}
+- AOI/FB strategy: {{ controls_software_design_plc.project_structure.aoi_fb_strategy | val("") }}
+- Data structures naming/versioning: {{ controls_software_design_plc.project_structure.data_structures_naming_versioning | val("") }}
+
+<div style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+
+### 8.2 Tagging & naming
+
+</div>
+
+- Naming convention reference: {{ controls_software_design_plc.tagging_naming.naming_convention_reference | val("") }}
+- IO naming mapping strategy: {{ controls_software_design_plc.tagging_naming.io_naming_mapping_strategy | val("") }}
+
+<div style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+
+### 8.3 State models & sequencing
+
+</div>
+
+- Modes supported: {{ controls_software_design_plc.state_models_sequencing.modes_supported | val([]) }}
+- Sequence description / reference: {{ controls_software_design_plc.state_models_sequencing.sequence_description_reference | val("") }}
+- Fault handling strategy: {{ controls_software_design_plc.state_models_sequencing.fault_handling_strategy | val("") }}
+
+<div style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+
+### 8.4 Diagnostics & maintainability
+
+</div>
+
+- Standard device diagnostics implemented: {{ controls_software_design_plc.diagnostics_maintainability.standard_device_diagnostics_implemented | yn }}
+- Clear fault text and corrective actions defined: {{ controls_software_design_plc.diagnostics_maintainability.clear_fault_text_corrective_actions_defined | yn }}
+- First-out / root-cause capture: {{ controls_software_design_plc.diagnostics_maintainability.first_out_root_cause_capture_where_applicable | yn }}
+
+<div style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+
+### 8.5 Simulation / offline testing
+
+</div>
+
+- Simulation approach: {{ controls_software_design_plc.simulation_offline_testing.simulation_approach | val("") }}
+- Sim boundaries & assumptions: {{ controls_software_design_plc.simulation_offline_testing.sim_boundaries_assumptions | val("") }}
+
+---
+
+<div style="background-color: darkblue; padding: 2px; border-radius: 5px;">
+
+## 9) HMI / SCADA design
+
+</div>
+
+<div style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+
+### 9.1 HMI scope
+
+</div>
+
+- Screen list / navigation map reference: {{ hmi_scada_design.hmi_scope.screen_list_navigation_map_reference | val("") }}
+- User roles / security levels: {{ hmi_scada_design.hmi_scope.user_roles_security_levels | val("") }}
+
+<div style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+
+### 9.2 Standards
+
+</div>
+
+- Alarm colors conform: {{ hmi_scada_design.standards.alarm_colors_conform_to_customer_standards | yn }}
+- Faceplates/objects conform: {{ hmi_scada_design.standards.faceplates_objects_conform_to_customer_templates | yn }}
+- Units/ranges/scaling defined: {{ hmi_scada_design.standards.units_ranges_scaling_defined | yn }}
+
+<div style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+
+### 9.3 Alarm management
+
+</div>
+
+- Alarm philosophy reference: {{ hmi_scada_design.alarm_management.alarm_philosophy_reference | val("") }}
+- Alarm priorities defined: {{ hmi_scada_design.alarm_management.alarm_priorities_defined | yn }}
+- Shelving/suppression requirements: {{ hmi_scada_design.alarm_management.shelving_suppression_requirements | val("") }}
+
+<div style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+
+### 9.4 Data logging / historian (if applicable)
+
+</div>
+
+- Tags to log + rates: {{ hmi_scada_design.data_logging_historian.tags_to_log_and_rates | val("") }}
+- Batch/lot/traceability requirements: {{ hmi_scada_design.data_logging_historian.batch_lot_traceability_requirements | val("") }}
+
+---
+
+<div style="background-color: darkblue; padding: 2px; border-radius: 5px;">
+
+## 10) Drive configuration & integration
+
+</div>
+
+<div style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+
+### 10.1 Control method
+
+</div>
+
+- Hardwired IO control: {{ drive_configuration_integration.control_method.hardwired_io_control | yn }}
+- Fieldbus control: {{ drive_configuration_integration.control_method.fieldbus_control | yn }}
+- Safety integration details: {{ drive_configuration_integration.control_method.safety_integration_details | val("") }}
+
+<div style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+
+### 10.2 Standard parameters
+
+</div>
+
+- Speed/accel/decel/torque limits: {{ drive_configuration_integration.standard_parameters.speed_limits_accel_decel_torque_limits | val("") }}
+- Motor nameplate data source: {{ drive_configuration_integration.standard_parameters.motor_nameplate_data_source | val("") }}
+
+<div style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+
+### 10.3 Config management
+
+</div>
+
+- Config file naming convention: {{ drive_configuration_integration.config_management.config_file_naming_convention | val("") }}
+- Storage / version control location: {{ drive_configuration_integration.config_management.storage_location_version_control_location | val("") }}
+
+---
+
+<div style="background-color: darkblue; padding: 2px; border-radius: 5px;">
+
+## 11) Communications, networking, and cybersecurity
+
+</div>
+
+<div style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+
+### 11.1 Network inventory
+
+</div>
+
+| Network | Subnet/VLAN | Devices | Managed By | Notes |
+| --- | --- | --- | --- | --- |
+{% for row in communications_networking_cybersecurity.network_inventory -%}
+| {{ row.network | val("") }} | {{ row.subnet_vlan | val("") }} | {{ row.devices | val("") }} | {{ row.managed_by | val("") }} | {{ row.notes | val("") }} |
+{% endfor %}
+
+<div style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+
+### 11.2 IP addressing & naming
+
+</div>
+
+- IP plan reference: {{ communications_networking_cybersecurity.ip_addressing_naming.ip_plan_reference | val("") }}
+- Hostname/device name plan: {{ communications_networking_cybersecurity.ip_addressing_naming.hostname_device_name_plan | val("") }}
+
+<div style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+
+### 11.3 Cybersecurity baseline (project-appropriate)
+
+</div>
+
+- Accounts/roles defined: {{ communications_networking_cybersecurity.cybersecurity_baseline.accounts_roles_defined | yn }}
+- Backup/restore procedure defined: {{ communications_networking_cybersecurity.cybersecurity_baseline.backup_restore_procedure_defined | yn }}
+- Remote access method approved: {{ communications_networking_cybersecurity.cybersecurity_baseline.remote_access_method_approved | yn }}
+- Antivirus/whitelisting aligned: {{ communications_networking_cybersecurity.cybersecurity_baseline.antivirus_whitelisting_expectations_aligned_with_customer | yn }}
+
+---
+
+<div style="background-color: darkblue; padding: 2px; border-radius: 5px;">
+
+## 12) Timeline & milestones (planned vs actual)
+
+</div>
+
+| Milestone | Planned Date | Actual Date | Owner | Notes / Blockers |
+| --- | --- | --- | --- | --- |
+{% for row in timeline_milestones -%}
+| {{ row.milestone | val("") }} | {{ row.planned_date | val("") }} | {{ row.actual_date | val("") }} | {{ row.owner | val("") }} | {{ row.notes_blockers | val("") }} |
+{% endfor %}
+
+---
+
+<div style="background-color: darkblue; padding: 2px; border-radius: 5px;">
+
+## 13) Testing, FAT/SAT, and acceptance criteria
+
+</div>
+
+<div style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+
+### 13.1 Test scope & strategy
+
+</div>
+
+- IO checkout plan reference: {{ testing_fat_sat_acceptance_criteria.test_scope_strategy.io_checkout_plan_reference | val("") }}
+- Interlock test procedure reference: {{ testing_fat_sat_acceptance_criteria.test_scope_strategy.interlock_test_procedure_reference | val("") }}
+- Sequence / recipe test plan reference: {{ testing_fat_sat_acceptance_criteria.test_scope_strategy.sequence_recipe_test_plan_reference | val("") }}
+
+<div style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+
+### 13.2 Acceptance criteria
+
+</div>
+
+- Customer acceptance criteria document: {{ testing_fat_sat_acceptance_criteria.acceptance_criteria.customer_acceptance_criteria_document | val("") }}
+- Punchlist closure criteria: {{ testing_fat_sat_acceptance_criteria.acceptance_criteria.punchlist_process_and_closure_criteria | val("") }}
+
+---
+
+<div style="background-color: darkblue; padding: 2px; border-radius: 5px;">
+
+## 14) Deliverables, backups, and handover
+
+</div>
+
+<div style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+
+### 14.1 Deliverables
+
+</div>
+
+- PLC source + compiled artifact: {{ deliverables_backups_handover.deliverables.plc_source_and_compiled_artifact | yn }}
+- HMI/SCADA source + runtime package: {{ deliverables_backups_handover.deliverables.hmi_scada_project_source_and_runtime_package | yn }}
+- Drive configuration backups: {{ deliverables_backups_handover.deliverables.drive_configuration_backups | yn }}
+- Network/IP plan: {{ deliverables_backups_handover.deliverables.network_ip_plan | yn }}
+- Operator/maintenance documentation: {{ deliverables_backups_handover.deliverables.operator_and_maintenance_documentation | yn }}
+- As-built drawings (or redlines): {{ deliverables_backups_handover.deliverables.as_built_drawings_or_redlines | yn }}
+
+<div style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+
+### 14.2 Backup & restore
+
+</div>
+
+- Backup location: {{ deliverables_backups_handover.backup_restore.backup_location | val("") }}
+- Restore validation performed: {{ deliverables_backups_handover.backup_restore.restore_validation_performed | yn }}
+- Notes: {{ deliverables_backups_handover.backup_restore.restore_validation_notes | val("") }}
+
+---
+
+<div style="background-color: darkblue; padding: 2px; border-radius: 5px;">
+
+## 15) Open items / risks / decisions
+
+</div>
+
+| Item | Owner | Due Date | Risk Level (L/M/H) | Mitigation / Notes |
+| --- | --- | --- | --- | --- |
+{% for row in open_items_risks_decisions -%}
+| {{ row.item | val("") }} | {{ row.owner | val("") }} | {{ row.due_date | val("") }} | {{ row.risk_level | val("") }} | {{ row.mitigation_notes | val("") }} |
+{% endfor %}
+
+---
+
+<div style="background-color: darkblue; padding: 2px; border-radius: 5px;">
+
+## 16) Approvals / Sign-off
+
+</div>
+
+- Pre-Design: Before development begins, this document has been filled to satisfy internal quality control members to continue with design.
+- Functional Design Check: Midway check to verify development is progressing in the correct direction. This is performed before customers get any design documentations.
+- Post Desgin Check: Final off-site check to validate the structure of the software matches what is expetected by this documentation, internal QC engineers, and the customer.
+- Integration Motion and Safety Check: Integration of controls equipment successful. This check occurs before automatic motion occurs in a system.
+- Site Acceptance (optional): If the system is built on the floor of an integrator to test before shipping to production facilities, this check is to ensure the integrating mechanical company is satisfied with the equipment.
+- Factory Acceptance: The final system check. All previous checks complete, system ready for purchase by customer. All issues closed and ready to sell.
+
+<div style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+
+### 16.1 Pre-Design
+
+</div>
+
+| Role | Name | Date | Signature / Initials |
+| --- | --- | --- | --- |
+| Controls Lead | {{ approvals_signoff.phases.pre_design.controls_lead.name | val("") }} | {{ approvals_signoff.phases.pre_design.controls_lead.date | val("") }} | {{ approvals_signoff.phases.pre_design.controls_lead.signature_initials | val("") }} |
+| Project Manager | {{ approvals_signoff.phases.pre_design.project_manager.name | val("") }} | {{ approvals_signoff.phases.pre_design.project_manager.date | val("") }} | {{ approvals_signoff.phases.pre_design.project_manager.signature_initials | val("") }} |
+| Safety (optional) | {{ approvals_signoff.phases.pre_design.safety_optional.name | val("") }} | {{ approvals_signoff.phases.pre_design.safety_optional.date | val("") }} | {{ approvals_signoff.phases.pre_design.safety_optional.signature_initials | val("") }} |
+| Customer Representative (optional) | {{ approvals_signoff.phases.pre_design.customer_representative_optional.name | val("") }} | {{ approvals_signoff.phases.pre_design.customer_representative_optional.date | val("") }} | {{ approvals_signoff.phases.pre_design.customer_representative_optional.signature_initials | val("") }} |
+
+<div style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+
+### 16.2 Functional Design Check (50%)
+
+</div>
+
+| Role | Name | Date | Signature / Initials |
+| --- | --- | --- | --- |
+| Controls Lead | {{ approvals_signoff.phases.functional_design_check_50.controls_lead.name | val("") }} | {{ approvals_signoff.phases.functional_design_check_50.controls_lead.date | val("") }} | {{ approvals_signoff.phases.functional_design_check_50.controls_lead.signature_initials | val("") }} |
+| Project Manager | {{ approvals_signoff.phases.functional_design_check_50.project_manager.name | val("") }} | {{ approvals_signoff.phases.functional_design_check_50.project_manager.date | val("") }} | {{ approvals_signoff.phases.functional_design_check_50.project_manager.signature_initials | val("") }} |
+| Safety (optional) | {{ approvals_signoff.phases.functional_design_check_50.safety_optional.name | val("") }} | {{ approvals_signoff.phases.functional_design_check_50.safety_optional.date | val("") }} | {{ approvals_signoff.phases.functional_design_check_50.safety_optional.signature_initials | val("") }} |
+| Customer Representative (optional) | {{ approvals_signoff.phases.functional_design_check_50.customer_representative_optional.name | val("") }} | {{ approvals_signoff.phases.functional_design_check_50.customer_representative_optional.date | val("") }} | {{ approvals_signoff.phases.functional_design_check_50.customer_representative_optional.signature_initials | val("") }} |
+
+<div style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+
+### 16.3 Post Design Check (90%)
+
+</div>
+
+| Role | Name | Date | Signature / Initials |
+| --- | --- | --- | --- |
+| Controls Lead | {{ approvals_signoff.phases.post_design_check_90.controls_lead.name | val("") }} | {{ approvals_signoff.phases.post_design_check_90.controls_lead.date | val("") }} | {{ approvals_signoff.phases.post_design_check_90.controls_lead.signature_initials | val("") }} |
+| Project Manager | {{ approvals_signoff.phases.post_design_check_90.project_manager.name | val("") }} | {{ approvals_signoff.phases.post_design_check_90.project_manager.date | val("") }} | {{ approvals_signoff.phases.post_design_check_90.project_manager.signature_initials | val("") }} |
+| Safety (optional) | {{ approvals_signoff.phases.post_design_check_90.safety_optional.name | val("") }} | {{ approvals_signoff.phases.post_design_check_90.safety_optional.date | val("") }} | {{ approvals_signoff.phases.post_design_check_90.safety_optional.signature_initials | val("") }} |
+| Customer Representative (optional) | {{ approvals_signoff.phases.post_design_check_90.customer_representative_optional.name | val("") }} | {{ approvals_signoff.phases.post_design_check_90.customer_representative_optional.date | val("") }} | {{ approvals_signoff.phases.post_design_check_90.customer_representative_optional.signature_initials | val("") }} |
+
+<div style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+
+### 16.4 Integration Motion and Safety Check
+
+</div>
+
+| Role | Name | Date | Signature / Initials |
+| --- | --- | --- | --- |
+| Controls Lead | {{ approvals_signoff.phases.integration_motion_and_safety_check.controls_lead.name | val("") }} | {{ approvals_signoff.phases.integration_motion_and_safety_check.controls_lead.date | val("") }} | {{ approvals_signoff.phases.integration_motion_and_safety_check.controls_lead.signature_initials | val("") }} |
+| Project Manager | {{ approvals_signoff.phases.integration_motion_and_safety_check.project_manager.name | val("") }} | {{ approvals_signoff.phases.integration_motion_and_safety_check.project_manager.date | val("") }} | {{ approvals_signoff.phases.integration_motion_and_safety_check.project_manager.signature_initials | val("") }} |
+| Safety (optional) | {{ approvals_signoff.phases.integration_motion_and_safety_check.safety_optional.name | val("") }} | {{ approvals_signoff.phases.integration_motion_and_safety_check.safety_optional.date | val("") }} | {{ approvals_signoff.phases.integration_motion_and_safety_check.safety_optional.signature_initials | val("") }} |
+| Customer Representative (optional) | {{ approvals_signoff.phases.integration_motion_and_safety_check.customer_representative_optional.name | val("") }} | {{ approvals_signoff.phases.integration_motion_and_safety_check.customer_representative_optional.date | val("") }} | {{ approvals_signoff.phases.integration_motion_and_safety_check.customer_representative_optional.signature_initials | val("") }} |
+
+<div style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+
+### 16.5 Site Acceptance (optional)
+
+</div>
+
+| Role | Name | Date | Signature / Initials |
+| --- | --- | --- | --- |
+| Controls Lead | {{ approvals_signoff.phases.site_acceptance_optional.controls_lead.name | val("") }} | {{ approvals_signoff.phases.site_acceptance_optional.controls_lead.date | val("") }} | {{ approvals_signoff.phases.site_acceptance_optional.controls_lead.signature_initials | val("") }} |
+| Project Manager | {{ approvals_signoff.phases.site_acceptance_optional.project_manager.name | val("") }} | {{ approvals_signoff.phases.site_acceptance_optional.project_manager.date | val("") }} | {{ approvals_signoff.phases.site_acceptance_optional.project_manager.signature_initials | val("") }} |
+| Safety (optional) | {{ approvals_signoff.phases.site_acceptance_optional.safety_optional.name | val("") }} | {{ approvals_signoff.phases.site_acceptance_optional.safety_optional.date | val("") }} | {{ approvals_signoff.phases.site_acceptance_optional.safety_optional.signature_initials | val("") }} |
+| Customer Representative (optional) | {{ approvals_signoff.phases.site_acceptance_optional.customer_representative_optional.name | val("") }} | {{ approvals_signoff.phases.site_acceptance_optional.customer_representative_optional.date | val("") }} | {{ approvals_signoff.phases.site_acceptance_optional.customer_representative_optional.signature_initials | val("") }} |
+
+<div style="background-color: darkgreen; padding: 2px; border-radius: 5px;">
+
+### 16.6 Factory Acceptance
+
+</div>
+
+| Role | Name | Date | Signature / Initials |
+| --- | --- | --- | --- |
+| Controls Lead | {{ approvals_signoff.phases.factory_acceptance.controls_lead.name | val("") }} | {{ approvals_signoff.phases.factory_acceptance.controls_lead.date | val("") }} | {{ approvals_signoff.phases.factory_acceptance.controls_lead.signature_initials | val("") }} |
+| Project Manager | {{ approvals_signoff.phases.factory_acceptance.project_manager.name | val("") }} | {{ approvals_signoff.phases.factory_acceptance.project_manager.date | val("") }} | {{ approvals_signoff.phases.factory_acceptance.project_manager.signature_initials | val("") }} |
+| Safety (optional) | {{ approvals_signoff.phases.factory_acceptance.safety_optional.name | val("") }} | {{ approvals_signoff.phases.factory_acceptance.safety_optional.date | val("") }} | {{ approvals_signoff.phases.factory_acceptance.safety_optional.signature_initials | val("") }} |
+| Customer Representative (optional) | {{ approvals_signoff.phases.factory_acceptance.customer_representative_optional.name | val("") }} | {{ approvals_signoff.phases.factory_acceptance.customer_representative_optional.date | val("") }} | {{ approvals_signoff.phases.factory_acceptance.customer_representative_optional.signature_initials | val("") }} |
+
+---
+
+<div style="background-color: darkblue; padding: 2px; border-radius: 5px;">
+
+## 17) Appendix (links / references)
+
+</div>
+
+- Customer standards: {{ appendix_links_references.customer_standards | mdlink }}
+- Drawings folder: {{ appendix_links_references.drawings_folder | mdlink }}
+- Code repository / tag: {{ appendix_links_references.code_repository_tag | mdlink }}
+- FAT/SAT reports: {{ appendix_links_references.fat_sat_reports | mdlink }}

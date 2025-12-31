@@ -33,6 +33,15 @@ class ILogicInstruction(
         return self.get_instruction_type()
 
     @property
+    def operands(self) -> list['ILogicOperand']:
+        """get the instruction operands
+
+        Returns:
+            :class:`list[LogixOperand]`
+        """
+        return self.get_operands()
+
+    @property
     def rung(self) -> Optional['IRung']:
         """get the parent rung for this instruction
 

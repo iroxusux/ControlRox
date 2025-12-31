@@ -9,6 +9,7 @@ from controlrox.interfaces import (
     IHasDatatypes,
     IHasController,
     IHasInstructions,
+    IHasSequencedInstructions,
     IHasMetaData,
     IHasModules,
     IHasRoutines,
@@ -29,6 +30,10 @@ from controlrox.interfaces import (
     IRoutine,
     IRung,
     ITag,
+
+    # Rung related data classes
+    RungElement,
+    RungBranch,
 )
 
 
@@ -573,6 +578,49 @@ class HasInstructions(
             if not isinstance(instr, ILogicInstruction):
                 raise TypeError("All items in instructions must implement ILogicInstruction interface.")
         self._instructions = instructions
+
+
+class HasSequencedInstructions(
+    IHasSequencedInstructions,
+    HasInstructions,
+):
+    """Protocol for objects that have sequenced instructions.
+    """
+
+    def __init__(
+        self,
+        **kwargs
+    ) -> None:
+        self._branch_id_counter: int = 0
+        self._rung_sequence: list[RungElement] = []
+        self._branches: dict[str, RungBranch] = {}
+        super().__init__(**kwargs)
+
+    def build_instruction_sequence(self) -> None:
+        raise NotImplementedError("build_instruction_sequence method must be implemented by subclass.")
+
+    def compile_instruction_sequence(self) -> None:
+        self.invalidate_instructions()
+        self.invalidate_sequence()
+        self.compile_instructions()
+        self.build_instruction_sequence()
+
+    def invalidate_sequence(self) -> None:
+        self._branch_id_counter = 0
+        self._rung_sequence.clear()
+        self._branches.clear()
+
+    def tokenize_instruction_sequence(self) -> list[str]:
+        tokens: list[str] = []
+
+        for element in self._rung_sequence:
+            if isinstance(element, RungBranch):
+                tokens.append(f"BRANCH_START_{element.branch_id}")
+            elif isinstance(element, ILogicInstruction):
+                tokens.append(element.get_instruction_name())
+            else:
+                tokens.append("UNKNOWN_ELEMENT")
+        return tokens
 
 
 class HasModules(

@@ -38,6 +38,7 @@ from .plc import (
     IHasController,
     IHasDatatypes,
     IHasInstructions,
+    IHasSequencedInstructions,
     IHasMetaData,
     IHasModules,
     IHasRoutines,
@@ -87,6 +88,9 @@ from .plc import (
 
     # Rung Interfaces
     IRung,
+    RungBranch,
+    RungElement,
+    RungElementType,
 
     # Introspective Interfaces
     IIntrospectiveModule,
@@ -125,6 +129,7 @@ __all__ = (
     'IHasController',
     'IHasDatatypes',
     'IHasInstructions',
+    'IHasSequencedInstructions',
     'IHasMetaData',
     'IHasModules',
     'IHasRoutines',
@@ -174,6 +179,9 @@ __all__ = (
 
     # Rung section
     'IRung',
+    'RungElementType',
+    'RungElement',
+    'RungBranch',
 
     # Introspective section
     'IIntrospectiveModule',

@@ -20,6 +20,7 @@ from .protocols import (
 
 from .aoi import IAddOnInstruction
 from .datatype import IDatatype
+from .instruction import ILogicInstruction
 from .module import IModule
 from .program import IProgram
 from .routine import IRoutine
@@ -155,6 +156,26 @@ class IController(
             IDatatype: The created datatype instance.
         """
         raise NotImplementedError("This method should be overridden by subclasses to create a datatype.")
+
+    @abstractmethod
+    def create_instruction(
+        self,
+        name: Optional[str] = None,
+        description: Optional[str] = None,
+        meta_data: Optional[str] = None,
+        rung: Optional[IRung] = None,
+    ) -> 'ILogicInstruction':
+        """Create an instruction instance.
+
+        Args:
+            name: The name of the instruction.
+            description: The description of the instruction.
+            meta_data: Optional metadata for the instruction (must be string format!).
+            rung: The rung to associate with the instruction.
+        Returns:
+            ILogicInstruction: The created instruction instance.
+        """
+        raise NotImplementedError("This method should be overridden by subclasses to create an instruction.")
 
     @abstractmethod
     def create_module(

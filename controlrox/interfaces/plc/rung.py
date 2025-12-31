@@ -20,12 +20,12 @@ class RungElementType(Enum):
 class RungElement:
     """Represents an element in the rung sequence."""
     element_type: RungElementType
+    rung: 'IRung'  # Reference to the Rung this element belongs to
     instruction: Optional[ILogicInstruction] = None
-    branch_id: Optional[str] = None
-    root_branch_id: Optional[str] = None  # ID of the parent branch if this is a nested branch
-    branch_level: Optional[int] = 0  # Level of the branch in the rung
+    branch_id: str = ''
+    root_branch_id: str = ''  # ID of the parent branch if this is a nested branch
+    branch_level: int = 0  # Level of the branch in the rung
     position: int = 0  # Sequential position in rung
-    rung: Optional['IRung'] = None  # Reference to the Rung this element belongs to
     rung_number: int = 0  # Rung number this element belongs to
 
 
@@ -35,7 +35,7 @@ class RungBranch:
     branch_id: str
     start_position: int
     end_position: int
-    root_branch_id: Optional[str] = None  # ID of the parent branch
+    root_branch_id: str = ''  # ID of the parent branch
     nested_branches: List['RungBranch'] = field(default_factory=list)
 
 
@@ -44,14 +44,31 @@ class IRung(
     IHasInstructions
 ):
     @property
-    @abstractmethod
+    def comment(self) -> str:
+        """Rung comment
+
+        Returns:
+            :class:`str`
+        """
+        return self.get_rung_comment()
+
+    @property
     def number(self) -> str:
         """Rung number of this rung
 
         Returns:
             :class:`str`: rung number of this rung
         """
-        raise NotImplementedError("This property should be overridden by subclasses to get the rung number.")
+        return self.get_rung_number()
+
+    @property
+    def text(self) -> str:
+        """Rung text, the ASCII makeup of how the rung is created
+
+        Returns:
+            :class:`str`: text of this rung
+        """
+        return self.get_rung_text()
 
     @abstractmethod
     def get_rung_comment(self) -> str:
@@ -88,6 +105,32 @@ class IRung(
             :class:`str`: text of this rung
         """
         raise NotImplementedError("This method should be overridden by subclasses to get the rung text.")
+
+    @abstractmethod
+    def insert_branch(
+        self,
+        start_pos: int,
+        end_pos: int,
+    ) -> None:
+        """insert a branch into the rung sequence
+
+        Args:
+            start_pos (int): position to start the branch
+            end_pos (int): position to end the branch
+        """
+        raise NotImplementedError("This method should be overridden by subclasses to insert a branch.")
+
+    @abstractmethod
+    def remove_branch(
+        self,
+        branch_id: str
+    ) -> None:
+        """delete a branch from the rung sequence
+
+        Args:
+            branch_id (str): ID of the branch to delete
+        """
+        raise NotImplementedError("This method should be overridden by subclasses to delete a branch.")
 
     @abstractmethod
     def set_rung_comment(
@@ -128,4 +171,7 @@ class IRung(
 
 __all__ = [
     'IRung',
+    'RungElementType',
+    'RungElement',
+    'RungBranch'
 ]
