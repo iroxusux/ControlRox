@@ -16,9 +16,7 @@ from controlrox.models.plc.instruction import LogicInstruction
 from .meta import (
     RaPlcObject,
     INST_TYPE_RE_PATTERN,
-    INST_OPER_RE_PATTERN
 )
-from .operand import LogixOperand
 
 
 class RaLogicInstruction(
@@ -66,36 +64,17 @@ class RaLogicInstruction(
         self._instruction_name = matches[0]
         return self._instruction_name
 
-    def compile_operands(self):
-        """get the operands for this instruction
-        """
-        self._operands = []
-        matches = re.findall(INST_OPER_RE_PATTERN, str(self.meta_data))
-        if not matches or len(matches) < 1 or not matches[0]:
-            return
-
-        for index, match in enumerate(matches[0].split(',')):
-            if not match:
-                continue
-            self._operands.append(
-                LogixOperand(
-                    meta_data=match,
-                    arg_position=index,
-                    instruction=self
-                )
-            )
-
     def get_instruction_type(self) -> LogicInstructionType:
         """get the instruction type for this instruction
 
         Returns:
             :class:`LogixInstructionType`
         """
-        if self.instruction_name in INPUT_INSTRUCTIONS:
+        if self.name in INPUT_INSTRUCTIONS:
             return LogicInstructionType.INPUT
-        elif self.instruction_name in [x[0] for x in OUTPUT_INSTRUCTIONS]:
+        elif self.name in [x[0] for x in OUTPUT_INSTRUCTIONS]:
             return LogicInstructionType.OUTPUT
-        elif self.instruction_name == INSTR_JSR:
+        elif self.name == INSTR_JSR:
             return LogicInstructionType.JSR
         else:
             return LogicInstructionType.UNKNOWN

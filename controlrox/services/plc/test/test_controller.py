@@ -546,14 +546,14 @@ class TestControllerFactory(unittest.TestCase):
             )
 
     def test_create_controller_with_no_match(self):
-        """Test create_controller returns None with no match."""
+        """Test create_controller returns Default Controller with no match."""
         with patch.object(
             ControllerFactory,
             'get_best_match',
             return_value=None
         ):
             result = ControllerFactory.create_controller(self.sample_controller_data)
-            self.assertIsNone(result)
+            self.assertIsNotNone(result)
 
     def test_create_controller_passes_kwargs(self):
         """Test create_controller passes additional kwargs."""
@@ -846,6 +846,12 @@ class TestControllerInstanceManager(unittest.TestCase):
                 file_location
             )
         self.assertIn('valid "RSLogix5000Content" dictionary', str(context.exception))
+
+    def test_new_controller_creates_generic_controller(self):
+        """Test new_controller creates a generic controller instance."""
+        ControllerInstanceManager.set_controller(None)  # Reset any existing controller
+        result = ControllerInstanceManager.new_controller()
+        self.assertIsNotNone(result)
 
 
 if __name__ == '__main__':

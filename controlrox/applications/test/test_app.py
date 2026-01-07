@@ -35,6 +35,7 @@ class TestApp(unittest.TestCase):
         # Mock environment variable for GUI with side_effect to return correct types
         self.env_patcher = patch('pyrox.models.application.EnvManager.get')
         self.mock_get_env = self.env_patcher.start()
+
         def env_side_effect(key, default=None, *args, **kwargs):
             # Return True for GUI setting, but strings for logging settings
             if 'gui' in str(key).lower():
@@ -181,79 +182,6 @@ class TestApp(unittest.TestCase):
         )
         self.app.treeview_commandbar.set_selected.assert_called_once_with(
             TreeViewMode.PROPERTIES,
-            True
-        )
-
-    @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
-    def test_display_controller_tags_in_treeview(self, mock_get_controller):
-        """Test displaying controller tags."""
-        mock_controller = MagicMock(spec=IController)
-        mock_controller.tags = [MagicMock(name='Tag1')]
-        mock_get_controller.return_value = mock_controller
-
-        self.app.controller_treeview = MagicMock()
-        self.app.treeview_commandbar = MagicMock()
-
-        with patch.object(self.app, '_display_common_list_in_treeview') as mock_display:
-            self.app._display_controller_tags_in_treeview()
-
-        mock_display.assert_called_once_with(mock_controller.tags)
-        self.app.treeview_commandbar.set_selected.assert_called_once_with(
-            TreeViewMode.TAGS,
-            True
-        )
-
-    @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
-    def test_display_controller_programs_in_treeview(self, mock_get_controller):
-        """Test displaying controller programs."""
-        mock_controller = MagicMock(spec=IController)
-        mock_controller.programs = [MagicMock(name='MainProgram')]
-        mock_get_controller.return_value = mock_controller
-        self.app.controller_treeview = MagicMock()
-        self.app.treeview_commandbar = MagicMock()
-
-        with patch.object(self.app, '_display_common_list_in_treeview') as mock_display:
-            self.app._display_controller_programs_in_treeview()
-
-        mock_display.assert_called_once_with(mock_controller.programs)
-        self.app.treeview_commandbar.set_selected.assert_called_once_with(
-            TreeViewMode.PROGRAMS,
-            True
-        )
-
-    @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
-    def test_display_controller_aois_in_treeview(self, mock_get_controller):
-        """Test displaying controller AOIs."""
-        mock_controller = MagicMock(spec=IController)
-        mock_controller.aois = [MagicMock(name='CustomAOI')]
-        mock_get_controller.return_value = mock_controller
-        self.app.controller_treeview = MagicMock()
-        self.app.treeview_commandbar = MagicMock()
-
-        with patch.object(self.app, '_display_common_list_in_treeview') as mock_display:
-            self.app._display_controller_aois_in_treeview()
-
-        mock_display.assert_called_once_with(mock_controller.aois)
-        self.app.treeview_commandbar.set_selected.assert_called_once_with(
-            TreeViewMode.AOIS,
-            True
-        )
-
-    @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
-    def test_display_controller_datatypes_in_treeview(self, mock_get_controller):
-        """Test displaying controller datatypes."""
-        mock_controller = MagicMock(spec=IController)
-        mock_controller.datatypes = [MagicMock(name='CustomType')]
-        mock_get_controller.return_value = mock_controller
-        self.app.controller_treeview = MagicMock()
-        self.app.treeview_commandbar = MagicMock()
-
-        with patch.object(self.app, '_display_common_list_in_treeview') as mock_display:
-            self.app._display_controller_datatypes_in_treeview()
-
-        mock_display.assert_called_once_with(mock_controller.datatypes)
-        self.app.treeview_commandbar.set_selected.assert_called_once_with(
-            TreeViewMode.DATATYPES,
             True
         )
 

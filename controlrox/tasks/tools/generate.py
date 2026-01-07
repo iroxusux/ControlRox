@@ -21,10 +21,6 @@ class ControllerGenerateTask(ControllerApplicationTask):
     """
 
     def generate_project_design_checklist(self):
-        ctrl = ControllerInstanceManager.get_controller()
-        if not ctrl:
-            return
-
         task_frame = TaskFrame(
             master=self.application.workspace.workspace_area.frame_root,
             name='Project Design Checklist'
@@ -72,6 +68,9 @@ class ControllerGenerateTask(ControllerApplicationTask):
         if not output_path:
             log(self).warning("No output path selected for design checklist export.")
             return
+
+        if not output_path.endswith('.md'):
+            output_path += '.md'
 
         render_checklist(
             input_yaml=yaml_file_path,

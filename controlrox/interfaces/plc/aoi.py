@@ -10,10 +10,10 @@ from .protocols import (
 
 
 class IAddOnInstruction(
-    IPlcObject[dict],
     IHasInstructions,
     IHasRoutines,
     IHasTags,
+    IPlcObject[dict],
 ):
     """AddOn Instruction Definition interface for PLCs.
     """

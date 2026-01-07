@@ -28,10 +28,6 @@ class RaRoutine(
             'RLLContent',
         ]
 
-    @classmethod
-    def get_factory(cls):
-        return RoutineFactory
-
     def compile(self) -> Self:
         """compile this object from its meta data
 

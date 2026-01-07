@@ -20,10 +20,16 @@ if TYPE_CHECKING:
     from .instruction import ILogicInstruction
     from .meta import IPlcObject
     from .module import IModule
+    from .operand import ILogicOperand
     from .program import IProgram
     from .routine import IRoutine
-    from .rung import IRung
+    from .rung import IRung, RungElement, RungBranch
     from .tag import ITag
+    from .dialect import (
+        IHasRungsTranslator,
+        IHasInstructionsTranslator,
+        IHasOperandsTranslator,
+    )
 
 
 # PLC TypeVar definitions
@@ -158,6 +164,11 @@ class IHasInstructions(
     """Protocol for objects that have instructions."""
 
     @property
+    def instruction_translator(self) -> 'IHasInstructionsTranslator':
+        """Get the instruction translator for this object."""
+        return self.get_instruction_translator()
+
+    @property
     def instructions(self) -> list['ILogicInstruction']:
         """Get the list of instructions."""
         ...
@@ -199,6 +210,19 @@ class IHasInstructions(
         """Clear all instructions from this container."""
         ...
 
+    def create_instruction_from_text(
+        self,
+        instruction_text: str
+    ) -> Optional['ILogicInstruction']:
+        """Create an instruction from its text representation.
+
+        Args:
+            instruction_text (str): The text representation of the instruction.
+        Returns:
+            ILogicInstruction: The created instruction, or None if creation failed.
+        """
+        ...
+
     def get_filtered_instructions(
         self,
         instruction_filter: str = '',
@@ -211,6 +235,14 @@ class IHasInstructions(
             operand_filter (str): Filter for operand.
         Returns:
             list: List of filtered instructions.
+        """
+        ...
+
+    def get_instruction_translator(self) -> 'IHasInstructionsTranslator':
+        """Get the instruction translator for this object.
+
+        Returns:
+            IHasInstructionsTranslator: The instruction translator.
         """
         ...
 
@@ -269,17 +301,6 @@ class IHasInstructions(
         """
         ...
 
-    def remove_instruction_by_index(
-        self,
-        index: int,
-    ) -> None:
-        """Remove an instruction from this container by index.
-
-        Args:
-            index: The index of the instruction to remove.
-        """
-        ...
-
     def remove_instructions(
         self,
         instructions: list['ILogicInstruction']
@@ -304,19 +325,265 @@ class IHasInstructions(
 
 
 @runtime_checkable
-class IHasSequencedInstructions(
+class IHasOperands(
     IHasInstructions,
+    Protocol,
+    metaclass=IFactoryMixinProtocolMeta
+):
+    """Protocol for objects that have operands."""
+
+    @property
+    def operand_translator(self) -> 'IHasOperandsTranslator':
+        """Get the operand translator for this object."""
+        return self.get_operand_transformer()
+
+    @property
+    def operands(self) -> list['ILogicOperand']:
+        """Get the list of operands."""
+        return self.get_operands()
+
+    def compile_operands(self) -> None:
+        """Compile the operands for this object."""
+        ...
+
+    def get_operand_transformer(self) -> 'IHasOperandsTranslator':
+        """Get the operand translator for this object.
+
+        Returns:
+            IHasOperandsTranslator: The operand translator.
+        """
+        ...
+
+    def get_operands(self) -> list['ILogicOperand']:
+        """Get the list of operands.
+
+        Returns:
+            list: The list of operands.
+        """
+        ...
+
+    def invalidate_operands(self) -> None:
+        """Invalidate all operands."""
+        ...
+
+
+@runtime_checkable
+class IHasRungText(
+    IHasOperands,
+    Protocol,
+    metaclass=IFactoryMixinProtocolMeta
+):
+    """Protocol for objects that have rung text."""
+
+    @property
+    def text(self) -> str:
+        """Get the text of this rung."""
+        return self.get_text()
+
+    @text.setter
+    def text(
+        self,
+        text: str
+    ) -> None:
+        self.set_text(text)
+
+    def get_text(self) -> str:
+        """Get the text of this rung.
+
+        Returns:
+            str: text of this rung
+        """
+        ...
+
+    def set_text(
+        self,
+        text: str
+    ) -> None:
+        """Set the text of this rung.
+
+        Args:
+            text (str): text to set
+        """
+        ...
+
+    def tokenize_instruction_meta_data(self) -> list[str]:
+        """Tokenize the instruction meta data for easier processing."""
+        ...
+
+    def remove_tokens(
+        self,
+        tokens: list[str],
+        start_index: int,
+        end_index: int
+    ) -> list[str]:
+        """Remove tokens from a list of tokens.
+
+        Args:
+            tokens (list): The list of tokens.
+            start_index (int): The start index to remove from.
+            end_index (int): The end index to remove to.
+        Returns:
+            list: The list of tokens with the specified range removed.
+        """
+        ...
+
+
+@runtime_checkable
+class IHasBranches(
+    IHasRungText,
+    Protocol,
+    metaclass=IFactoryMixinProtocolMeta
+):
+    """Protocol for objects that have branches.
+    """
+
+    @property
+    def branch_start_token(self) -> str:
+        """Get the branch start token of this object."""
+        return self.get_branch_start_token()
+
+    @property
+    def branch_next_token(self) -> str:
+        """Get the branch next token of this object."""
+        return self.get_branch_next_token()
+
+    @property
+    def branch_end_token(self) -> str:
+        """Get the branch end token of this object."""
+        return self.get_branch_end_token()
+
+    @property
+    def branch_tokens(self) -> list[str]:
+        """Get the branch tokens of this object."""
+        return self.get_branch_tokens()
+
+    @property
+    def branches(self) -> dict[str, 'RungBranch']:
+        """Get the branches of this object."""
+        return self.get_branches()
+
+    def compile_branches(self) -> None:
+        """Compile the branches of this object."""
+        ...
+
+    def get_branch_start_token(self) -> str:
+        """Get the branch start token of this object.
+
+        Returns:
+            str: The branch start token of this object.
+        """
+        ...
+
+    def get_branch_next_token(self) -> str:
+        """Get the branch next token of this object.
+
+        Returns:
+            str: The branch next token of this object.
+        """
+        ...
+
+    def get_branch_end_token(self) -> str:
+        """Get the branch end token of this object.
+
+        Returns:
+            str: The branch end token of this object.
+        """
+        ...
+
+    def get_branch_tokens(self) -> list[str]:
+        """Get the branch tokens of this object.
+
+        Returns:
+            list[str]: The branch tokens of this object.
+        """
+        ...
+
+    def get_branches(self) -> dict[str, 'RungBranch']:
+        """Get the branches of this object.
+
+        Returns:
+            list[RungBranch]: The branches of this object.
+        """
+        ...
+
+    def set_branches(
+        self,
+        branches: dict[str, 'RungBranch']
+    ) -> None:
+        """Set the branches of this object.
+
+        Args:
+            branches (list[RungBranch]): The branches to set.
+        """
+        ...
+
+
+@runtime_checkable
+class IHasSequencedInstructions(
+    IHasBranches,
     Protocol,
     metaclass=IFactoryMixinProtocolMeta
 ):
     """Protocol for objects that have sequenced instructions."""
 
-    def compile_instruction_sequence(self) -> None:
+    @property
+    def sequence(self) -> list['RungElement']:
+        """Get the instruction sequence."""
+        return self.get_sequence()
+
+    def compile_instructions(self) -> None:
+        """Compile the instructions from the current instruction sequence."""
+        ...
+
+    def compile_sequence(self) -> None:
         """Compile the instruction sequence from the current instructions."""
         ...
 
-    def tokenize_instruction_sequence(self) -> list[str]:
-        """Tokenize the instruction sequence for easier processing."""
+    def get_instruction_by_index(
+        self,
+        index: int
+    ) -> 'ILogicInstruction':
+        """Get an instruction by its index.
+
+        Args:
+            index (int): The index of the instruction.
+        Returns:
+            ILogicInstruction: The instruction at the specified index.
+        """
+        ...
+
+    def get_sequence(self) -> list['RungElement']:
+        """Get the instruction sequence.
+
+        Returns:
+            list: The instruction sequence.
+        """
+        ...
+
+    def set_sequence(
+        self,
+        sequence: list['RungElement']
+    ) -> None:
+        """Set the instruction sequence for this container.
+
+        Args:
+            sequence (list): The instruction sequence to set.
+        """
+        ...
+
+    def invalidate_sequence(self) -> None:
+        """Invalidate the instruction sequence."""
+        ...
+
+    def remove_instruction_by_index(
+        self,
+        index: int,
+    ) -> None:
+        """Remove an instruction from this container by index.
+
+        Args:
+            index: The index of the instruction to remove.
+        """
         ...
 
 
@@ -394,7 +661,9 @@ class ISupportsMetaDataListAssignment(
         asset_list: HashList,
         raw_asset_list: list[dict],
         inhibit_invalidate: bool = False,
-        invalidate_method: Optional[Callable] = None
+        invalidate_method: Optional[Callable] = None,
+        dict_lookup_key: str = '@Name',
+        object_attribute: str = 'name'
     ) -> None:
         """Remove an asset from this object's metadata.
 
@@ -404,6 +673,8 @@ class ISupportsMetaDataListAssignment(
             raw_asset_list: The raw metadata list.
             inhibit_invalidate: If True, does not invalidate the object after removing.
             invalidate_method: Optional method to call to invalidate the object.
+            dict_lookup_key: The key to use for dictionary lookup.
+            object_attribute: The attribute of the object to match against the dict key.
 
         Raises:
             ValueError: If asset is wrong type or doesn't exist.
@@ -777,6 +1048,11 @@ class IHasRungs(
     """Protocol for objects that have rungs."""
 
     @property
+    def rung_translator(self) -> 'IHasRungsTranslator':
+        """Get the rung translator."""
+        return self.get_rung_translator()
+
+    @property
     def rungs(self) -> list['IRung']:
         """Get the list of rungs."""
         ...
@@ -822,6 +1098,16 @@ class IHasRungs(
         self
     ) -> None:
         """Compile all rungs in this container."""
+        ...
+
+    def get_rung_translator(
+        self
+    ) -> 'IHasRungsTranslator':
+        """Get the rung translator.
+
+        Returns:
+            IHasRungsTranslator: The rung translator.
+        """
         ...
 
     def get_rungs(
@@ -1201,6 +1487,8 @@ __all__ = [
     "IHasController",
     "IHasDatatypes",
     "IHasInstructions",
+    "IHasRungText",
+    "IHasBranches",
     "IHasMetaData",
     "IHasModules",
     "IHasRoutines",

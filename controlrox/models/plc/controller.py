@@ -4,7 +4,7 @@ from typing import (
     Optional,
 )
 
-from pyrox.models import HashList
+from pyrox.models import HashList, FactoryTypeMeta
 
 from controlrox.interfaces import (
     IAddOnInstruction,
@@ -19,12 +19,16 @@ from controlrox.interfaces import (
     IProgram,
     IRoutine,
     IRung,
+    PLCDialect,
 )
 
+from controlrox.interfaces.plc.operand import ILogicOperand
 from controlrox.services import (
     AOIFactory,
+    ControllerFactory,
     DatatypeFactory,
     ModuleFactory,
+    OperandFactory,
     ProgramFactory,
     RoutineFactory,
     RungFactory,
@@ -54,7 +58,8 @@ class Controller(
     HasModules,
     HasPrograms,
     HasTags,
-    PlcObject[dict]
+    PlcObject[dict],
+    metaclass=FactoryTypeMeta['Controller', ControllerFactory]
 ):
     """Controller for a PLC project.
 
@@ -65,6 +70,8 @@ class Controller(
         slot (int): The slot number of the controller. Defaults to 0.
     """
 
+    generator_type: str = 'BaseEmulationGenerator'
+
     def __init__(
         self,
         meta_data: Optional[dict] = None,
@@ -73,7 +80,13 @@ class Controller(
         slot: int = 0,
         **kwargs,
     ) -> None:
-        super().__init__(
+        HasAOIs.__init__(self)
+        HasDatatypes.__init__(self)
+        HasModules.__init__(self)
+        HasPrograms.__init__(self)
+        HasTags.__init__(self)
+        PlcObject.__init__(
+            self,
             meta_data=meta_data,
             **kwargs,
         )
@@ -265,6 +278,24 @@ class Controller(
             meta_data=meta_data
         )
 
+    def create_operand(
+        self,
+        name: str = '',
+        description: str = '',
+        meta_data: Optional[str] = None,
+        instruction: Optional[ILogicInstruction] = None
+    ) -> ILogicOperand:
+        constructor = OperandFactory.get_registered_type_by_supporting_class(self.__class__)
+        if not constructor:
+            raise RuntimeError('No Operand constructor found for this controller type!')
+
+        return constructor(
+            name=name,
+            description=description,
+            meta_data=meta_data,
+            instruction=instruction
+        )
+
     def create_program(
         self,
         name: str = '',
@@ -358,6 +389,9 @@ class Controller(
     def get_controller_safety_info(self) -> IControllerSafetyInfo:
         raise NotImplementedError("This method should be overridden by subclasses to get controller safety info.")
 
+    def get_dialect(self) -> PLCDialect:
+        return PLCDialect.RSLOGIX5000  # Default dialect; override in subclasses if needed
+
     def get_file_location(self) -> str:
         return self._file_location  # type: ignore
 
@@ -420,3 +454,6 @@ class Controller(
 
     def set_modified_date(self, modified_date: str) -> None:
         raise NotImplementedError("set_modified_date should be overridden by subclasses.")
+
+
+PlcObject.supporting_class = Controller

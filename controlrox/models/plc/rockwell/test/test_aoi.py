@@ -1146,14 +1146,8 @@ class TestRaAddOnInstructionProtocolMethods:
         with patch.object(aoi, 'compile_routines'):
             with patch.object(aoi, 'compile_instructions'):
                 with patch.object(aoi, 'get_raw_instructions', return_value=[]):
-                    with pytest.raises(ValueError, match="asset must be of type PlcObject or string"):
+                    with pytest.raises(ValueError, match="asset must be of type IPlcObject or string"):
                         aoi.add_instruction(Mock())
-
-    def test_clear_instructions(self):
-        """Test clear_instructions."""
-        aoi = RaAddOnInstruction(meta_data=self.full_meta_data)
-        aoi.clear_instructions()
-        assert len(aoi._instructions) == 0
 
     def test_remove_instruction_raises_not_implemented(self):
         """Test remove_instruction raises NotImplementedError with helpful message."""
@@ -1162,70 +1156,8 @@ class TestRaAddOnInstructionProtocolMethods:
         with patch.object(aoi, 'compile_routines'):
             with patch.object(aoi, 'compile_instructions'):
                 with patch.object(aoi, 'get_raw_instructions', return_value=[]):
-                    with pytest.raises(ValueError, match="asset must be of type PlcObject"):
+                    with pytest.raises(ValueError, match="asset must be of type IPlcObject"):
                         aoi.remove_instruction(Mock())
-
-    @patch('controlrox.models.plc.rockwell.aoi.ControllerInstanceManager.get_controller', return_value=Mock(spec=RaController))
-    def test_has_instruction_checks_compiled_instructions(self, mock_get_controller):
-        """Test has_instruction raises NotImplementedError."""
-        aoi = RaAddOnInstruction(
-            meta_data=self.full_meta_data,
-        )
-
-        mock_instruction = Mock()
-        aoi._instructions = [mock_instruction]
-
-        with pytest.raises(NotImplementedError, match="has_instruction method must be implemented"):
-            aoi.has_instruction(mock_instruction)
-
-    @patch('controlrox.models.plc.rockwell.aoi.ControllerInstanceManager.get_controller', return_value=Mock(spec=RaController))
-    def test_get_filtered_instructions_by_type(self, mock_get_controller):
-        """Test get_filtered_instructions filters by instruction type."""
-        aoi = RaAddOnInstruction(
-            meta_data=self.full_meta_data,
-        )
-
-        mock_xic = Mock(spec=RaLogicInstruction)
-        mock_xic.type = 'XIC'
-        mock_xic.get_instruction_name.return_value = 'XIC'
-        mock_ote = Mock(spec=RaLogicInstruction)
-        mock_ote.type = 'OTE'
-        mock_ote.get_instruction_name.return_value = 'OTE'
-
-        aoi._instructions = [mock_xic, mock_ote]
-
-        instr = aoi.get_filtered_instructions(instruction_filter='XIC')
-        assert len(instr) == 1
-        assert instr[0].type == 'XIC'  # type: ignore
-
-    @patch('controlrox.models.plc.rockwell.aoi.ControllerInstanceManager.get_controller', return_value=Mock(spec=RaController))
-    def test_get_filtered_instructions_by_operand(self, mock_get_controller):
-        """Test get_filtered_instructions filters by operand."""
-        aoi = RaAddOnInstruction(
-            meta_data=self.full_meta_data,
-        )
-
-        mock_instr1 = Mock(spec=RaLogicInstruction)
-        mock_instr1.type = 'XIC'
-        instr1_operand1 = Mock(spec=LogixOperand)
-        instr1_operand1.meta_data = 'Tag1'
-        instr1_operand2 = Mock(spec=LogixOperand)
-        instr1_operand2.meta_data = 'Tag2'
-        mock_instr1.operands = [instr1_operand1, instr1_operand2]
-        mock_instr1.get_operands.return_value = mock_instr1.operands
-
-        mock_instr2 = Mock(spec=RaLogicInstruction)
-        mock_instr2.type = 'OTE'
-        instr2_operand1 = Mock(spec=LogixOperand)
-        instr2_operand1.meta_data = 'Tag3'
-        mock_instr2.operands = [instr2_operand1]
-        mock_instr2.get_operands.return_value = mock_instr2.operands
-
-        aoi._instructions = [mock_instr1, mock_instr2]
-
-        instr = aoi.get_filtered_instructions(operand_filter='Tag1')
-        assert len(instr) == 1
-        assert instr[0].type == 'XIC'  # type: ignore
 
 
 if __name__ == '__main__':

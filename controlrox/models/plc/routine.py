@@ -3,10 +3,12 @@
 from typing import (
     Optional,
 )
+from pyrox.models import FactoryTypeMeta
 from controlrox.interfaces import (
+    IHasRoutines,
     IRoutine,
 )
-from controlrox.services import ControllerInstanceManager
+from controlrox.services import RoutineFactory
 from .protocols import HasInstructions, HasRoutines, HasRungs
 from .meta import PlcObject
 
@@ -16,6 +18,7 @@ class Routine(
     HasInstructions,
     HasRungs,
     PlcObject[dict],
+    metaclass=FactoryTypeMeta['Routine', RoutineFactory]
 ):
     def __init__(
         self,
@@ -35,8 +38,12 @@ class Routine(
         self._container: Optional[HasRoutines] = container
 
     @property
-    def container(self) -> Optional[HasRoutines]:
+    def container(self) -> IHasRoutines:
         return self.get_container()
+
+    @classmethod
+    def get_factory(cls):
+        return RoutineFactory
 
     def block(self) -> None:
         raise NotImplementedError("block method must be implemented by subclass.")
@@ -50,23 +57,6 @@ class Routine(
     def compile(self):
         self.compile_rungs()
         return self
-
-    def compile_rungs(self):
-        """compile the rungs in this routine
-
-        This method compiles the rungs from the raw metadata and initializes the list.
-        """
-        ctrl = ControllerInstanceManager.get_controller()
-        if not ctrl:
-            raise ValueError("No active controller found for compiling rungs.")
-
-        self._rungs = []
-        for index, rung in enumerate(self.raw_rungs):
-            self._rungs.append(ctrl.create_rung(
-                meta_data=rung,
-                routine=self,
-                rung_number=index
-            ))
 
     def get_container(self) -> HasRoutines:
         if self._container is None:

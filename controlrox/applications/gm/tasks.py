@@ -27,7 +27,7 @@ class KDiagWrapperTask(ControllerApplicationTask):
         for prog in ctrl.programs:
             for rout in prog.routines:
                 for rung in rout.rungs:
-                    rung.set_rung_comment(wrap_diagnostic_lines(rung.get_rung_comment()))
+                    rung.set_comment(wrap_diagnostic_lines(rung.get_comment()))
 
         log(self).info('kDiag Wrapping Validation Complete')
 

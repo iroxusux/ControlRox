@@ -19,6 +19,9 @@ from .protocols import (
     IHasController,
     IHasDatatypes,
     IHasInstructions,
+    IHasOperands,
+    IHasRungText,
+    IHasBranches,
     IHasSequencedInstructions,
     IHasMetaData,
     IHasModules,
@@ -98,6 +101,13 @@ from .generator import (
     IEmulationGenerator,
 )
 
+from .dialect import (
+    PLCDialect,
+    IHasRungsTranslator,
+    IHasInstructionsTranslator,
+    IHasOperandsTranslator,
+)
+
 
 __all__ = (
     # Type variables section
@@ -120,6 +130,9 @@ __all__ = (
     "IHasConnectionTags",
     "IHasDatatypes",
     "IHasInstructions",
+    "IHasOperands",
+    "IHasRungText",
+    "IHasBranches",
     "IHasSequencedInstructions",
     "IHasMetaData",
     "IHasModules",
@@ -184,4 +197,10 @@ __all__ = (
 
     # Generator section
     "IEmulationGenerator",
+
+    # Dialect section
+    "PLCDialect",
+    "IHasRungsTranslator",
+    "IHasInstructionsTranslator",
+    "IHasOperandsTranslator",
 )

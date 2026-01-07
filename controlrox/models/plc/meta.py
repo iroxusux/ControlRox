@@ -31,13 +31,11 @@ class PlcObject(
         meta_data: Metadata for this object.
         name: The name of this object.
         description: The description of this object.
-        controller: The controller this object belongs to.
 
     Attributes:
         meta_data: The metadata dictionary or string for this object.
         name: The name of this object.
         description: The description of this object.
-        controller: The controller this object belongs to.
     """
 
     def __init__(
@@ -76,35 +74,6 @@ class PlcObject(
 
     def __str__(self) -> str:
         return str(self.name)
-
-    @property
-    def name(self) -> str:
-        """Get this object's name.
-        PlcObject isn't named, so return the class name.
-        This attribute is read-only for this class.
-
-        Returns:
-            str: The name of this object.
-        """
-        return self._name
-
-    @property
-    def process_name(self) -> str:
-        """Get the process name of this object's controller without plant or customer prefixes / suffixes.
-
-        Returns:
-            str: The process name of this object's controller.
-        """
-        return self.name  # Override in subclasses if needed
-
-    @property
-    def description(self) -> str:
-        """Get the description of this object.
-
-        Returns:
-            str: The description of this object.
-        """
-        return self._description
 
     def add_asset_to_meta_data(
         self,
@@ -217,6 +186,14 @@ class PlcObject(
         """
         raise NotImplementedError("This method should be overridden by subclasses to compile the object.")
 
+    def get_description(self) -> str:
+        """Get the description of this object.
+
+        Returns:
+            str: The description of this object.
+        """
+        return self._description
+
     def set_description(
         self,
         description: str
@@ -230,6 +207,14 @@ class PlcObject(
 
         if isinstance(self.meta_data, dict):
             self.meta_data["Description"] = description
+
+    def get_name(self) -> str:
+        """Get the name of this object.
+
+        Returns:
+            str: The name of this object.
+        """
+        return self._name
 
     def set_name(
         self,
@@ -251,6 +236,14 @@ class PlcObject(
 
         if isinstance(self.meta_data, dict):
             self.meta_data["@Name"] = name
+
+    def get_process_name(self) -> str:
+        """Get the process name of this object's controller without plant or customer prefixes / suffixes.
+
+        Returns:
+            str: The process name of this object's controller.
+        """
+        return self.name  # Override in subclasses if needed
 
     def get_controller(self) -> Optional[IController]:
         """Get the controller this object belongs to.

@@ -38,6 +38,9 @@ from .plc import (
     IHasController,
     IHasDatatypes,
     IHasInstructions,
+    IHasOperands,
+    IHasRungText,
+    IHasBranches,
     IHasSequencedInstructions,
     IHasMetaData,
     IHasModules,
@@ -101,6 +104,12 @@ from .plc import (
 
     # Generator Interfaces
     IEmulationGenerator,
+
+    # Dialect Interfaces
+    PLCDialect,
+    IHasRungsTranslator,
+    IHasInstructionsTranslator,
+    IHasOperandsTranslator,
 )
 
 from .tasks import (
@@ -129,6 +138,9 @@ __all__ = (
     'IHasController',
     'IHasDatatypes',
     'IHasInstructions',
+    'IHasOperands',
+    'IHasRungText',
+    'IHasBranches',
     'IHasSequencedInstructions',
     'IHasMetaData',
     'IHasModules',
@@ -192,6 +204,12 @@ __all__ = (
 
     # Generator section
     'IEmulationGenerator',
+
+    # Dialect section
+    "PLCDialect",
+    "IHasRungsTranslator",
+    "IHasInstructionsTranslator",
+    "IHasOperandsTranslator",
 
     # Tasks section
     "IControllerApplication",

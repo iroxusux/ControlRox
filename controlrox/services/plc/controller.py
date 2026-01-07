@@ -315,8 +315,20 @@ class ControllerFactory(MetaFactory):
         """Create the best matching controller instance."""
         controller_class = cls.get_best_match(meta_data)
         if not controller_class:
-            return None
+            return cls.create_default_controller(**kwargs)
         return controller_class(meta_data=meta_data, **kwargs)
+
+    @staticmethod
+    def create_default_controller(
+        **kwargs
+    ) -> IController:
+        """Create a default generic controller instance.
+
+        Returns:
+            IController: The default controller instance.
+        """
+        from controlrox.models.plc.controller import Controller
+        return Controller(meta_data={}, **kwargs)
 
 
 class ControllerInstanceManager:
@@ -454,7 +466,7 @@ class ControllerInstanceManager:
 
         write_dict = copy.deepcopy(meta_data)
         remove_none_values_inplace(write_dict)
-        
+
         dict_to_l5x_file(
             write_dict,
             file_location

@@ -12,6 +12,7 @@ from controlrox.interfaces import (
     IRung,
     LogicInstructionType,
 )
+from .protocols import HasOperands
 from .meta import (
     PlcObject,
 )
@@ -19,6 +20,7 @@ from .meta import (
 
 class LogicInstruction(
     ILogicInstruction,
+    HasOperands,
     PlcObject[str],
 ):
     """Logic instruction.
@@ -27,28 +29,18 @@ class LogicInstruction(
     def __init__(
         self,
         meta_data: str,
-        operands: list[ILogicOperand] = [],
         rung: Optional[IRung] = None,
         **kwargs
     ):
-        super().__init__(
+        HasOperands.__init__(self)
+        PlcObject.__init__(
+            self,
             meta_data=meta_data,
             **kwargs
         )
         self._qualified_meta_data: str = ''
-        self._instruction_name: str = ''
         self._instruction_type: LogicInstructionType = LogicInstructionType.UNKNOWN
-        self._operands: list[ILogicOperand] = operands
         self._rung: Optional[IRung] = rung
-
-    @property
-    def instruction_name(self) -> str:
-        """get the name for this instruction
-
-        Returns:
-            :class:`str`
-        """
-        return self.get_instruction_name()
 
     @property
     def instruction_type(self) -> LogicInstructionType:
@@ -60,15 +52,6 @@ class LogicInstruction(
         return self.get_instruction_type()
 
     @property
-    def operands(self) -> list[ILogicOperand]:
-        """get the instruction operands
-
-        Returns:
-            :class:`list[logicOperand]`
-        """
-        return self.get_operands()
-
-    @property
     def rung(self) -> Optional[IRung]:
         """get the parent rung for this instruction
 
@@ -77,22 +60,23 @@ class LogicInstruction(
         """
         return self.get_rung()
 
-    def compile(self):
-        self.compile_operands()
-        return self
-
-    def compile_operands(self) -> None:
-        """compile the operands for this instruction
-        """
-        raise NotImplementedError("This method should be overridden by subclasses to compile the operands.")
-
-    def get_instruction_name(self) -> str:
-        """get the instruction name for this instruction
+    def get_name(self) -> str:
+        """get the instruction name
 
         Returns:
             :class:`str`
         """
-        raise NotImplementedError("This method should be overridden by subclasses to get the instruction name.")
+        if not self._name:
+            # Extract the instruction name from the meta_data
+            if '(' in self.meta_data:
+                self._name = self.meta_data.split('(')[0].strip()
+            else:
+                self._name = self.meta_data.strip()
+        return self._name
+
+    def compile(self):
+        self.compile_operands()
+        return self
 
     def get_instruction_type(self) -> LogicInstructionType:
         """get the instruction type for this instruction
@@ -103,26 +87,19 @@ class LogicInstruction(
         if self._instruction_type != LogicInstructionType.UNKNOWN:
             return self._instruction_type
 
-        if self.instruction_name in INPUT_INSTRUCTIONS:
+        if self.name in INPUT_INSTRUCTIONS:
             self._instruction_type = LogicInstructionType.INPUT
 
-        elif self.instruction_name in [x[0] for x in OUTPUT_INSTRUCTIONS]:
+        elif self.name in [x[0] for x in OUTPUT_INSTRUCTIONS]:
             self._instruction_type = LogicInstructionType.OUTPUT
 
-        elif self.instruction_name == INSTR_JSR:
+        elif self.name == INSTR_JSR:
             self._instruction_type = LogicInstructionType.JSR
 
         else:
             self._instruction_type = LogicInstructionType.UNKNOWN
 
         return self._instruction_type
-
-    def get_operands(self) -> list[ILogicOperand]:
-        """get the operands for this instruction
-        """
-        if not self._operands:
-            self.compile_operands()
-        return self._operands
 
     def get_rung(self) -> Optional[IRung]:
         """get the parent rung for this instruction

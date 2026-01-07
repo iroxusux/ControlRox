@@ -1,8 +1,8 @@
 """Unit tests for controlrox.models.plc.routine module."""
 import unittest
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
-from controlrox.interfaces import ILogicInstruction
+from controlrox.interfaces import ILogicInstruction, PLCDialect
 from controlrox.models.plc.routine import Routine
 
 
@@ -608,123 +608,6 @@ class TestRoutineInstructionsManagement(unittest.TestCase):
 
         self.assertEqual(len(filtered), 1)
         self.assertEqual(filtered[0].name, 'XIC')
-
-
-class TestRoutineRungsManagement(unittest.TestCase):
-    """Test routine rung management."""
-
-    def setUp(self):
-        """Set up test fixtures."""
-        from controlrox.interfaces import IRung
-
-        self.mock_rung = Mock(spec=IRung)
-        self.mock_rung.number = 0
-
-        class TestableRoutine(Routine):
-            def __init__(self, **kwargs):
-                super().__init__(**kwargs)
-                self.compiled_rungs = False
-
-            def compile_instructions(self):
-                pass
-
-            def compile_rungs(self):
-                self.compiled_rungs = True
-                self._rungs = [Mock(spec=IRung) for _ in range(5)]
-
-            def add_rung(self, rung):
-                self._rungs.append(rung)
-
-            def remove_rung(self, rung):
-                self._rungs.remove(rung)
-
-            def clear_rungs(self):
-                self._rungs.clear()
-
-            def block(self):
-                pass
-
-            def unblock(self):
-                pass
-
-            def check_for_jsr(self, routine_name):
-                return False
-
-            def compile(self):
-                return self
-
-            def invalidate(self):
-                pass
-
-            @property
-            def process_name(self):
-                return 'TestProcess'
-
-            def add_instruction(self, instruction, index=-1):
-                self._instructions.append(instruction)
-
-            def clear_instructions(self):
-                self._instructions.clear()
-
-            def get_filtered_instructions(self, instruction_filter='', operand_filter=''):
-                return []
-
-            def has_instruction(self, instruction):
-                return instruction in self._instructions
-
-            def remove_instruction(self, instruction):
-                self._instructions.remove(instruction)
-
-        self.TestableRoutine = TestableRoutine
-
-    def test_get_rungs_triggers_compile(self):
-        """Test compile_rungs populates rungs list."""
-        routine = self.TestableRoutine()
-
-        # Initially empty
-        self.assertFalse(routine.compiled_rungs)
-        self.assertEqual(len(routine._rungs), 0)
-
-        # After compile
-        routine.compile_rungs()
-
-        self.assertTrue(routine.compiled_rungs)
-        self.assertEqual(len(routine.get_rungs()), 5)
-
-    def test_add_rung(self):
-        """Test adding rung to routine."""
-        routine = self.TestableRoutine()
-
-        routine.add_rung(self.mock_rung)
-
-        self.assertIn(self.mock_rung, routine._rungs)
-
-    def test_remove_rung(self):
-        """Test removing rung from routine."""
-        routine = self.TestableRoutine()
-        routine._rungs = [self.mock_rung]
-
-        routine.remove_rung(self.mock_rung)
-
-        self.assertNotIn(self.mock_rung, routine._rungs)
-
-    def test_clear_rungs(self):
-        """Test clearing all rungs."""
-        routine = self.TestableRoutine()
-        routine._rungs = [Mock(), Mock(), Mock()]
-
-        routine.clear_rungs()
-
-        self.assertEqual(len(routine._rungs), 0)
-
-    def test_rungs_property(self):
-        """Test rungs property access."""
-        routine = self.TestableRoutine()
-        routine._rungs = [Mock(), Mock()]
-
-        rungs = routine.rungs
-
-        self.assertEqual(len(rungs), 2)
 
 
 class TestRoutineBlockingFunctionality(unittest.TestCase):

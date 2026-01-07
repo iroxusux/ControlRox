@@ -216,34 +216,31 @@ class IPlcObject(
     """
 
     @property
-    @abstractmethod
     def description(self) -> str:
         """Get the description of this object.
 
         Returns:
             str: The description of this object.
         """
-        raise NotImplementedError("This method should be overridden by subclasses to get the description.")
+        return self.get_description()
 
     @property
-    @abstractmethod
     def name(self) -> str:
         """Get the name of this object.
 
         Returns:
             str: The name of this object.
         """
-        raise NotImplementedError("This method should be overridden by subclasses to get the object's name.")
+        return self.get_name()
 
     @property
-    @abstractmethod
     def process_name(self) -> str:
         """Get the process name of this object's controller without plant or customer prefixes / suffixes.
 
         Returns:
             str: The process name of this object's controller.
         """
-        raise NotImplementedError("This method should be overridden by subclasses to get the process name.")
+        return self.get_process_name()
 
     @abstractmethod
     def compile(self) -> Self:
@@ -265,6 +262,24 @@ class IPlcObject(
         raise NotImplementedError("This method should be overridden by subclasses to invalidate the object.")
 
     @abstractmethod
+    def get_process_name(self) -> str:
+        """Get the process name of this object's controller without plant or customer prefixes / suffixes.
+
+        Returns:
+            str: The process name of this object's controller.
+        """
+        raise NotImplementedError("This method should be overridden by subclasses to get the process name.")
+
+    @abstractmethod
+    def get_description(self) -> str:
+        """Get the description of this object.
+
+        Returns:
+            str: The description of this object.
+        """
+        raise NotImplementedError("This method should be overridden by subclasses to get the description.")
+
+    @abstractmethod
     def set_description(
         self,
         description: str
@@ -275,6 +290,15 @@ class IPlcObject(
             description: The description to set.
         """
         raise NotImplementedError("This method should be overridden by subclasses to set the description.")
+
+    @abstractmethod
+    def get_name(self) -> str:
+        """Get the name of this object.
+
+        Returns:
+            str: The name of this object.
+        """
+        raise NotImplementedError("This method should be overridden by subclasses to get the name.")
 
     @abstractmethod
     def set_name(

@@ -3,6 +3,7 @@ from .aoi import AOIFactory
 from .datatype import DatatypeFactory
 from .instruction import InstructionFactory, extract_instruction_strings
 from .module import ModuleFactory
+from .operand import OperandFactory
 from .program import ProgramFactory
 from .routine import RoutineFactory
 from .rung import RungFactory
@@ -15,6 +16,8 @@ from .controller import (
     ControllerMatcherFactory,
     ControllerInstanceManager,
 )
+
+from .dialect import DialectTranslatorFactory
 
 from .emu import (
     create_checklist_from_template,
@@ -29,6 +32,7 @@ __all__ = (
     'DatatypeFactory',
     'InstructionFactory',
     'ModuleFactory',
+    'OperandFactory',
     'ProgramFactory',
     'RoutineFactory',
     'RungFactory',
@@ -39,6 +43,9 @@ __all__ = (
     'ControllerFactory',
     'ControllerMatcherFactory',
     'ControllerInstanceManager',
+
+    # Dialect imports
+    'DialectTranslatorFactory',
 
     # Emulation imports
     'create_checklist_from_template',

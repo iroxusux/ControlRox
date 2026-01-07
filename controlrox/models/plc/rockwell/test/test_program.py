@@ -352,7 +352,8 @@ class TestRaProgramBlockRaRoutine(unittest.TestCase):
         self.mock_jsr_instruction.get_operands.return_value = [mock_operand]
         # Mock rung
         self.mock_rung = Mock()
-        self.mock_rung.get_rung_text.return_value = "JSR(SubRaRoutine1);"
+        self.mock_rung.text = "JSR(SubRaRoutine1);"  # Set as property, not method
+        self.mock_rung.get_text.return_value = "JSR(SubRaRoutine1);"  # Method call
         self.mock_jsr_instruction.get_rung.return_value = self.mock_rung
 
     def test_block_routine_success(self):
@@ -363,7 +364,7 @@ class TestRaProgramBlockRaRoutine(unittest.TestCase):
         program.block_routine('SubRaRoutine1', 'BlockingBit')
 
         program.get_instructions.assert_called_once_with(instruction_filter='JSR')
-        self.mock_rung.set_rung_text.assert_called_once_with('XIC(BlockingBit)JSR(SubRaRoutine1);')
+        self.mock_rung.set_text.assert_called_once_with('XIC(BlockingBit)JSR(SubRaRoutine1);')
 
     def test_block_routine_already_blocked(self):
         """Test blocking routine that's already blocked."""
@@ -371,12 +372,12 @@ class TestRaProgramBlockRaRoutine(unittest.TestCase):
         program.get_instructions = Mock(return_value=[self.mock_jsr_instruction])
 
         # Set rung text to already include the blocking condition
-        self.mock_rung.get_rung_text.return_value = 'XIC(BlockingBit)JSR(SubRaRoutine1);'
+        self.mock_rung.text = 'XIC(BlockingBit)JSR(SubRaRoutine1);'
 
         program.block_routine('SubRaRoutine1', 'BlockingBit')
 
         # set_rung_text should not be called since already blocked
-        self.mock_rung.set_rung_text.assert_not_called()
+        self.mock_rung.set_text.assert_not_called()
 
     def test_block_routine_no_matching_jsr(self):
         """Test blocking routine with no matching JSR."""
@@ -435,30 +436,30 @@ class TestRaProgramUnblockRaRoutine(unittest.TestCase):
         self.mock_jsr_instruction.get_operands.return_value = ["SubRaRoutine1"]
         # Mock rung
         self.mock_rung = Mock()
-        self.mock_rung.get_rung_text.return_value = "JSR(SubRaRoutine1);"
+        self.mock_rung.get_text.return_value = "JSR(SubRaRoutine1);"
         self.mock_jsr_instruction.get_rung.return_value = self.mock_rung
 
     def test_unblock_routine_success(self):
         """Test successful routine unblocking."""
         program = RaProgram(meta_data=self.basic_program_meta)
-        self.mock_rung.get_rung_text.return_value = 'XIC(BlockingBit)JSR(SubRaRoutine1);'
+        self.mock_rung.get_text.return_value = 'XIC(BlockingBit)JSR(SubRaRoutine1);'
         program.get_instructions = Mock(return_value=[self.mock_jsr_instruction])
 
         program.unblock_routine('SubRaRoutine1', 'BlockingBit')
 
         program.get_instructions.assert_called_once_with(instruction_filter='JSR')
-        self.mock_rung.set_rung_text.assert_called_once_with('JSR(SubRaRoutine1);')
+        self.mock_rung.set_text.assert_called_once_with('JSR(SubRaRoutine1);')
 
     def test_unblock_routine_not_blocked(self):
         """Test unblocking routine that's not blocked."""
         program = RaProgram(meta_data=self.basic_program_meta)
-        self.mock_rung.get_rung_text.return_value = 'JSR(SubRaRoutine1);'
+        self.mock_rung.get_text.return_value = 'JSR(SubRaRoutine1);'
         program.get_instructions = Mock(return_value=[self.mock_jsr_instruction])
 
         program.unblock_routine('SubRaRoutine1', 'BlockingBit')
 
-        # set_rung_text should not be called since it doesn't start with XIC(BlockingBit)
-        self.mock_rung.set_rung_text.assert_not_called()
+        # set_text should not be called since it doesn't start with XIC(BlockingBit)
+        self.mock_rung.set_text.assert_not_called()
 
     def test_unblock_routine_no_matching_jsr(self):
         """Test unblocking routine with no matching JSR."""
@@ -468,8 +469,8 @@ class TestRaProgramUnblockRaRoutine(unittest.TestCase):
 
         program.unblock_routine('SubRaRoutine1', 'BlockingBit')
 
-        # set_rung_text should not be called since no matching JSR
-        self.mock_rung.set_rung_text.assert_not_called()
+        # set_text should not be called since no matching JSR
+        self.mock_rung.set_text.assert_not_called()
 
     def test_unblock_routine_no_rung(self):
         """Test unblocking routine when JSR has no rung."""
@@ -483,24 +484,24 @@ class TestRaProgramUnblockRaRoutine(unittest.TestCase):
     def test_unblock_routine_partial_match_blocking_bit(self):
         """Test unblocking when blocking bit appears elsewhere in text."""
         program = RaProgram(meta_data=self.basic_program_meta)
-        self.mock_rung.get_rung_text.return_value = 'XIC(OtherBit)XIC(BlockingBit)JSR(SubRaRoutine1);'
+        self.mock_rung.get_text.return_value = 'XIC(OtherBit)XIC(BlockingBit)JSR(SubRaRoutine1);'
         program.get_instructions = Mock(return_value=[self.mock_jsr_instruction])
 
         program.unblock_routine('SubRaRoutine1', 'BlockingBit')
 
-        # set_rung_text should not be called since it doesn't START with XIC(BlockingBit)
-        self.mock_rung.set_rung_text.assert_not_called()
+        # set_text should not be called since it doesn't START with XIC(BlockingBit)
+        self.mock_rung.set_text.assert_not_called()
 
     def test_unblock_routine_multiple_occurrences(self):
         """Test unblocking only removes first occurrence."""
         program = RaProgram(meta_data=self.basic_program_meta)
-        self.mock_rung.get_rung_text.return_value = 'XIC(BlockingBit)XIC(BlockingBit)JSR(SubRaRoutine1);'
+        self.mock_rung.get_text.return_value = 'XIC(BlockingBit)XIC(BlockingBit)JSR(SubRaRoutine1);'
         program.get_instructions = Mock(return_value=[self.mock_jsr_instruction])
 
         program.unblock_routine('SubRaRoutine1', 'BlockingBit')
 
         # Should only remove the first occurrence
-        self.mock_rung.set_rung_text.assert_called_once_with('XIC(BlockingBit)JSR(SubRaRoutine1);')
+        self.mock_rung.set_text.assert_called_once_with('XIC(BlockingBit)JSR(SubRaRoutine1);')
 
 
 class TestRaProgramEdgeCases(unittest.TestCase):
@@ -539,14 +540,15 @@ class TestRaProgramEdgeCases(unittest.TestCase):
         mock_operand.meta_data = "Sub_RaRoutine.1"
         mock_jsr_instruction.get_operands.return_value = [mock_operand]
         mock_rung = Mock()
-        mock_rung.get_rung_text.return_value = "JSR(Sub_RaRoutine.1);"
+        mock_rung.text = "JSR(Sub_RaRoutine.1);"  # Set as property, not method
+        mock_rung.get_text.return_value = "JSR(Sub_RaRoutine.1);"  # For unblock_routine
         mock_jsr_instruction.get_rung.return_value = mock_rung
 
         program.get_instructions = Mock(return_value=[mock_jsr_instruction])
 
         program.block_routine('Sub_RaRoutine.1', 'Block_Bit.1')
 
-        mock_rung.set_rung_text.assert_called_once_with('XIC(Block_Bit.1)JSR(Sub_RaRoutine.1);')
+        mock_rung.set_text.assert_called_once_with('XIC(Block_Bit.1)JSR(Sub_RaRoutine.1);')
 
     def test_empty_routine_name_block_unblock(self):
         """Test blocking/unblocking with empty routine name."""

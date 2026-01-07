@@ -6,9 +6,9 @@ from .meta import IPlcObject
 
 
 class IRoutine(
-    IPlcObject[dict],
     IHasInstructions,
     IHasRungs,
+    IPlcObject[dict],
 ):
 
     @property
