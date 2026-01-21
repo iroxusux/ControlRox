@@ -69,11 +69,24 @@ class PlcObject(
         self._name = name or ""
         self._description = description or ""
 
+        # run post init
+        self.__post_init__(**kwargs)
+
     def __repr__(self) -> str:
         return str(self)
 
     def __str__(self) -> str:
         return str(self.name)
+
+    def __post_init__(
+        self,
+        **kwargs,
+    ) -> None:
+        """Post-initialization method to allow flexibility in private attributes and initialization processes.
+        Due to vendors having different requirements for PLC objects, this method can be overridden in subclasses
+        to handle additional initialization logic.
+        """
+        ...
 
     def add_asset_to_meta_data(
         self,

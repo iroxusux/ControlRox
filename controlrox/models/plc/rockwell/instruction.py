@@ -9,7 +9,7 @@ from controlrox.interfaces import (
     OUTPUT_INSTRUCTIONS,
     INSTR_JSR,
     IRung,
-    LogicInstructionType
+    ILogicInstructionType
 )
 from controlrox.models.plc.instruction import LogicInstruction
 
@@ -64,17 +64,17 @@ class RaLogicInstruction(
         self._instruction_name = matches[0]
         return self._instruction_name
 
-    def get_instruction_type(self) -> LogicInstructionType:
+    def get_instruction_type(self) -> ILogicInstructionType:
         """get the instruction type for this instruction
 
         Returns:
             :class:`LogixInstructionType`
         """
         if self.name in INPUT_INSTRUCTIONS:
-            return LogicInstructionType.INPUT
+            return ILogicInstructionType.INPUT
         elif self.name in [x[0] for x in OUTPUT_INSTRUCTIONS]:
-            return LogicInstructionType.OUTPUT
+            return ILogicInstructionType.OUTPUT
         elif self.name == INSTR_JSR:
-            return LogicInstructionType.JSR
+            return ILogicInstructionType.JSR
         else:
-            return LogicInstructionType.UNKNOWN
+            return ILogicInstructionType.UNKNOWN

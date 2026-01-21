@@ -3,7 +3,7 @@
 import unittest
 from unittest.mock import MagicMock, patch
 
-from controlrox.interfaces import LogicInstructionType
+from controlrox.interfaces import ILogicInstructionType
 from controlrox.models.plc.rockwell.controller import RaController
 from controlrox.models.plc.rockwell.instruction import RaLogicInstruction
 from controlrox.models.plc.rockwell.operand import LogixOperand
@@ -121,7 +121,7 @@ class TestLogixInstruction(unittest.TestCase):
         """Test type property for input instruction."""
         with patch.object(RaLogicInstruction, 'get_operands'):
             with patch.object(RaLogicInstruction, 'get_instruction_type') as mock_get_type:
-                mock_get_type.return_value = LogicInstructionType.INPUT
+                mock_get_type.return_value = ILogicInstructionType.INPUT
 
                 instruction = RaLogicInstruction(
                     meta_data=self.xic_metadata,
@@ -129,7 +129,7 @@ class TestLogixInstruction(unittest.TestCase):
                 )
 
                 result = instruction.get_instruction_type()
-                self.assertEqual(result, LogicInstructionType.INPUT)
+                self.assertEqual(result, ILogicInstructionType.INPUT)
                 mock_get_type.assert_called_once()
 
     def test_get_instruction_type_input(self):
@@ -141,7 +141,7 @@ class TestLogixInstruction(unittest.TestCase):
             )
 
             result = instruction.get_instruction_type()
-            self.assertEqual(result, LogicInstructionType.INPUT)
+            self.assertEqual(result, ILogicInstructionType.INPUT)
 
     def test_get_instruction_type_output(self):
         """Test _get_instruction_type for output instructions."""
@@ -152,7 +152,7 @@ class TestLogixInstruction(unittest.TestCase):
             )
 
             result = instruction.get_instruction_type()
-            self.assertEqual(result, LogicInstructionType.OUTPUT)
+            self.assertEqual(result, ILogicInstructionType.OUTPUT)
 
     def test_get_instruction_type_jsr(self):
         """Test _get_instruction_type for JSR instruction."""
@@ -163,7 +163,7 @@ class TestLogixInstruction(unittest.TestCase):
             )
 
             result = instruction.get_instruction_type()
-            self.assertEqual(result, LogicInstructionType.JSR)
+            self.assertEqual(result, ILogicInstructionType.JSR)
 
     def test_get_instruction_type_unknown(self):
         """Test _get_instruction_type for unknown instructions."""
@@ -174,7 +174,7 @@ class TestLogixInstruction(unittest.TestCase):
             )
 
             result = instruction.get_instruction_type()
-            self.assertEqual(result, LogicInstructionType.UNKNOWN)
+            self.assertEqual(result, ILogicInstructionType.UNKNOWN)
 
 
 if __name__ == '__main__':

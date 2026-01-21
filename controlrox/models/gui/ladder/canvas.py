@@ -11,7 +11,7 @@ from controlrox.interfaces import (
     ILogicInstruction,
     IRoutine,
     IRung,
-    LogicInstructionType,
+    ILogicInstructionType,
     RungElement,
     RungElementType
 )
@@ -598,7 +598,7 @@ class LadderCanvas(Canvas):
         bottom_y = center_y + self.BLOCK_HEIGHT // 2 + (operand_count * self.RUNG_COMMENT_ASCII_Y_SIZE)
 
         max_width = self.BLOCK_WIDTH
-        if instruction.instruction_type == LogicInstructionType.AOI:
+        if instruction.instruction_type == ILogicInstructionType.AOI:
             # Determine if instruction is an add-on instruction with named parameters
             aoi = self.controller.aois.get(instruction.instruction_name, None)
             if not aoi:
@@ -622,11 +622,11 @@ class LadderCanvas(Canvas):
 
         # add_on instruction operands are mis-aligned size-wise when compared to their parameter counterparts.
         # there is always 1 extra operand for the add-on instruction, which is the name of the instruction itself.
-        name_pkg = [] if not instruction.instruction_type == LogicInstructionType.AOI else [
+        name_pkg = [] if not instruction.instruction_type == ILogicInstructionType.AOI else [
             f'{instruction.name.ljust(10)} {instruction.operands[0].meta_data.ljust(20)}']
 
         # pull out the extra operand if this is an add-on instruction
-        operands = instruction.operands[1:] if instruction.instruction_type == LogicInstructionType.AOI else instruction.operands
+        operands = instruction.operands[1:] if instruction.instruction_type == ILogicInstructionType.AOI else instruction.operands
 
         # Calculate proper column widths
         max_param_width = max(len(name) for name in param_names) if param_names else 0

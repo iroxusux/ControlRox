@@ -19,7 +19,7 @@ from controlrox.interfaces import (
     IModule,
     ITag,
     IProgram,
-    LogicAssetType
+    ILogicAssetType
 )
 from controlrox.models.plc.controller import Controller
 from controlrox.services.l5x import l5x_dict_from_file
@@ -645,7 +645,7 @@ class RaController(
 
     def rename_asset(
         self,
-        element_type: LogicAssetType,
+        element_type: ILogicAssetType,
         name: str,
         replace_name: str
     ):
@@ -653,14 +653,14 @@ class RaController(
             return
 
         match element_type:
-            case LogicAssetType.TAG:
+            case ILogicAssetType.TAG:
                 replace_strings_in_dict(
                     self.raw_tags,
                     name,
                     replace_name
                 )
 
-            case LogicAssetType.ALL:
+            case ILogicAssetType.ALL:
                 replace_strings_in_dict(
                     self.l5x_meta_data,
                     name,

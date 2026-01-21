@@ -1,7 +1,7 @@
 """Logix operand module."""
 from typing import Optional
 from controlrox.interfaces import (
-    LogicInstructionType,
+    ILogicInstructionType,
     ILogicInstruction
 )
 from controlrox.models.plc.operand import LogicOperand
@@ -31,7 +31,7 @@ class LogixOperand(
 
         self._as_aliased: str = ''
         self._as_qualified: str = ''
-        self._instruction_type: LogicInstructionType = LogicInstructionType.UNKNOWN
+        self._instruction_type: ILogicInstructionType = ILogicInstructionType.UNKNOWN
 
     @property
     def alias(self) -> str:

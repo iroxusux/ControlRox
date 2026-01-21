@@ -1,0 +1,42 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Software Icon</title>
+  <desc id="desc">A stylized software icon with a circuit-like window representing an application.</desc>
+
+  <!-- Background circle -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0078D4"/>
+      <stop offset="100%" stop-color="#00A4EF"/>
+    </linearGradient>
+  </defs>
+
+  <circle cx="256" cy="256" r="240" fill="url(#bgGradient)"/>
+
+  <!-- App window (dark mode) -->
+  <rect x="116" y="136" width="280" height="240" rx="32" ry="32" fill="#111827" opacity="0.98"/>
+
+  <!-- Header bar (slightly lighter dark) -->
+  <rect x="116" y="136" width="280" height="54" rx="32" ry="32" fill="#1F2937"/>
+
+  <!-- Header dots -->
+  <circle cx="148" cy="163" r="7" fill="#FF5F57"/>
+  <circle cx="174" cy="163" r="7" fill="#FFBD2E"/>
+  <circle cx="200" cy="163" r="7" fill="#28C840"/>
+
+  <!-- Stylized software motif with { } and central icon -->
+  <!-- Left and right curly braces -->
+  <text x="178" y="290" text-anchor="middle" font-family="Segoe UI, system-ui, -apple-system, BlinkMacSystemFont" font-size="80" fill="#60A5FA" font-weight="600">{</text>
+  <text x="334" y="290" text-anchor="middle" font-family="Segoe UI, system-ui, -apple-system, BlinkMacSystemFont" font-size="80" fill="#60A5FA" font-weight="600">}</text>
+
+  <!-- Central software/code icon -->
+  <!-- Outer rounded rectangle -->
+  <rect x="214" y="230" width="84" height="80" rx="14" ry="14" fill="#0B1220" stroke="#93C5FD" stroke-width="4"/>
+
+  <!-- Inner code-like lines -->
+  <rect x="226" y="246" width="60" height="6" rx="3" ry="3" fill="#38BDF8"/>
+  <rect x="226" y="266" width="52" height="6" rx="3" ry="3" fill="#E5F3FF" opacity="0.9"/>
+  <rect x="226" y="286" width="40" height="6" rx="3" ry="3" fill="#93C5FD" opacity="0.9"/>
+
+  <!-- Subtle inner shadow / border -->
+  <rect x="126" y="146" width="260" height="220" rx="26" ry="26" fill="none" stroke="#4B5563" stroke-width="4"/>
+</svg>

@@ -642,5 +642,462 @@ class TestControllerInheritance(unittest.TestCase):
         self.assertIsInstance(controller, IController)
 
 
+class TestControllerCreateMethods(unittest.TestCase):
+    """Test Controller create methods for PLC assets."""
+
+    def setUp(self):
+        """Set up test fixtures."""
+        class ConcreteController(Controller):
+            def compile_aois(self):
+                pass
+
+            def compile_datatypes(self):
+                pass
+
+            def compile_modules(self):
+                pass
+
+            def compile_programs(self):
+                pass
+
+            def compile_tags(self):
+                pass
+
+            def get_raw_aois(self):
+                return []
+
+            def get_raw_datatypes(self):
+                return []
+
+            def get_raw_modules(self):
+                return []
+
+            def get_raw_programs(self):
+                return []
+
+            def get_raw_tags(self):
+                return []
+
+            def get_safety_programs(self):
+                return HashList('name')
+
+            def get_standard_programs(self):
+                return HashList('name')
+
+            def import_assets_from_file(self, file_location, asset_types=None):
+                pass
+
+        self.ConcreteClass = ConcreteController
+
+    def test_create_aoi(self):
+        """Test create_aoi method creates an AOI."""
+        controller = self.ConcreteClass()
+
+        aoi = controller.create_aoi(
+            name='TestAOI',
+            description='Test AOI description'
+        )
+
+        self.assertIsNotNone(aoi)
+        self.assertEqual(aoi.name, 'TestAOI')
+        self.assertEqual(aoi.description, 'Test AOI description')
+
+    def test_create_aoi_with_metadata(self):
+        """Test create_aoi with metadata."""
+        controller = self.ConcreteClass()
+        meta_data = {'@Name': 'MetaAOI', '@Revision': '1.0'}
+
+        aoi = controller.create_aoi(meta_data=meta_data)
+
+        self.assertIsNotNone(aoi)
+        self.assertEqual(aoi.meta_data, meta_data)
+
+    def test_create_datatype(self):
+        """Test create_datatype method creates a datatype."""
+        controller = self.ConcreteClass()
+
+        datatype = controller.create_datatype(
+            name='TestDatatype',
+            description='Test datatype description'
+        )
+
+        self.assertIsNotNone(datatype)
+        self.assertEqual(datatype.name, 'TestDatatype')
+        self.assertEqual(datatype.description, 'Test datatype description')
+
+    def test_create_datatype_with_metadata(self):
+        """Test create_datatype with metadata."""
+        controller = self.ConcreteClass()
+        meta_data = {'@Name': 'CustomType', '@Family': 'NoFamily'}
+
+        datatype = controller.create_datatype(meta_data=meta_data)
+
+        self.assertIsNotNone(datatype)
+        self.assertEqual(datatype.meta_data, meta_data)
+
+    def test_create_instruction(self):
+        """Test create_instruction method creates an instruction."""
+        controller = self.ConcreteClass()
+
+        instruction = controller.create_instruction(
+            name='XIC',
+            description='Examine If Closed'
+        )
+
+        self.assertIsNotNone(instruction)
+        self.assertEqual(instruction.name, 'XIC')
+        self.assertEqual(instruction.description, 'Examine If Closed')
+
+    def test_create_instruction_with_rung(self):
+        """Test create_instruction with rung parameter."""
+        controller = self.ConcreteClass()
+        mock_rung = Mock()
+
+        instruction = controller.create_instruction(
+            name='OTE',
+            rung=mock_rung
+        )
+
+        self.assertIsNotNone(instruction)
+        self.assertEqual(instruction.name, 'OTE')
+
+    def test_create_instruction_with_metadata(self):
+        """Test create_instruction with metadata."""
+        controller = self.ConcreteClass()
+        meta_data = '<XIC Name="MyTag" />'
+
+        instruction = controller.create_instruction(meta_data=meta_data)
+
+        self.assertIsNotNone(instruction)
+
+    def test_create_module(self):
+        """Test create_module method creates a module."""
+        controller = self.ConcreteClass()
+
+        module = controller.create_module(
+            name='TestModule',
+            description='Test module description'
+        )
+
+        self.assertIsNotNone(module)
+        self.assertEqual(module.name, 'TestModule')
+        self.assertEqual(module.description, 'Test module description')
+
+    def test_create_module_with_metadata(self):
+        """Test create_module with metadata."""
+        controller = self.ConcreteClass()
+        meta_data = {'@Name': 'IO_Module', '@CatalogNumber': '1756-IB16'}
+
+        module = controller.create_module(meta_data=meta_data)
+
+        self.assertIsNotNone(module)
+        self.assertEqual(module.meta_data, meta_data)
+
+    def test_create_operand(self):
+        """Test create_operand method creates an operand."""
+        controller = self.ConcreteClass()
+
+        operand = controller.create_operand(
+            name='MyTag',
+            description='Test operand',
+        )
+
+        self.assertIsNotNone(operand)
+        self.assertEqual(operand.name, 'MyTag')
+        self.assertEqual(operand.description, 'Test operand')
+
+    def test_create_operand_with_instruction(self):
+        """Test create_operand with instruction parameter."""
+        controller = self.ConcreteClass()
+        mock_instruction = Mock()
+
+        operand = controller.create_operand(
+            name='InputTag',
+            instruction=mock_instruction
+        )
+
+        self.assertIsNotNone(operand)
+        self.assertEqual(operand.name, 'InputTag')
+
+    def test_create_operand_with_metadata(self):
+        """Test create_operand with metadata."""
+        controller = self.ConcreteClass()
+        meta_data = '<Operand Name="Tag1" Type="BOOL" />'
+
+        operand = controller.create_operand(meta_data=meta_data)
+
+        self.assertIsNotNone(operand)
+
+    def test_create_program(self):
+        """Test create_program method creates a program."""
+        controller = self.ConcreteClass()
+
+        program = controller.create_program(
+            name='MainProgram',
+            description='Main program description'
+        )
+
+        self.assertIsNotNone(program)
+        self.assertEqual(program.name, 'MainProgram')
+        self.assertEqual(program.description, 'Main program description')
+
+    def test_create_program_with_metadata(self):
+        """Test create_program with metadata."""
+        controller = self.ConcreteClass()
+        meta_data = {'@Name': 'AlarmProgram', '@Type': 'Normal'}
+
+        program = controller.create_program(meta_data=meta_data)
+
+        self.assertIsNotNone(program)
+        self.assertEqual(program.meta_data, meta_data)
+
+    def test_create_routine(self):
+        """Test create_routine method creates a routine."""
+        controller = self.ConcreteClass()
+
+        routine = controller.create_routine(
+            name='MainRoutine',
+            description='Main routine description'
+        )
+
+        self.assertIsNotNone(routine)
+        self.assertEqual(routine.name, 'MainRoutine')
+        self.assertEqual(routine.description, 'Main routine description')
+
+    def test_create_routine_with_container(self):
+        """Test create_routine with container parameter."""
+        controller = self.ConcreteClass()
+        mock_container = Mock()
+
+        routine = controller.create_routine(
+            name='Subroutine',
+            container=mock_container
+        )
+
+        self.assertIsNotNone(routine)
+        self.assertEqual(routine.name, 'Subroutine')
+
+    def test_create_routine_with_metadata(self):
+        """Test create_routine with metadata."""
+        controller = self.ConcreteClass()
+        meta_data = {'@Name': 'InitRoutine', '@Type': 'RLL'}
+
+        routine = controller.create_routine(meta_data=meta_data)
+
+        self.assertIsNotNone(routine)
+        self.assertEqual(routine.meta_data, meta_data)
+
+    def test_create_rung(self):
+        """Test create_rung method creates a rung."""
+        controller = self.ConcreteClass()
+
+        rung = controller.create_rung(
+            name='Rung0',
+            comment='Test rung',
+            rung_text='XIC(Input)OTE(Output);',
+            rung_number=0
+        )
+
+        self.assertIsNotNone(rung)
+        self.assertEqual(rung.name, 'Rung0')
+        self.assertEqual(rung.comment, 'Test rung')
+
+    def test_create_rung_with_routine(self):
+        """Test create_rung with routine parameter."""
+        controller = self.ConcreteClass()
+        mock_routine = Mock()
+
+        rung = controller.create_rung(
+            rung_number=5,
+            routine=mock_routine
+        )
+
+        self.assertIsNotNone(rung)
+
+    def test_create_rung_with_metadata(self):
+        """Test create_rung with metadata."""
+        controller = self.ConcreteClass()
+        meta_data = {'@Number': '0', '@Type': 'N'}
+
+        rung = controller.create_rung(meta_data=meta_data)
+
+        self.assertIsNotNone(rung)
+        self.assertEqual(rung.meta_data, meta_data)
+
+    def test_create_rung_with_all_parameters(self):
+        """Test create_rung with all parameters."""
+        controller = self.ConcreteClass()
+        mock_routine = Mock()
+
+        rung = controller.create_rung(
+            meta_data={'@Number': '1'},
+            name='Rung1',
+            description='Detailed rung',
+            routine=mock_routine,
+            comment='Start sequence',
+            rung_text='XIC(Start)OTE(Running);',
+            rung_number=1
+        )
+
+        self.assertIsNotNone(rung)
+        self.assertEqual(rung.name, 'Rung1')
+        self.assertEqual(rung.description, 'Detailed rung')
+        self.assertEqual(rung.comment, 'Start sequence')
+
+    def test_create_tag(self):
+        """Test create_tag method creates a tag."""
+        controller = self.ConcreteClass()
+
+        tag = controller.create_tag(
+            name='TestTag',
+            datatype='BOOL',
+            description='Test tag description'
+        )
+
+        self.assertIsNotNone(tag)
+        self.assertEqual(tag.name, 'TestTag')
+        self.assertEqual(tag.description, 'Test tag description')
+
+    def test_create_tag_with_container(self):
+        """Test create_tag with container parameter."""
+        controller = self.ConcreteClass()
+        mock_container = Mock()
+
+        tag = controller.create_tag(
+            name='ProgramTag',
+            datatype='DINT',
+            container=mock_container
+        )
+
+        self.assertIsNotNone(tag)
+        self.assertEqual(tag.name, 'ProgramTag')
+
+    def test_create_tag_with_metadata(self):
+        """Test create_tag with metadata."""
+        controller = self.ConcreteClass()
+        meta_data = {'@Name': 'ConfigTag', '@DataType': 'REAL'}
+
+        tag = controller.create_tag(meta_data=meta_data)
+
+        self.assertIsNotNone(tag)
+        self.assertEqual(tag.meta_data, meta_data)
+
+    def test_create_tag_with_all_parameters(self):
+        """Test create_tag with all parameters."""
+        controller = self.ConcreteClass()
+        mock_container = Mock()
+
+        tag = controller.create_tag(
+            name='ComplexTag',
+            datatype='TIMER',
+            description='Complex tag with all params',
+            container=mock_container,
+            meta_data={'@Name': 'Timer1'},
+            tag_klass='Standard',
+            tag_type='Base',
+            dimensions='',
+            constant=False,
+            external_access='Read/Write'
+        )
+
+        self.assertIsNotNone(tag)
+        self.assertEqual(tag.name, 'ComplexTag')
+        self.assertEqual(tag.description, 'Complex tag with all params')
+
+    def test_create_tag_array(self):
+        """Test create_tag with array dimensions."""
+        controller = self.ConcreteClass()
+
+        tag = controller.create_tag(
+            name='ArrayTag',
+            datatype='DINT',
+            dimensions='[10]'
+        )
+
+        self.assertIsNotNone(tag)
+        self.assertEqual(tag.name, 'ArrayTag')
+
+    def test_create_tag_constant(self):
+        """Test create_tag with constant parameter."""
+        controller = self.ConcreteClass()
+
+        tag = controller.create_tag(
+            name='ConstantTag',
+            datatype='REAL',
+            constant=True
+        )
+
+        self.assertIsNotNone(tag)
+        self.assertEqual(tag.name, 'ConstantTag')
+
+    def test_create_tag_external_access(self):
+        """Test create_tag with external_access parameter."""
+        controller = self.ConcreteClass()
+
+        tag = controller.create_tag(
+            name='ReadOnlyTag',
+            datatype='INT',
+            external_access='Read Only'
+        )
+
+        self.assertIsNotNone(tag)
+        self.assertEqual(tag.name, 'ReadOnlyTag')
+
+    @patch('controlrox.models.plc.controller.AOIFactory')
+    def test_create_common_object_calls_factory(self, mock_factory):
+        """Test create_common_object uses factory to get registered type."""
+        controller = self.ConcreteClass()
+        mock_constructor = Mock(return_value=Mock())
+        mock_factory.get_registered_type_by_supporting_class.return_value = mock_constructor
+
+        result = controller.create_common_object(
+            factory=mock_factory,
+            name='TestObject',
+            description='Test description'
+        )
+
+        mock_factory.get_registered_type_by_supporting_class.assert_called_once_with(self.ConcreteClass)
+        mock_constructor.assert_called_once_with(
+            name='TestObject',
+            description='Test description',
+            meta_data=None
+        )
+        self.assertIsNotNone(result)
+
+    @patch('controlrox.models.plc.controller.AOIFactory')
+    def test_create_common_object_uses_default_type(self, mock_factory):
+        """Test create_common_object falls back to default_type when no registered type."""
+        controller = self.ConcreteClass()
+        mock_factory.get_registered_type_by_supporting_class.return_value = None
+        mock_default = Mock(return_value=Mock())
+
+        result = controller.create_common_object(
+            factory=mock_factory,
+            name='TestObject',
+            default_type=mock_default
+        )
+
+        mock_default.assert_called_once()
+        self.assertIsNotNone(result)
+
+    @patch('controlrox.models.plc.controller.AOIFactory')
+    def test_create_common_object_raises_error_without_constructor(self, mock_factory):
+        """Test create_common_object raises RuntimeError when no constructor found."""
+        controller = self.ConcreteClass()
+        mock_factory.get_registered_type_by_supporting_class.return_value = None
+        mock_factory.__name__ = 'TestFactory'
+
+        with self.assertRaises(RuntimeError) as context:
+            controller.create_common_object(
+                factory=mock_factory,
+                name='TestObject'
+            )
+
+        self.assertIn('No constructor or default constructor found', str(context.exception))
+        self.assertIn('TestFactory', str(context.exception))
+
+
+
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)

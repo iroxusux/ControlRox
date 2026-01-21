@@ -8,7 +8,10 @@ from controlrox.interfaces import (
     IDatatype,
     IHasTags,
     ITag,
-    LogicTagScope,
+    ITagKlass,
+    ITagType,
+    ITagExternalAccess,
+    ILogicTagScope,
 )
 from .meta import PlcObject
 from .protocols import CanBeSafe
@@ -22,9 +25,15 @@ class Tag(
     def __init__(
         self,
         meta_data: Optional[dict] = None,
-        name: Optional[str] = None,
-        description: Optional[str] = None,
-        container: Optional[IHasTags] = None,
+        name: str = '',
+        description: str = '',
+        tag_klass: ITagKlass = ITagKlass.STANDARD,
+        tag_type: ITagType = ITagType.BASE,
+        datatype: Optional[IDatatype] = None,
+        dimensions: Optional[str] = None,
+        constant: bool = False,
+        external_access: ITagExternalAccess = ITagExternalAccess.READ_WRITE,
+        container: Optional[IHasTags] = None
     ):
         CanBeSafe.__init__(self=self)
         PlcObject.__init__(
@@ -36,8 +45,13 @@ class Tag(
 
         self._aliased_tag: Optional[ITag] = None
         self._base_tag: Optional[ITag] = None
-        self._datatype: Optional[IDatatype] = None
+        self._constant = constant
         self._container = container or self.get_controller()
+        self._dimensions = dimensions
+        self._external_access = external_access
+        self._datatype: Optional[IDatatype] = datatype
+        self._tag_klass: ITagKlass = tag_klass
+        self._tag_type: ITagType = tag_type
 
     @property
     def container(self) -> IHasTags:
@@ -78,13 +92,16 @@ class Tag(
     def get_external_access(self) -> str:
         raise NotImplementedError("get_external_access method must be implemented by subclass.")
 
+    def get_klass(self) -> ITagKlass:
+        return self._tag_klass
+
     def get_opcua_access(self) -> str:
         raise NotImplementedError("get_opcua_access method must be implemented by subclass.")
 
-    def get_safety_class(self) -> str:
-        raise NotImplementedError("get_safety_class method must be implemented by subclass.")
+    def get_tag_type(self) -> ITagType:
+        return self._tag_type
 
-    def get_tag_scope(self) -> LogicTagScope:
+    def get_tag_scope(self) -> ILogicTagScope:
         raise NotImplementedError("get_tag_scope method must be implemented by subclass.")
 
     def is_constant(self) -> bool:
@@ -114,6 +131,14 @@ class Tag(
         """
         raise NotImplementedError("set_external_access method must be implemented by subclass.")
 
+    def set_klass(self, value: ITagKlass) -> None:
+        """set the klass for this tag
+
+        Args:
+            value (ITagKlass): klass to set
+        """
+        self._tag_klass = value
+
     def set_safety_class(self, value: str) -> None:
         """set the safety class for this tag
 
@@ -121,6 +146,14 @@ class Tag(
             value (str): safety class to set ['Standard', 'Safety']
         """
         raise NotImplementedError("set_safety_class method must be implemented by subclass.")
+
+    def set_tag_type(self, value: ITagType) -> None:
+        """set the tag type for this tag
+
+        Args:
+            value (ITagType): tag type to set
+        """
+        self._tag_type = value
 
     def set_opcua_access(self, value: str) -> None:
         """set the opc ua access for this tag

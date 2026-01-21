@@ -25,15 +25,19 @@ class RaRung(
     def __init__(
         self,
         meta_data: dict = DefaultDict(None),
+        name: str = '',
+        description: str = '',
         routine: Optional[IRoutine] = None,
-        rung_number: Union[int, str] = 0,
+        comment: str = '',
         rung_text: str = '',
-        comment: str = ''
+        rung_number: Union[int, str] = 0,
+
     ):
         """type class for plc Rung"""
         super().__init__(
             meta_data=meta_data,
-            name='',
+            name=name,
+            description=description,
             comment=comment or meta_data.get('Comment', ''),
             routine=routine,
             rung_text=rung_text or meta_data.get('Text', ''),

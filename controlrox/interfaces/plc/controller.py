@@ -210,6 +210,7 @@ class IController(
         description: str = '',
         meta_data: Optional[str] = None,
         instruction: Optional[ILogicInstruction] = None,
+        arg_position: int = -1,
     ) -> 'ILogicOperand':
         """Create an operand instance.
 
@@ -218,6 +219,7 @@ class IController(
             description: The description of the operand.
             meta_data: Optional metadata for the operand.
             instruction: The instruction to associate with the operand.
+            arg_position: The argument position of the operand. Defaults to last position.
         Returns:
             ILogicOperand: The created operand instance.
         """

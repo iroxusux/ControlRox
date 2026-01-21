@@ -57,9 +57,9 @@ from .plc import (
     INSTR_JSR,
     CIPTYPES,
     IPlcObject,
-    LogicAssetType,
-    LogicInstructionType,
-    LogicTagScope,
+    ILogicAssetType,
+    ILogicInstructionType,
+    ILogicTagScope,
 
     # Datatype Interfaces
     IDatatype,
@@ -71,6 +71,9 @@ from .plc import (
 
     # Tag Interfaces
     ITag,
+    ITagKlass,
+    ITagType,
+    ITagExternalAccess,
 
     # Logic Interfaces
     ILogicInstruction,
@@ -157,9 +160,9 @@ __all__ = (
     'INSTR_JSR',
     'CIPTYPES',
     'IPlcObject',
-    'LogicAssetType',
-    'LogicInstructionType',
-    'LogicTagScope',
+    'ILogicAssetType',
+    'ILogicInstructionType',
+    'ILogicTagScope',
 
     # Datatype section
     'IDatatype',
@@ -171,6 +174,9 @@ __all__ = (
 
     # Tag section
     'ITag',
+    'ITagKlass',
+    'ITagType',
+    'ITagExternalAccess',
 
     # Instruction section
     'ILogicInstruction',

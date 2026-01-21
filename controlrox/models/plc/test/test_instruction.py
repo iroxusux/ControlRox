@@ -2,7 +2,7 @@
 import unittest
 from unittest.mock import Mock
 
-from controlrox.interfaces import LogicInstructionType, ILogicOperand
+from controlrox.interfaces import ILogicInstructionType, ILogicOperand
 from controlrox.models.plc.instruction import LogicInstruction
 from controlrox.models.plc.operand import LogicOperand
 
@@ -50,7 +50,7 @@ class TestLogicInstruction(unittest.TestCase):
 
         instr_type = instruction.instruction_type
 
-        self.assertIsInstance(instr_type, LogicInstructionType)
+        self.assertIsInstance(instr_type, ILogicInstructionType)
 
 
 class TestLogixInstructionType(unittest.TestCase):
@@ -74,7 +74,7 @@ class TestLogixInstructionType(unittest.TestCase):
 
         instr_type = instruction.get_instruction_type()
 
-        self.assertEqual(instr_type, LogicInstructionType.INPUT)
+        self.assertEqual(instr_type, ILogicInstructionType.INPUT)
 
     def test_input_instruction_type_xio(self):
         """Test XIO is detected as INPUT type."""
@@ -82,7 +82,7 @@ class TestLogixInstructionType(unittest.TestCase):
 
         instr_type = instruction.get_instruction_type()
 
-        self.assertEqual(instr_type, LogicInstructionType.INPUT)
+        self.assertEqual(instr_type, ILogicInstructionType.INPUT)
 
     def test_output_instruction_type_ote(self):
         """Test OTE is detected as OUTPUT type."""
@@ -90,7 +90,7 @@ class TestLogixInstructionType(unittest.TestCase):
 
         instr_type = instruction.get_instruction_type()
 
-        self.assertEqual(instr_type, LogicInstructionType.OUTPUT)
+        self.assertEqual(instr_type, ILogicInstructionType.OUTPUT)
 
     def test_output_instruction_type_otl(self):
         """Test OTL is detected as OUTPUT type."""
@@ -98,7 +98,7 @@ class TestLogixInstructionType(unittest.TestCase):
 
         instr_type = instruction.get_instruction_type()
 
-        self.assertEqual(instr_type, LogicInstructionType.OUTPUT)
+        self.assertEqual(instr_type, ILogicInstructionType.OUTPUT)
 
     def test_output_instruction_type_otu(self):
         """Test OTU is detected as OUTPUT type."""
@@ -106,7 +106,7 @@ class TestLogixInstructionType(unittest.TestCase):
 
         instr_type = instruction.get_instruction_type()
 
-        self.assertEqual(instr_type, LogicInstructionType.OUTPUT)
+        self.assertEqual(instr_type, ILogicInstructionType.OUTPUT)
 
     def test_output_instruction_type_mov(self):
         """Test MOV is detected as OUTPUT type."""
@@ -114,7 +114,7 @@ class TestLogixInstructionType(unittest.TestCase):
 
         instr_type = instruction.get_instruction_type()
 
-        self.assertEqual(instr_type, LogicInstructionType.OUTPUT)
+        self.assertEqual(instr_type, ILogicInstructionType.OUTPUT)
 
     def test_jsr_instruction_type(self):
         """Test JSR is detected as JSR type."""
@@ -122,7 +122,7 @@ class TestLogixInstructionType(unittest.TestCase):
 
         instr_type = instruction.get_instruction_type()
 
-        self.assertEqual(instr_type, LogicInstructionType.JSR)
+        self.assertEqual(instr_type, ILogicInstructionType.JSR)
 
     def test_unknown_instruction_type(self):
         """Test unknown instruction is detected as UNKNOWN type."""
@@ -130,7 +130,7 @@ class TestLogixInstructionType(unittest.TestCase):
 
         instr_type = instruction.get_instruction_type()
 
-        self.assertEqual(instr_type, LogicInstructionType.UNKNOWN)
+        self.assertEqual(instr_type, ILogicInstructionType.UNKNOWN)
 
     def test_instruction_type_caching(self):
         """Test instruction type is cached after first access."""
@@ -142,7 +142,7 @@ class TestLogixInstructionType(unittest.TestCase):
         type2 = instruction.get_instruction_type()
 
         self.assertEqual(type1, type2)
-        self.assertEqual(instruction._instruction_type, LogicInstructionType.INPUT)
+        self.assertEqual(instruction._instruction_type, ILogicInstructionType.INPUT)
 
     def test_instruction_type_property_uses_get_method(self):
         """Test instruction_type property calls get_instruction_type."""
@@ -306,43 +306,43 @@ class TestLogicInstructionTypeDetection(unittest.TestCase):
         """Test XIC is INPUT type."""
         instruction = self.TestableInstruction('XIC(Tag)', 'XIC')
 
-        self.assertEqual(instruction.instruction_type, LogicInstructionType.INPUT)
+        self.assertEqual(instruction.instruction_type, ILogicInstructionType.INPUT)
 
     def test_xio_is_input(self):
         """Test XIO is INPUT type."""
         instruction = self.TestableInstruction('XIO(Tag)', 'XIO')
 
-        self.assertEqual(instruction.instruction_type, LogicInstructionType.INPUT)
+        self.assertEqual(instruction.instruction_type, ILogicInstructionType.INPUT)
 
     def test_ote_is_output(self):
         """Test OTE is OUTPUT type."""
         instruction = self.TestableInstruction('OTE(Tag)', 'OTE')
 
-        self.assertEqual(instruction.instruction_type, LogicInstructionType.OUTPUT)
+        self.assertEqual(instruction.instruction_type, ILogicInstructionType.OUTPUT)
 
     def test_otl_is_output(self):
         """Test OTL is OUTPUT type."""
         instruction = self.TestableInstruction('OTL(Tag)', 'OTL')
 
-        self.assertEqual(instruction.instruction_type, LogicInstructionType.OUTPUT)
+        self.assertEqual(instruction.instruction_type, ILogicInstructionType.OUTPUT)
 
     def test_otu_is_output(self):
         """Test OTU is OUTPUT type."""
         instruction = self.TestableInstruction('OTU(Tag)', 'OTU')
 
-        self.assertEqual(instruction.instruction_type, LogicInstructionType.OUTPUT)
+        self.assertEqual(instruction.instruction_type, ILogicInstructionType.OUTPUT)
 
     def test_jsr_is_jsr(self):
         """Test JSR is JSR type."""
         instruction = self.TestableInstruction('JSR(Routine)', 'JSR')
 
-        self.assertEqual(instruction.instruction_type, LogicInstructionType.JSR)
+        self.assertEqual(instruction.instruction_type, ILogicInstructionType.JSR)
 
     def test_unknown_type(self):
         """Test unknown instruction is UNKNOWN type."""
         instruction = self.TestableInstruction('CUSTOM(Tag)', 'CUSTOM')
 
-        self.assertEqual(instruction.instruction_type, LogicInstructionType.UNKNOWN)
+        self.assertEqual(instruction.instruction_type, ILogicInstructionType.UNKNOWN)
 
     def test_type_caching(self):
         """Test instruction type is cached."""
@@ -352,7 +352,7 @@ class TestLogicInstructionTypeDetection(unittest.TestCase):
         type2 = instruction.get_instruction_type()
 
         self.assertEqual(type1, type2)
-        self.assertEqual(instruction._instruction_type, LogicInstructionType.INPUT)
+        self.assertEqual(instruction._instruction_type, ILogicInstructionType.INPUT)
 
 
 class TestLogicInstructionMetaData(unittest.TestCase):

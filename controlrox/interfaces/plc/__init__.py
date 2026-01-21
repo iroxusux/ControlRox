@@ -40,9 +40,9 @@ from .meta import (
     INSTR_JSR,
     CIPTYPES,
     IPlcObject,
-    LogicAssetType,
-    LogicInstructionType,
-    LogicTagScope
+    ILogicAssetType,
+    ILogicInstructionType,
+    ILogicTagScope
 )
 
 from .datatype import (
@@ -57,6 +57,9 @@ from .aoi import (
 
 from .tag import (
     ITag,
+    ITagKlass,
+    ITagType,
+    ITagExternalAccess,
 )
 
 from .instruction import (
@@ -150,9 +153,9 @@ __all__ = (
     "INSTR_JSR",
     "CIPTYPES",
     "IPlcObject",
-    "LogicAssetType",
-    "LogicInstructionType",
-    "LogicTagScope",
+    "ILogicAssetType",
+    "ILogicInstructionType",
+    "ILogicTagScope",
 
     # Controller section
     "IController",
@@ -168,6 +171,9 @@ __all__ = (
 
     # Tag section
     "ITag",
+    "ITagKlass",
+    "ITagType",
+    "ITagExternalAccess",
 
     # Instruction section
     "ILogicInstruction",

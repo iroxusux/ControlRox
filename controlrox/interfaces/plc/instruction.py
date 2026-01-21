@@ -2,7 +2,7 @@
 from abc import abstractmethod
 from typing import Optional, TYPE_CHECKING
 from .protocols import IHasOperands
-from .meta import IPlcObject, LogicInstructionType
+from .meta import IPlcObject, ILogicInstructionType
 
 if TYPE_CHECKING:
     from controlrox.interfaces.plc.rung import IRung
@@ -16,7 +16,7 @@ class ILogicInstruction(
     """
 
     @property
-    def instruction_type(self) -> 'LogicInstructionType':
+    def instruction_type(self) -> 'ILogicInstructionType':
         """get the instruction type for this instruction
 
         Returns:
@@ -34,7 +34,7 @@ class ILogicInstruction(
         return self.get_rung()
 
     @abstractmethod
-    def get_instruction_type(self) -> 'LogicInstructionType':
+    def get_instruction_type(self) -> 'ILogicInstructionType':
         """get the instruction type for this instruction
 
         Returns:

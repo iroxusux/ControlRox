@@ -2,7 +2,7 @@
 
 import unittest
 from unittest.mock import Mock, patch
-from controlrox.interfaces import LogicInstructionType
+from controlrox.interfaces import ILogicInstructionType
 from controlrox.models.plc.rockwell.controller import RaController
 from controlrox.models.plc.rockwell.program import RaProgram
 from controlrox.models.plc.rockwell.routine import RaRoutine
@@ -252,7 +252,7 @@ class TestRaRoutineJSRMethods(unittest.TestCase):
 
         # Mock JSR instruction with proper interface methods
         mock_jsr = Mock(spec=RaLogicInstruction)
-        mock_jsr.get_instruction_type.return_value = LogicInstructionType.JSR
+        mock_jsr.get_instruction_type.return_value = ILogicInstructionType.JSR
 
         mock_operand = Mock()
         mock_operand.__str__ = Mock(return_value='SubRaRoutine1')
@@ -260,7 +260,7 @@ class TestRaRoutineJSRMethods(unittest.TestCase):
 
         # Mock non-JSR instruction
         mock_other = Mock(spec=RaLogicInstruction)
-        mock_other.get_instruction_type.return_value = LogicInstructionType.INPUT
+        mock_other.get_instruction_type.return_value = ILogicInstructionType.INPUT
 
         routine._instructions = [mock_other, mock_jsr]
 
@@ -276,7 +276,7 @@ class TestRaRoutineJSRMethods(unittest.TestCase):
 
         # Mock JSR instruction with different operand
         mock_jsr = Mock(spec=RaLogicInstruction)
-        mock_jsr.type = LogicInstructionType.JSR
+        mock_jsr.type = ILogicInstructionType.JSR
         mock_operand = Mock()
         mock_operand.__str__ = Mock(return_value='DifferentRaRoutine')
         mock_jsr.operands = [mock_operand]
@@ -295,7 +295,7 @@ class TestRaRoutineJSRMethods(unittest.TestCase):
 
         # Mock JSR instruction with no operands
         mock_jsr = Mock(spec=RaLogicInstruction)
-        mock_jsr.type = LogicInstructionType.JSR
+        mock_jsr.type = ILogicInstructionType.JSR
         mock_jsr.operands = []
 
         routine._instructions = [mock_jsr]
@@ -414,7 +414,7 @@ class TestRaRoutineEdgeCases(unittest.TestCase):
         )
 
         mock_jsr = Mock(spec=RaLogicInstruction)
-        mock_jsr.get_instruction_type.return_value = LogicInstructionType.JSR
+        mock_jsr.get_instruction_type.return_value = ILogicInstructionType.JSR
         mock_jsr.get_operands.return_value = None
 
         routine._instructions = [mock_jsr]

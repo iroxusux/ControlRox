@@ -174,7 +174,7 @@ CIPTYPES = {
 }
 
 
-class LogicTagScope(Enum):
+class ILogicTagScope(Enum):
     """logix tag scope enumeration
     """
     PROGRAM = 0
@@ -182,7 +182,7 @@ class LogicTagScope(Enum):
     CONTROLLER = 2
 
 
-class LogicInstructionType(Enum):
+class ILogicInstructionType(Enum):
     """logix instruction type enumeration
     """
     INPUT = 1
@@ -192,7 +192,7 @@ class LogicInstructionType(Enum):
     AOI = 5
 
 
-class LogicAssetType(Enum):
+class ILogicAssetType(Enum):
     """logix element resolver enumeration
     """
     DEFAULT = 0
@@ -205,6 +205,18 @@ class LogicAssetType(Enum):
     PROGRAMTAG = 7
     RUNG = 8
     ALL = 9
+
+
+class IExternalAccessMixin(Enum):
+    READ_ONLY = 'READ_ONLY'
+    WRITE_ONLY = 'WRITE_ONLY'
+    READ_WRITE = 'READ_WRITE'
+    NONE = 'NONE'
+
+
+class IStandardSafetyMixin(Enum):
+    STANDARD = 'STANDARD'
+    SAFETY = 'SAFETY'
 
 
 class IPlcObject(
@@ -315,8 +327,8 @@ class IPlcObject(
 
 __all__ = [
     'IPlcObject',
-    'LogicTagScope',
-    'LogicInstructionType',
-    'LogicAssetType',
+    'ILogicTagScope',
+    'ILogicInstructionType',
+    'ILogicAssetType',
     'CIPTYPES',
 ]

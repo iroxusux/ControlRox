@@ -3,16 +3,20 @@
 from __future__ import annotations
 
 
-from pyrox.models import ApplicationTask
+from controlrox.models.tasks.task import ControllerApplicationTask
 
 
-class DebugTask(ApplicationTask):
+class DebugTask(ControllerApplicationTask):
     """Debug task for the application.
     """
 
     def debug(self, *_, **__) -> None:
         """Debug method."""
-        pass
+        print('this is a debug task')
 
     def inject(self) -> None:
-        pass
+        tools_menu = self.application.menu.get_tools_menu()
+        if not tools_menu:
+            return
+
+        tools_menu.add_item(label='EPlan Import', command=self.debug)
