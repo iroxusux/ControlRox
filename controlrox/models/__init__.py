@@ -2,7 +2,8 @@
 from . import (
     eplan,
     gui,
-    plc
+    plc,
+    simulation,
 )
 
 # PLC section
@@ -61,6 +62,7 @@ __all__ = (
     'eplan',
     'gui',
     'plc',
+    'simulation',
 
     # PLC section
     # Protocol definitions
