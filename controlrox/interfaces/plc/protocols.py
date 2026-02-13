@@ -11,7 +11,7 @@ from typing import (
     TypeVar,
 )
 from pyrox.models import HashList, FactoryTypeMeta
-from pyrox.models.abc.meta import T as META
+from pyrox.models.meta import T as META
 
 if TYPE_CHECKING:
     from .aoi import IAddOnInstruction

@@ -5,7 +5,7 @@ from typing import (
     Optional,
 )
 
-from pyrox.models.abc.factory import FactoryTypeMeta
+from pyrox.models.factory import FactoryTypeMeta
 
 from controlrox.interfaces import (
     IAddOnInstruction,
@@ -91,8 +91,9 @@ class RaAddOnInstruction(
     def execute_prescan(self, value: str):
         if isinstance(value, bool):
             value = 'true' if value else 'false'
-        if not self.is_valid_rockwell_bool(value):
-            raise self.InvalidNamingException
+
+        if value.lower() not in ['true', 'false']:
+            raise ValueError("execute_enable_in_false must be a boolean or 'true'/'false' string!")
 
         self['@ExecutePrescan'] = value
 
@@ -104,8 +105,9 @@ class RaAddOnInstruction(
     def execute_postscan(self, value: str):
         if isinstance(value, bool):
             value = 'true' if value else 'false'
-        if not self.is_valid_rockwell_bool(value):
-            raise self.InvalidNamingException
+
+        if value.lower() not in ['true', 'false']:
+            raise ValueError("execute_enable_in_false must be a boolean or 'true'/'false' string!")
 
         self['@ExecutePostscan'] = value
 
@@ -117,8 +119,9 @@ class RaAddOnInstruction(
     def execute_enable_in_false(self, value: str):
         if isinstance(value, bool):
             value = 'true' if value else 'false'
-        if not self.is_valid_rockwell_bool(value):
-            raise self.InvalidNamingException
+
+        if value.lower() not in ['true', 'false']:
+            raise ValueError("execute_enable_in_false must be a boolean or 'true'/'false' string!")
 
         self['@ExecuteEnableInFalse'] = value
 
@@ -153,9 +156,6 @@ class RaAddOnInstruction(
 
     @software_revision.setter
     def software_revision(self, value: str):
-        if not self.is_valid_revision_string(value):
-            raise self.InvalidNamingException
-
         self['@SoftwareRevision'] = value
 
     @property
@@ -350,8 +350,6 @@ class RaAddOnInstruction(
         Args:
             revision (str): revision string
         """
-        if not self.is_valid_revision_string(revision):
-            raise self.InvalidNamingException
         self['@Revision'] = revision
 
     def get_parameters(self) -> list[dict]:

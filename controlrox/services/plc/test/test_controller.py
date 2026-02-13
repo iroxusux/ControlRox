@@ -380,7 +380,7 @@ class TestControllerMatcherFactory(unittest.TestCase):
 
     def test_factory_is_meta_factory(self):
         """Test that ControllerMatcherFactory is a MetaFactory."""
-        from pyrox.models.abc.factory import MetaFactory
+        from pyrox.models.factory import MetaFactory
         self.assertTrue(issubclass(ControllerMatcherFactory, type(MetaFactory)))
 
 

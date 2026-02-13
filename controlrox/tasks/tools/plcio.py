@@ -1,27 +1,23 @@
 """PLC Inspection Application
-    """
-import importlib
-from controlrox.applications import plcio
-from controlrox.models.tasks.task import ControllerApplicationTask
+"""
+from controlrox.models import ControllerApplicationTask
+from controlrox.models.gui.plcio import PlcIoFrame
 
 
 class PlcIoTask(ControllerApplicationTask):
     """Controller verification task for the PLC verification Application.
     """
 
-    def run(self) -> None:
-        mgr = getattr(self, 'manager', None)
-        if mgr:
-            del self.manager
-        importlib.reload(plcio)
-        self.manager = plcio.PlcIoApplicationManager(self.application)
+    def show_plc_io_frame(self) -> None:
+        """Show the PLC I/O frame.
+        """
+        frame = PlcIoFrame(self.application.workspace.root)
+        self.application.workspace.register_frame(frame)
 
     def inject(self) -> None:
-        tools_menu = self.application.menu.get_tools_menu()
-        if not tools_menu:
-            raise RuntimeError('Tools menu not found')
-
-        tools_menu.add_item(
+        self.tools_menu.add_item(
             label='PLC I/O',
-            command=self.run
+            command=self.show_plc_io_frame,
+            accelerator='Ctrl+Shift+P',
+            underline=0,
         )

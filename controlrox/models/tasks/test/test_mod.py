@@ -2,7 +2,7 @@
 import unittest
 from unittest.mock import Mock, patch
 
-from pyrox.models.abc.list import HashList
+from pyrox.models.list import HashList
 from controlrox.interfaces import ITag, IRoutine, IRung
 from controlrox.models import Controller, ControllerModificationSchema
 

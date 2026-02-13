@@ -4,7 +4,7 @@ from enum import Enum
 from typing import Callable, Optional, Union
 from pylogix import PLC
 from pylogix.lgx_response import Response
-from pyrox.models.abc.network import Ipv4Address
+from pyrox.models.network import Ipv4Address
 from pyrox.services.logging import log
 from pyrox.services.timer import TimerService
 

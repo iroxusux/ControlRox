@@ -1,8 +1,7 @@
 """ Edit tasks
 """
-from pyrox.services.logging import log
-from pyrox.services.process import execute_file_as_subprocess
-from controlrox.models.tasks.task import ControllerApplicationTask
+from pyrox.services import execute_file_as_subprocess, log
+from controlrox.models import ControllerApplicationTask
 from controlrox.services import ControllerInstanceManager
 
 
@@ -15,7 +14,7 @@ class LaunchToStudioTask(ControllerApplicationTask):
         ctrl = ControllerInstanceManager.get_controller()
 
         if not ctrl:
-            log(self).error('No controller loaded, cannot launch Studio 5000.')
+            log(self).warning('No controller loaded, cannot launch Studio 5000.')
             return
 
         ControllerInstanceManager.save_controller_to_file_location(
@@ -24,19 +23,13 @@ class LaunchToStudioTask(ControllerApplicationTask):
         )
 
         if not ctrl:
-            log(self).error('Controller file location is not set.')
+            log(self).error('Controller file location is not set, cannot launch Studio 5000.')
             return
 
         execute_file_as_subprocess(ctrl.file_location)
 
     def inject(self) -> None:
-        if not self.application.menu:
-            return
-
-        edit_menu = self.application.menu.get_edit_menu()
-        edit_menu.add_separator()
-        edit_menu.add_item(
+        self.edit_menu.add_item(
             label='Launch to Studio 5000',
             command=self.launch_studio,
-            index='end',
         )

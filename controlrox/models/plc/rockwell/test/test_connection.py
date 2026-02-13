@@ -9,7 +9,7 @@ from controlrox.models.plc.rockwell.connection import (
     ConnectionCommandType,
     ControllerConnection
 )
-from pyrox.models.abc.network import Ipv4Address
+from pyrox.models.network import Ipv4Address
 from pyrox.services.timer import TimerService
 from pylogix.lgx_response import Response
 

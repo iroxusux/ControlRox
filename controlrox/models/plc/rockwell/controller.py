@@ -6,8 +6,8 @@ from typing import (
     Optional,
 )
 
-from pyrox.models.abc.list import HashList
-from pyrox.models.abc.factory import FactoryTypeMeta
+from pyrox.models.list import HashList
+from pyrox.models.factory import FactoryTypeMeta
 from pyrox.services.dict import replace_strings_in_dict
 from pyrox.services.file import get_save_file
 from pyrox.services.logging import log

@@ -1,7 +1,7 @@
 """Program module for pyrox
 """
 from typing import Optional
-from pyrox.models.abc.factory import FactoryTypeMeta
+from pyrox.models.factory import FactoryTypeMeta
 from controlrox.interfaces import (
     ILogicInstruction,
     IRoutine,

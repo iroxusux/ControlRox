@@ -8,7 +8,6 @@ from controlrox.interfaces import (
     OUTPUT_INSTRUCTIONS,
     INSTR_JSR,
     ILogicInstruction,
-    ILogicOperand,
     IRung,
     ILogicInstructionType,
 )

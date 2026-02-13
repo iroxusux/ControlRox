@@ -14,8 +14,8 @@ from controlrox.models.plc.rockwell.module import RaModule
 from controlrox.models.plc.rockwell.tag import RaTag
 from controlrox.interfaces import IController
 from controlrox.models.plc.rockwell import meta as plc_meta
-from pyrox.models.abc.list import HashList
-from pyrox.models.abc.factory import MetaFactory
+from pyrox.models.list import HashList
+from pyrox.models.factory import MetaFactory
 
 
 class TestControllerSafetyInfo(unittest.TestCase):

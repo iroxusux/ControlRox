@@ -181,7 +181,7 @@ class TestPlcObject(unittest.TestCase):
         """Test set_name with invalid string containing spaces."""
         obj = self.ConcreteTestPlcObject()
 
-        with self.assertRaises(obj.InvalidNamingException) as context:
+        with self.assertRaises(ValueError) as context:
             obj.set_name('Invalid Name With Spaces')
 
         self.assertIn('valid', str(context.exception).lower())
@@ -190,7 +190,7 @@ class TestPlcObject(unittest.TestCase):
         """Test set_name with invalid string containing special characters."""
         obj = self.ConcreteTestPlcObject()
 
-        with self.assertRaises(obj.InvalidNamingException) as context:
+        with self.assertRaises(ValueError) as context:
             obj.set_name('Invalid@Name!')
 
         self.assertIn('valid', str(context.exception).lower())
@@ -241,28 +241,12 @@ class TestPlcObject(unittest.TestCase):
         # Should have PyroxObject attributes
         self.assertTrue(hasattr(obj, 'id'))
 
-    def test_inheritance_from_enforces_naming(self):
-        """Test that PlcObject inherits from EnforcesNaming."""
-        obj = self.ConcreteTestPlcObject()
-
-        # Should have EnforcesNaming methods
-        self.assertTrue(hasattr(obj, 'is_valid_string'))
-        self.assertTrue(hasattr(obj, 'InvalidNamingException'))
-
     def test_inheritance_from_supports_metadata(self):
         """Test that PlcObject inherits from SupportsMetaData."""
         obj = self.ConcreteTestPlcObject()
 
         # Should have SupportsMetaData attributes
         self.assertTrue(hasattr(obj, 'meta_data'))
-
-    def test_enforces_naming_validation(self):
-        """Test that EnforcesNaming validation works."""
-        obj = self.ConcreteTestPlcObject()
-
-        # Test validation methods
-        self.assertTrue(obj.is_valid_string('ValidName'))
-        self.assertFalse(obj.is_valid_string('Invalid Name'))
 
     def test_metadata_attribute_exists(self):
         """Test that meta_data attribute exists and is accessible."""
@@ -930,7 +914,7 @@ class TestPlcObjectNameValidation(unittest.TestCase):
         """Test invalid name with space."""
         obj = self.ConcreteTestPlcObject()
 
-        with self.assertRaises(obj.InvalidNamingException):
+        with self.assertRaises(ValueError):
             obj.set_name('Invalid Name')
 
     def test_invalid_name_with_special_chars(self):
@@ -939,29 +923,15 @@ class TestPlcObjectNameValidation(unittest.TestCase):
 
         invalid_names = ['Name@Test', 'Name!', 'Name#', 'Name$', 'Name%']
         for invalid_name in invalid_names:
-            with self.assertRaises(obj.InvalidNamingException):
+            with self.assertRaises(ValueError):
                 obj.set_name(invalid_name)
 
     def test_invalid_name_with_hyphen(self):
         """Test invalid name with hyphen."""
         obj = self.ConcreteTestPlcObject()
 
-        with self.assertRaises(obj.InvalidNamingException):
+        with self.assertRaises(ValueError):
             obj.set_name('Invalid-Name')
-
-    def test_is_valid_string_method(self):
-        """Test is_valid_string method directly."""
-        obj = self.ConcreteTestPlcObject()
-
-        self.assertTrue(obj.is_valid_string('ValidName'))
-        self.assertTrue(obj.is_valid_string('Valid_Name'))
-        self.assertTrue(obj.is_valid_string('_Name'))
-        self.assertTrue(obj.is_valid_string('Name123'))
-        self.assertTrue(obj.is_valid_string('Array[0]'))
-
-        self.assertFalse(obj.is_valid_string('Invalid Name'))
-        self.assertFalse(obj.is_valid_string('Invalid@Name'))
-        self.assertFalse(obj.is_valid_string('Invalid-Name'))
 
 
 class TestPlcObjectInheritanceChain(unittest.TestCase):
@@ -1004,13 +974,6 @@ class TestPlcObjectInheritanceChain(unittest.TestCase):
         self.assertTrue(hasattr(obj, 'get_meta_data'))
         self.assertTrue(hasattr(obj, 'set_meta_data'))
         self.assertTrue(hasattr(obj, 'meta_data'))
-
-    def test_has_naming_methods(self):
-        """Test that object has EnforcesNaming methods."""
-        obj = self.ConcreteTestPlcObject()
-
-        self.assertTrue(hasattr(obj, 'is_valid_string'))
-        self.assertTrue(hasattr(obj, 'InvalidNamingException'))
 
     def test_multiple_inheritance_resolution(self):
         """Test that multiple inheritance is properly resolved."""

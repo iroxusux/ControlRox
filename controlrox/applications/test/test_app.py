@@ -33,7 +33,7 @@ class TestApp(unittest.TestCase):
         self.mock_gui_manager.is_gui_available.return_value = True
 
         # Mock environment variable for GUI with side_effect to return correct types
-        self.env_patcher = patch('pyrox.models.application.EnvManager.get')
+        self.env_patcher = patch('pyrox.application.EnvManager.get')
         self.mock_get_env = self.env_patcher.start()
 
         def env_side_effect(key, default=None, *args, **kwargs):
@@ -64,7 +64,7 @@ class TestApp(unittest.TestCase):
     def test_init(self):
         """Test initialization of App."""
         with patch('pyrox.services.gui.GuiManager'):
-            with patch('pyrox.models.application.EnvManager.get', return_value=False):  # Disable GUI for this test
+            with patch('pyrox.application.EnvManager.get', return_value=False):  # Disable GUI for this test
                 app = App()
 
         self.assertIsInstance(app._object_lookup_cache, dict)

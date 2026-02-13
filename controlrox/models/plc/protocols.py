@@ -5,7 +5,8 @@ from typing import (
     Optional,
     Union
 )
-from pyrox.models.abc import HashList, SupportsItemAccess
+from pyrox.models import HashList
+from pyrox.models.meta import SupportsItemAccess
 from controlrox.interfaces import (
     # Protocols
     ICanBeSafe,

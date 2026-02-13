@@ -1,5 +1,5 @@
 import re
-from pyrox.models.abc.factory import MetaFactory
+from pyrox.models.factory import MetaFactory
 from controlrox.interfaces.plc.rung import RungElement, RungElementType, RungBranch
 
 

@@ -2,7 +2,6 @@
 """
 from datetime import datetime
 
-from pyrox.services.gui import GuiManager
 from pyrox.services.logging import log
 from controlrox.models.tasks.task import ControllerApplicationTask
 from controlrox.models.tasks import validator
@@ -47,15 +46,8 @@ class ControllerValidatorTask(ControllerApplicationTask):
             log().info('--- Controller Validation Complete ---')
 
     def inject(self) -> None:
-        tools_menu = self.application.menu.get_tools_menu()
-        if not tools_menu:
-            raise RuntimeError('Tools menu not found')
 
-        backend = GuiManager.get_backend()
-        if not backend:
-            raise RuntimeError('GUI backend not found')
-
-        dropdown_menu = backend.create_gui_menu(master=tools_menu.menu, tearoff=0)
+        dropdown_menu = self.gui.unsafe_get_backend().create_gui_menu(master=self.tools_menu.menu, tearoff=0)
         dropdown_menu.add_item(
             label='Validate Controller (All)',
             command=lambda: self.run('full')
@@ -85,7 +77,7 @@ class ControllerValidatorTask(ControllerApplicationTask):
             label='Validate Controller (Program Only)',
             command=lambda: self.run('programs')
         )
-        tools_menu.add_submenu(
+        self.tools_menu.add_submenu(
             label='Validate',
             submenu=dropdown_menu
         )

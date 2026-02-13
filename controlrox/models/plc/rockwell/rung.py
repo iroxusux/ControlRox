@@ -5,7 +5,7 @@ from typing import (
     Optional,
     Union
 )
-from pyrox.models.abc.factory import FactoryTypeMeta
+from pyrox.models.factory import FactoryTypeMeta
 from controlrox.interfaces import IRoutine
 from controlrox.models.plc.rockwell.meta import PLC_RUNG_FILE
 from controlrox.models.plc import Rung

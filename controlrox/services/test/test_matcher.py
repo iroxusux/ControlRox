@@ -7,7 +7,7 @@ from controlrox.services import (
     ControllerMatcherFactory
 )
 from controlrox.models.plc.rockwell.controller import RaController
-from pyrox.models.abc.factory import FactoryTypeMeta, MetaFactory
+from pyrox.models.factory import FactoryTypeMeta, MetaFactory
 
 
 class TestControllerMatcherFactory(unittest.TestCase):

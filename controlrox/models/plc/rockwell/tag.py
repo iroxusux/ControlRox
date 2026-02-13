@@ -6,7 +6,7 @@ from typing import (
     Union,
     Self,
 )
-from pyrox.models.abc.factory import FactoryTypeMeta
+from pyrox.models.factory import FactoryTypeMeta
 from controlrox.interfaces import (
     IController,
     IProgram,
@@ -165,8 +165,8 @@ class RaTag(
         if isinstance(value, bool):
             value = 'true' if value else 'false'
 
-        if not self.is_valid_rockwell_bool(value):
-            raise self.InvalidNamingException
+        if value not in ['true', 'false']:
+            raise ValueError("Constant must be a boolean or a string of 'true' or 'false'!")
 
         self['@Constant'] = value
 
@@ -183,9 +183,6 @@ class RaTag(
 
     @raw_datatype.setter
     def raw_datatype(self, value: str):
-        if not self.is_valid_string(value) or not value:
-            raise ValueError("Data type must be a valid string!")
-
         self['@DataType'] = value
         self['Data'] = []
 

@@ -1,5 +1,6 @@
 """Meta definition for PLC models and architecture.
 """
+import re
 from typing import (
     Callable,
     Generic,
@@ -7,8 +8,7 @@ from typing import (
     Self,
     Union
 )
-from pyrox.models.abc import (
-    EnforcesNaming,
+from pyrox.models import (
     HashList,
     PyroxObject,
 )
@@ -16,12 +16,15 @@ from controlrox.interfaces import IController, IPlcObject, META
 from controlrox.services import ControllerInstanceManager
 from .protocols import HasController, HasMetaData
 
+ALLOWED_CHARS = re.compile(f'[^{r'a-zA-Z0-9_\[\]'}]')
+ALLOWED_REV_CHARS = re.compile(f'[^{r'0-9.'}]')
+ALLOWED_MOD_CHARS = re.compile(f'[^{r'^a-zA-Z0-9\_\.\-\:'}]')
+
 
 class PlcObject(
     IPlcObject[META],
     HasController,
     HasMetaData[META],
-    EnforcesNaming,
     PyroxObject,
     Generic[META],
 ):
@@ -242,10 +245,11 @@ class PlcObject(
             ValueError: If the name is not a valid string.
         """
         if not isinstance(name, str):
-            raise self.InvalidNamingException(f"Name must be a string, got {type(name)}")
-        if not self.is_valid_string(name):
-            raise self.InvalidNamingException(f"Invalid name: {name}")
+            raise ValueError(f"Name must be a string, got {type(name)}")
         self._name = name
+
+        if ALLOWED_CHARS.search(name):
+            raise ValueError(f"Name contains invalid characters: {name}")
 
         if isinstance(self.meta_data, dict):
             self.meta_data["@Name"] = name

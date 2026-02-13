@@ -2,7 +2,7 @@
 """
 from enum import Enum
 from typing import Optional
-from pyrox.models.abc.factory import FactoryTypeMeta
+from pyrox.models.factory import FactoryTypeMeta
 from controlrox.interfaces import (
     IModule
 )
@@ -219,9 +219,6 @@ class RaModule(
         return self.meta_data.get('@CatalogNumber', '')
 
     def set_catalog_number(self, catalog_number: str):
-        if not self.is_valid_module_string(catalog_number):
-            raise self.InvalidNamingException
-
         self['@CatalogNumber'] = catalog_number
 
     def get_communications(self) -> dict:

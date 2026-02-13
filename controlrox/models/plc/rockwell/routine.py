@@ -3,7 +3,7 @@
 from typing import (
     Self,
 )
-from pyrox.models.abc.factory import FactoryTypeMeta
+from pyrox.models.factory import FactoryTypeMeta
 from controlrox.models.plc.rockwell.meta import PLC_ROUT_FILE
 from controlrox.interfaces import ILogicInstructionType
 from controlrox.models.plc import Routine

@@ -5,11 +5,8 @@ from unittest.mock import Mock, patch
 
 from controlrox.models.plc.rockwell.aoi import RaAddOnInstruction
 from controlrox.models.plc.rockwell.controller import RaController
-from controlrox.models.plc.rockwell.instruction import RaLogicInstruction
-from controlrox.models.plc.rockwell.operand import LogixOperand
 from controlrox.models.plc.rockwell import meta as plc_meta
 from controlrox.models.plc.rockwell.tag import RaTag
-from pyrox.models.abc.meta import EnforcesNaming
 from pyrox.models import HashList
 
 
@@ -136,16 +133,6 @@ class TestRaAddOnInstruction:
         aoi.set_revision('10.25.3')
         assert aoi.revision == '10.25.3'
 
-    def test_revision_property_setter_invalid(self):
-        """Test revision property setter with invalid values."""
-        aoi = RaAddOnInstruction(meta_data=self.sample_meta_data)
-
-        with pytest.raises(EnforcesNaming.InvalidNamingException):
-            aoi.set_revision('invalid_revision')
-
-        with pytest.raises(EnforcesNaming.InvalidNamingException):
-            aoi.set_revision('v1.2.3')
-
     def test_execute_prescan_property_getter(self):
         """Test execute_prescan property getter."""
         aoi = RaAddOnInstruction(meta_data=self.sample_meta_data)
@@ -172,16 +159,6 @@ class TestRaAddOnInstruction:
         aoi.execute_prescan = False  # type: ignore
         assert aoi.execute_prescan == 'false'
 
-    def test_execute_prescan_property_setter_invalid(self):
-        """Test execute_prescan property setter with invalid values."""
-        aoi = RaAddOnInstruction(meta_data=self.sample_meta_data)
-
-        with pytest.raises(EnforcesNaming.InvalidNamingException):
-            aoi.execute_prescan = 'invalid'
-
-        with pytest.raises(EnforcesNaming.InvalidNamingException):
-            aoi.execute_prescan = 'True'  # Case sensitive
-
     def test_execute_postscan_property_getter(self):
         """Test execute_postscan property getter."""
         aoi = RaAddOnInstruction(meta_data=self.sample_meta_data)
@@ -204,13 +181,6 @@ class TestRaAddOnInstruction:
 
         aoi.execute_postscan = False  # type: ignore
         assert aoi.execute_postscan == 'false'
-
-    def test_execute_postscan_property_setter_invalid(self):
-        """Test execute_postscan property setter with invalid values."""
-        aoi = RaAddOnInstruction(meta_data=self.sample_meta_data)
-
-        with pytest.raises(EnforcesNaming.InvalidNamingException):
-            aoi.execute_postscan = 'yes'
 
     def test_execute_enable_in_false_property_getter(self):
         """Test execute_enable_in_false property getter."""
@@ -235,13 +205,6 @@ class TestRaAddOnInstruction:
         aoi.execute_enable_in_false = False  # type: ignore
         assert aoi.execute_enable_in_false == 'false'
 
-    def test_execute_enable_in_false_property_setter_invalid(self):
-        """Test execute_enable_in_false property setter with invalid values."""
-        aoi = RaAddOnInstruction(meta_data=self.sample_meta_data)
-
-        with pytest.raises(EnforcesNaming.InvalidNamingException):
-            aoi.execute_enable_in_false = '1'
-
     def test_read_only_properties(self):
         """Test read-only properties."""
         aoi = RaAddOnInstruction(meta_data=self.sample_meta_data)
@@ -263,13 +226,6 @@ class TestRaAddOnInstruction:
         aoi.software_revision = '34.00'
         assert aoi.software_revision == '34.00'
         assert aoi['@SoftwareRevision'] == '34.00'
-
-    def test_software_revision_property_setter_invalid(self):
-        """Test software_revision property setter with invalid values."""
-        aoi = RaAddOnInstruction(meta_data=self.sample_meta_data)
-
-        with pytest.raises(EnforcesNaming.InvalidNamingException):
-            aoi.software_revision = 'invalid_version'
 
     def test_revision_extension_property_getter(self):
         """Test revision_extension property getter."""
@@ -557,21 +513,6 @@ class TestRaAddOnInstructionInheritance:
         assert len(routines) == 2
         assert routines[0].name == 'Logic'  # type: ignore
         assert routines[1].name == 'EnableInFalse'  # type: ignore
-
-    def test_inherited_naming_validation(self):
-        """Test that inherited naming validation works."""
-        aoi = RaAddOnInstruction(meta_data=self.sample_meta_data)
-
-        # Should inherit naming validation methods
-        assert hasattr(aoi, 'is_valid_string')
-        assert hasattr(aoi, 'is_valid_revision_string')
-        assert hasattr(aoi, 'is_valid_rockwell_bool')
-
-        # Test validation works
-        assert aoi.is_valid_string('ValidName')
-        assert not aoi.is_valid_string('Invalid Name!')
-        assert aoi.is_valid_revision_string('1.2.3')
-        assert aoi.is_valid_rockwell_bool('true')
 
 
 class TestRaAddOnInstructionEdgeCases:

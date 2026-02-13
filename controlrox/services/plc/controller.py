@@ -7,7 +7,7 @@ from pathlib import Path
 from pyrox.services.dict import remove_none_values_inplace
 from pyrox.services.logging import log
 from pyrox.services.search import check_wildcard_patterns
-from pyrox.models.abc.factory import MetaFactory, FactoryTypeMeta
+from pyrox.models.factory import MetaFactory, FactoryTypeMeta
 
 from controlrox.interfaces import IController, IDatatype
 from controlrox.services.l5x import dict_to_l5x_file, l5x_dict_from_file

@@ -1,12 +1,8 @@
 """ file tasks
 """
 from typing import Optional
-import sys
-
-from pyrox.services.file import get_open_file, get_save_file
-from pyrox.services.gui import GuiManager
-from pyrox.services.logging import log
-from controlrox.models.tasks.task import ControllerApplicationTask
+from pyrox.services import GuiManager, log, get_open_file, get_save_file
+from controlrox.models import ControllerApplicationTask
 
 
 class FileTask(ControllerApplicationTask):
@@ -80,62 +76,42 @@ class FileTask(ControllerApplicationTask):
         self.application.save_controller(file_location=file_location)
 
     def inject(self) -> None:
-        if not self.application.menu:
-            log(self).error('Application menu not found, cannot inject file tasks.')
-            return
-
-        file_menu = self.application.menu.get_file_menu()
-        if not file_menu:
-            return
-
-        file_menu.add_item(
-            index=0,
+        self.file_menu.add_separator()
+        self.file_menu.add_item(
             label='New Controller',
             command=self._on_file_new,
             accelerator='Ctrl+N',
             underline=0,
             binding_info=('<Control-n>', lambda e: self._on_file_new())
         )
-        file_menu.add_separator()
-        file_menu.add_item(
-            index=2,
+        self.file_menu.add_separator()
+        self.file_menu.add_item(
             label='Open Controller',
             command=self._on_file_open,
             accelerator='Ctrl+O',
             underline=0,
             binding_info=('<Control-o>', lambda e: self._on_file_open())
         )
-        file_menu.add_item(
-            index=3,
+        self.file_menu.add_item(
             label='Save Controller',
             command=self._on_file_save,
             accelerator='Ctrl+S',
             underline=0,
             binding_info=('<Control-s>', lambda e: self._on_file_save())
         )
-        file_menu.add_item(
-            index=4,
+        self.file_menu.add_item(
             label='Save Controller As...',
             command=lambda: self._on_file_save(save_as=True),
             accelerator='Ctrl+Shift+S',
             underline=0,
             binding_info=('<Control-Shift-s>', lambda e: self._on_file_save(save_as=True))
         )
-        file_menu.add_separator()
-        file_menu.add_item(
+        self.file_menu.add_separator()
+        self.file_menu.add_item(
             index=6,
             label='Close Controller',
             command=self._on_file_close,
             accelerator='Ctrl+W',
             underline=0,
             binding_info=('<Control-w>', lambda e: self._on_file_close())
-        )
-        file_menu.add_separator()
-        file_menu.add_item(
-            index=8,
-            label='Exit',
-            command=lambda: sys.exit(0),
-            accelerator='Ctrl+Q',
-            underline=0,
-            binding_info=('<Control-q>', lambda e: sys.exit(0))
         )

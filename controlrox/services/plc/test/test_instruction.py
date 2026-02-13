@@ -785,7 +785,7 @@ class TestInstructionFactory(unittest.TestCase):
 
     def test_instruction_factory_inherits_from_metafactory(self):
         """Test InstructionFactory inherits from MetaFactory."""
-        from pyrox.models.abc.factory import MetaFactory
+        from pyrox.models.factory import MetaFactory
         self.assertTrue(issubclass(InstructionFactory, MetaFactory))
 
     def test_instruction_factory_instantiation(self):
