@@ -1,7 +1,7 @@
 """Test suite for tag module"""
 import unittest
 from unittest.mock import Mock
-from controlrox.interfaces import LogicTagScope
+from controlrox.interfaces import ILogicTagScope
 from controlrox.models.plc.rockwell.tag import RaTag, DataValueMember, TagEndpoint
 
 
@@ -121,7 +121,7 @@ class TestTag(unittest.TestCase):
 
             name="TestTag",
             description="Test Description",
-            tag_class="Standard",
+            tag_klass="Standard",
             tag_type="Base",
             datatype="BOOL",
             dimensions="1",
@@ -174,17 +174,17 @@ class TestTag(unittest.TestCase):
         """Test class_ property getter and setter"""
         tag = RaTag(meta_data=self.valid_metadata, )
 
-        self.assertEqual(tag.class_, 'Standard')
+        self.assertEqual(tag.klass, 'Standard')
 
-        tag.class_ = 'Safety'
-        self.assertEqual(tag.class_, 'Safety')
+        tag.klass = 'Safety'
+        self.assertEqual(tag.klass, 'Safety')
 
     def test_class_setter_invalid_type(self):
         """Test class_ setter with invalid type raises error"""
         tag = RaTag(meta_data=self.valid_metadata, )
 
         with self.assertRaises(ValueError) as context:
-            tag.class_ = 123  # type: ignore
+            tag.klass = 123  # type: ignore
 
         self.assertEqual(str(context.exception), "Class must be a string!")
 
@@ -193,7 +193,7 @@ class TestTag(unittest.TestCase):
         tag = RaTag(meta_data=self.valid_metadata, )
 
         with self.assertRaises(ValueError) as context:
-            tag.class_ = "Invalid"
+            tag.klass = "Invalid"
 
         self.assertEqual(str(context.exception), "Class must be one of: Standard, Safety!")
 
@@ -323,7 +323,7 @@ class TestTag(unittest.TestCase):
         # Test controller scope
         tag = RaTag(meta_data=self.valid_metadata, )
         tag._container = self.mock_controller
-        self.assertEqual(tag.scope, LogicTagScope.CONTROLLER)
+        self.assertEqual(tag.scope, ILogicTagScope.CONTROLLER)
 
     def test_get_alias_string_no_alias(self):
         """Test get_alias_string method without alias"""

@@ -6,12 +6,11 @@ from typing import (
     Union,
     Self,
 )
-from pyrox.models.abc.factory import FactoryTypeMeta
+from pyrox.models.factory import FactoryTypeMeta
 from controlrox.interfaces import (
     IController,
-    IHasTags,
     IProgram,
-    LogicTagScope
+    ILogicTagScope
 )
 
 from controlrox.models.plc.tag import Tag
@@ -106,49 +105,7 @@ class RaTag(
         instance = super(RaTag, cls).__new__(cls)
         return instance  # TODO: investigate why this is needed
 
-    def __init__(
-        self,
-        meta_data: Optional[dict] = None,
-        name: str = '',
-        description: str = '',
-        tag_class: str = '',
-        tag_type: Optional[str] = None,
-        datatype: Optional[str] = None,
-        dimensions: Optional[str] = None,
-        constant: Optional[bool] = None,
-        external_access: Optional[str] = None,
-        container: Optional[IHasTags] = None
-    ):
-        """type class for plc Tag
-
-        Args:
-            l5x_meta_data (str): meta data
-            controller (Self): controller dictionary
-        """
-        super().__init__(
-            meta_data=meta_data,
-            name=name,
-            description=description,
-            container=container,
-        )
-
-        if not tag_class:
-            tag_class = self.meta_data.get('@Class', 'Standard')
-        if not tag_class:
-            tag_class = 'Standard'
-        self.class_ = tag_class
-
-        if tag_type:
-            self.tag_type = tag_type
-        if datatype:
-            self.raw_datatype = datatype
-        if dimensions:
-            self.dimensions = dimensions
-        if constant is not None:
-            self.constant = constant
-        if external_access:
-            self.external_access = external_access
-
+    def __post_init__(self, **kwargs) -> None:
         self._datavalue_members: list[DataValueMember] = []
 
     @property
@@ -186,11 +143,11 @@ class RaTag(
         return self.alias_for.split('.')[0].split(':')[0]
 
     @property
-    def class_(self) -> str:
+    def klass(self) -> str:
         return self['@Class']
 
-    @class_.setter
-    def class_(self, value: str):
+    @klass.setter
+    def klass(self, value: str):
         if not isinstance(value, str):
             raise ValueError("Class must be a string!")
 
@@ -208,8 +165,8 @@ class RaTag(
         if isinstance(value, bool):
             value = 'true' if value else 'false'
 
-        if not self.is_valid_rockwell_bool(value):
-            raise self.InvalidNamingException
+        if value not in ['true', 'false']:
+            raise ValueError("Constant must be a boolean or a string of 'true' or 'false'!")
 
         self['@Constant'] = value
 
@@ -226,9 +183,6 @@ class RaTag(
 
     @raw_datatype.setter
     def raw_datatype(self, value: str):
-        if not self.is_valid_string(value) or not value:
-            raise ValueError("Data type must be a valid string!")
-
         self['@DataType'] = value
         self['Data'] = []
 
@@ -317,11 +271,11 @@ class RaTag(
         return self['@OpcUaAccess']
 
     @property
-    def scope(self) -> LogicTagScope:
+    def scope(self) -> ILogicTagScope:
         if isinstance(self.container, IController):
-            return LogicTagScope.CONTROLLER
+            return ILogicTagScope.CONTROLLER
         elif isinstance(self.container, IProgram) or isinstance(self.container, IProgram):
-            return LogicTagScope.PROGRAM
+            return ILogicTagScope.PROGRAM
         else:
             raise ValueError('Unknown tag scope!')
 

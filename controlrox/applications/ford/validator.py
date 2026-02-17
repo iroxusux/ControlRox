@@ -1,6 +1,6 @@
 """Ford Controller Validator Class
 """
-from pyrox.models.abc.network import Ipv4Address
+from pyrox.models.network import Ipv4Address
 from controlrox.models.plc.rockwell import (
     RaController,
     RaDatatype,

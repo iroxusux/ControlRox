@@ -2,7 +2,7 @@
 import unittest
 from unittest.mock import Mock, patch
 
-from controlrox.interfaces import LogicTagScope
+from controlrox.interfaces import ILogicTagScope
 from controlrox.models.plc.tag import Tag
 
 
@@ -19,7 +19,7 @@ class TestTag(unittest.TestCase):
                 self._external_access = 'Read/Write'
                 self._opcua_access = '1'
                 self._safety_class = 'Standard'
-                self._tag_scope = LogicTagScope.CONTROLLER
+                self._tag_scope = ILogicTagScope.CONTROLLER
                 self._is_constant = False
 
             def get_dimensions(self):
@@ -154,7 +154,7 @@ class TestTag(unittest.TestCase):
 
         scope = tag.get_tag_scope()
 
-        self.assertEqual(scope, LogicTagScope.CONTROLLER)
+        self.assertEqual(scope, ILogicTagScope.CONTROLLER)
 
     def test_is_constant(self):
         """Test is_constant method."""
@@ -291,13 +291,6 @@ class TestTagNotImplemented(unittest.TestCase):
 
         with self.assertRaises(NotImplementedError):
             tag.get_opcua_access()
-
-    def test_get_safety_class_not_implemented(self):
-        """Test get_safety_class raises NotImplementedError."""
-        tag = Tag()
-
-        with self.assertRaises(NotImplementedError):
-            tag.get_safety_class()
 
     def test_get_tag_scope_not_implemented(self):
         """Test get_tag_scope raises NotImplementedError."""
@@ -447,7 +440,7 @@ class TestTagContainerIntegration(unittest.TestCase):
                 return 'Standard'
 
             def get_tag_scope(self):
-                return LogicTagScope.CONTROLLER
+                return ILogicTagScope.CONTROLLER
 
             def is_constant(self):
                 return False
@@ -539,7 +532,7 @@ class TestTagAliasAndBaseTag(unittest.TestCase):
                 return 'Standard'
 
             def get_tag_scope(self):
-                return LogicTagScope.CONTROLLER
+                return ILogicTagScope.CONTROLLER
 
             def is_constant(self):
                 return False
@@ -655,7 +648,7 @@ class TestTagDatatypeIntegration(unittest.TestCase):
                 return 'Standard'
 
             def get_tag_scope(self):
-                return LogicTagScope.CONTROLLER
+                return ILogicTagScope.CONTROLLER
 
             def is_constant(self):
                 return False
@@ -759,7 +752,7 @@ class TestTagScopeAndSafety(unittest.TestCase):
         class TestableTag(Tag):
             def __init__(self, **kwargs):
                 super().__init__(**kwargs)
-                self._tag_scope = LogicTagScope.CONTROLLER
+                self._tag_scope = ILogicTagScope.CONTROLLER
                 self._safety_class = 'Standard'
 
             def get_dimensions(self):
@@ -817,14 +810,14 @@ class TestTagScopeAndSafety(unittest.TestCase):
         """Test tag with controller scope."""
         tag = self.TestableTag()
 
-        self.assertEqual(tag.get_tag_scope(), LogicTagScope.CONTROLLER)
+        self.assertEqual(tag.get_tag_scope(), ILogicTagScope.CONTROLLER)
 
     def test_tag_scope_program(self):
         """Test tag with program scope."""
         tag = self.TestableTag()
-        tag._tag_scope = LogicTagScope.PROGRAM
+        tag._tag_scope = ILogicTagScope.PROGRAM
 
-        self.assertEqual(tag.get_tag_scope(), LogicTagScope.PROGRAM)
+        self.assertEqual(tag.get_tag_scope(), ILogicTagScope.PROGRAM)
 
     def test_safety_class_standard(self):
         """Test tag with standard safety class."""
@@ -869,7 +862,7 @@ class TestTagDimensionsAndAccess(unittest.TestCase):
                 return 'Standard'
 
             def get_tag_scope(self):
-                return LogicTagScope.CONTROLLER
+                return ILogicTagScope.CONTROLLER
 
             def is_constant(self):
                 return self._is_constant

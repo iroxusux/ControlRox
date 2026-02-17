@@ -1,7 +1,7 @@
 """Generic Generated Module Class.
 This is the base class for all auto-generated module classes.
 """
-from pyrox.models.abc.factory import FactoryTypeMeta
+from pyrox.models.factory import FactoryTypeMeta
 from controlrox.models import (
     Controller,
     IntrospectiveModule,

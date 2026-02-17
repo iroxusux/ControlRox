@@ -1,16 +1,37 @@
 """Tag module for plc Tag type
 """
 from abc import abstractmethod
+from enum import Enum
 from typing import Optional, Union
 from .datatype import IDatatype
-from .meta import IPlcObject, LogicTagScope
+from .meta import IPlcObject, ILogicTagScope, IExternalAccessMixin, IStandardSafetyMixin
 from .protocols import ICanBeSafe, IHasTags
+
+
+ITagKlass = IStandardSafetyMixin
+ITagExternalAccess = IExternalAccessMixin
+
+
+class ITagType(Enum):
+    """Tag types for PLC tags
+    """
+    BASE = 'Base'
+    ALIAS = 'Alias'
 
 
 class ITag(
     IPlcObject[dict],
     ICanBeSafe,
 ):
+
+    @property
+    def constant(self) -> bool:
+        """check if this tag is constant
+
+        Returns:
+            bool: True if constant, False otherwise
+        """
+        return self.is_constant()
 
     @property
     def container(self) -> IHasTags:
@@ -38,6 +59,32 @@ class ITag(
             :class:`str`: dimensions of this tag
         """
         return self.get_dimensions()
+
+    @property
+    def external_access(self) -> str:
+        """get the external access of this tag
+
+        Returns:
+            :class:`str`: external access of this tag
+        """
+        return self.get_external_access()
+
+    @property
+    def klass(self) -> ITagKlass:
+        """get the klass of this tag (Standard or Safety)
+        Returns:
+            :class:`ITagClass`: class of this tag
+        """
+        return self.get_klass()
+
+    @property
+    def tag_type(self) -> ITagType:
+        """get the tag type of this tag (Base or Alias)
+
+        Returns:
+            :class:`ITagType`: type of this tag
+        """
+        return self.get_tag_type()
 
     @abstractmethod
     def get_alias_for_tag(self) -> 'ITag':
@@ -103,6 +150,23 @@ class ITag(
         raise NotImplementedError("This method should be overridden by subclasses to get the external access.")
 
     @abstractmethod
+    def get_klass(self) -> ITagKlass:
+        """get the klass of this tag (Standard or Safety)
+        Returns:
+            :class:`ITagClass`: class of this tag
+        """
+        raise NotImplementedError("This method should be overridden by subclasses to get the klass.")
+
+    @abstractmethod
+    def set_klass(self, value: ITagKlass) -> None:
+        """set the klass of this tag
+
+        Args:
+            value (ITagKlass): klass to set
+        """
+        raise NotImplementedError("This method should be overridden by subclasses to set the klass.")
+
+    @abstractmethod
     def get_opcua_access(self) -> str:
         """get the opc ua access of this tag
 
@@ -112,21 +176,31 @@ class ITag(
         raise NotImplementedError("This method should be overridden by subclasses to get the opc ua access.")
 
     @abstractmethod
-    def get_safety_class(self) -> str:
-        """get the safety class of this tag
-        Returns:
-            :class:`str`: safety class of this tag ['Standard', 'Safety']
-        """
-        raise NotImplementedError("This method should be overridden by subclasses to get the safety class.")
-
-    @abstractmethod
-    def get_tag_scope(self) -> LogicTagScope:
+    def get_tag_scope(self) -> ILogicTagScope:
         """get the tag scope of this tag
 
         Returns:
             :class:`LogixTagScope`: tag scope of this tag ['Controller', 'Program']
         """
         raise NotImplementedError("This method should be overridden by subclasses to get the tag scope.")
+
+    @abstractmethod
+    def get_tag_type(self) -> ITagType:
+        """get the tag type of this tag (Base or Alias)
+
+        Returns:
+            :class:`ITagType`: type of this tag
+        """
+        raise NotImplementedError("This method should be overridden by subclasses to get the tag type.")
+
+    @abstractmethod
+    def set_tag_type(self, value: ITagType) -> None:
+        """set the tag type of this tag
+
+        Args:
+            value (ITagType): type to set
+        """
+        raise NotImplementedError("This method should be overridden by subclasses to set the tag type.")
 
     @abstractmethod
     def is_constant(self) -> bool:
@@ -197,4 +271,7 @@ class ITag(
 
 __all__ = [
     'ITag',
+    'ITagKlass',
+    'ITagType',
+    'ITagExternalAccess',
 ]

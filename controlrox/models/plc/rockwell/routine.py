@@ -3,9 +3,9 @@
 from typing import (
     Self,
 )
-from pyrox.models.abc.factory import FactoryTypeMeta
+from pyrox.models.factory import FactoryTypeMeta
 from controlrox.models.plc.rockwell.meta import PLC_ROUT_FILE
-from controlrox.interfaces import LogicInstructionType
+from controlrox.interfaces import ILogicInstructionType
 from controlrox.models.plc import Routine
 from controlrox.services.plc.routine import RoutineFactory
 from .meta import RaPlcObject
@@ -27,10 +27,6 @@ class RaRoutine(
             'Description',
             'RLLContent',
         ]
-
-    @classmethod
-    def get_factory(cls):
-        return RoutineFactory
 
     def compile(self) -> Self:
         """compile this object from its meta data
@@ -74,7 +70,7 @@ class RaRoutine(
             bool: True if a JSR instruction to the specified routine is found, False otherwise.
         """
         for instruction in self.instructions:
-            if instruction.get_instruction_type() == LogicInstructionType.JSR and instruction.get_operands():
+            if instruction.get_instruction_type() == ILogicInstructionType.JSR and instruction.get_operands():
                 if str(instruction.get_operands()[0]) == routine_name:
                     return True
         return False

@@ -1,9 +1,14 @@
 """Unit tests for controlrox.models.plc.protocols module."""
+
 import unittest
 from unittest.mock import Mock, patch
-
 from pyrox.models import HashList
-
+from controlrox.interfaces import (
+    IPlcObject,
+    RungElement,
+    RungBranch,
+    RungElementType
+)
 from controlrox.models.plc.protocols import (
     CanBeSafe,
     CanEnableDisable,
@@ -13,11 +18,18 @@ from controlrox.models.plc.protocols import (
     HasInstructions,
     HasMetaData,
     HasModules,
+    HasOperands,
     HasPrograms,
     HasRoutines,
     HasRungs,
     HasTags,
+    SupportsMetaDataListAssignment,
+    HasRungText,
+    HasBranches,
+    HasSequencedInstructions
 )
+
+from controlrox.services import ControllerInstanceManager
 
 
 class TestHasMetaData(unittest.TestCase):
@@ -669,6 +681,56 @@ class TestHasInstructions(unittest.TestCase):
             obj.compile_instructions()
 
 
+class TestHasOperands(unittest.TestCase):
+    """Test cases for HasOperands protocol."""
+
+    def setUp(self):
+        """Set up test fixtures."""
+        class ConcreteHasOperands(HasOperands):
+            def compile_operands(self):
+                self._operands = [Mock(), Mock()]
+
+            def add_operand(self, operand, inhibit_invalidate=False):
+                self._operands.append(operand)
+
+            def remove_operand(self, operand, inhibit_invalidate=False):
+                self._operands.remove(operand)
+
+        self.ConcreteClass = ConcreteHasOperands
+
+    def test_init_creates_empty_operand_list(self):
+        """Test initialization creates empty operand list."""
+        obj = self.ConcreteClass()
+
+        self.assertIsInstance(obj._operands, list)
+        self.assertEqual(len(obj._operands), 0)
+
+    def test_operands_property(self):
+        """Test operands property."""
+        obj = self.ConcreteClass()
+
+        operands = obj.operands
+
+        self.assertIsInstance(operands, list)
+
+    def test_get_operands_calls_compile(self):
+        """Test get_operands calls compile_operands if empty."""
+        obj = self.ConcreteClass()
+
+        operands = obj.get_operands()
+
+        self.assertEqual(len(operands), 2)
+
+    def test_get_operands_returns_cached(self):
+        """Test get_operands returns cached operands."""
+        obj = self.ConcreteClass()
+        obj._operands = [Mock(), Mock(), Mock()]
+
+        operands = obj.get_operands()
+
+        self.assertEqual(len(operands), 3)
+
+
 class TestHasRoutines(unittest.TestCase):
     """Test cases for HasRoutines protocol."""
 
@@ -779,34 +841,22 @@ class TestHasRungs(unittest.TestCase):
 
     def setUp(self):
         """Set up test fixtures."""
-        class ConcreteHasRungs(HasRungs):
-            def compile_rungs(self):
-                self._rungs.extend([Mock(), Mock()])
+        self._og_controller = ControllerInstanceManager.get_controller()
+        ControllerInstanceManager.new_controller()
 
-            def add_rung(self, rung, inhibit_invalidate=False):
-                self._rungs.append(rung)
-
-            def remove_rung(self, rung, inhibit_invalidate=False):
-                self._rungs.remove(rung)
-
-            def get_raw_rungs(self):
-                return []
-
-            def clear_rungs(self):
-                self._rungs.clear()
-
-        self.ConcreteClass = ConcreteHasRungs
+    def tearDown(self) -> None:
+        ControllerInstanceManager.set_controller(self._og_controller)
 
     def test_init_creates_empty_rung_list(self):
         """Test initialization creates empty rung list."""
-        obj = self.ConcreteClass()
+        obj = HasRungs()
 
         self.assertIsInstance(obj._rungs, list)
         self.assertEqual(len(obj._rungs), 0)
 
     def test_rungs_property(self):
         """Test rungs property."""
-        obj = self.ConcreteClass()
+        obj = HasRungs()
 
         rungs = obj.rungs
 
@@ -814,7 +864,8 @@ class TestHasRungs(unittest.TestCase):
 
     def test_get_rungs_calls_compile(self):
         """Test get_rungs calls compile_rungs if empty."""
-        obj = self.ConcreteClass()
+        obj = HasRungs()
+        obj.set_raw_rungs([{'@Number': 0}, {'@Number': 1}])
 
         rungs = obj.get_rungs()
 
@@ -822,48 +873,107 @@ class TestHasRungs(unittest.TestCase):
 
     def test_get_rungs_returns_cached(self):
         """Test get_rungs returns cached rungs."""
-        obj = self.ConcreteClass()
-        obj._rungs = [Mock(), Mock(), Mock()]
+        obj = HasRungs()
+        obj.set_raw_rungs([{'@Number': 0}, {'@Number': 1}, {'@Number': 2}])
 
         rungs = obj.get_rungs()
 
         self.assertEqual(len(rungs), 3)
 
+    def test_add_rung(self):
+        """Test add_rung successfully adds rung, reassigns numbers, and triggers compilation."""
+        obj = HasRungs()
+        self.assertEqual(len(obj.rungs), 0)
+
+        ctrl = ControllerInstanceManager.get_controller()
+        if not ctrl:
+            raise RuntimeError("No controller instance available for testing.")
+
+        rung1 = ctrl.create_rung()
+        rung2 = ctrl.create_rung()
+        rung3 = ctrl.create_rung()
+
+        obj.add_rung(rung1)
+        obj.add_rung(rung2)
+        obj.add_rung(rung3)
+
+        # Check that set_number was called on each rung
+        self.assertEqual(rung1.number, 0)
+        self.assertEqual(rung2.number, 1)
+        self.assertEqual(rung3.number, 2)
+        self.assertEqual(len(obj.rungs), 3)
+
     def test_add_rungs_bulk(self):
         """Test add_rungs adds multiple rungs then invalidates (clears)."""
-        obj = self.ConcreteClass()
-        mock_rungs = [Mock(), Mock(), Mock()]
+        obj = HasRungs()
+        ctrl = ControllerInstanceManager.get_controller()
+        if not ctrl:
+            raise RuntimeError("No controller instance available for testing.")
 
-        obj.add_rungs(mock_rungs)
+        rung1 = ctrl.create_rung()
+        rung2 = ctrl.create_rung()
+        rung3 = ctrl.create_rung()
+
+        obj.add_rungs([rung1, rung2, rung3])
 
         # Note: add_rungs calls invalidate_rungs which clears the list
         self.assertEqual(len(obj._rungs), 0)
+        self.assertEqual(rung1.number, 0)
+        self.assertEqual(rung2.number, 1)
+        self.assertEqual(rung3.number, 2)
+        # public getter compiles rungs again
+        self.assertEqual(len(obj.rungs), 3)
 
     def test_remove_rungs_bulk(self):
         """Test remove_rungs removes multiple rungs."""
-        obj = self.ConcreteClass()
-        mock_rungs = [Mock(), Mock(), Mock()]
-        obj._rungs.extend(mock_rungs)
+        obj = HasRungs()
+        ctrl = ControllerInstanceManager.get_controller()
+        if not ctrl:
+            raise RuntimeError("No controller instance available for testing.")
 
-        obj.remove_rungs(mock_rungs)
+        self.assertEqual(len(obj.rungs), 0)
 
-        self.assertEqual(len(obj._rungs), 0)
+        obj.add_rungs([ctrl.create_rung() for _ in range(3)])
+
+        self.assertEqual(len(obj.rungs), 3)
+
+        rung1 = ctrl.create_rung()
+        rung2 = ctrl.create_rung()
+        rung3 = ctrl.create_rung()
+
+        rungs_to_remove = [rung1, rung2, rung3]
+
+        obj.add_rungs(rungs_to_remove)
+
+        self.assertEqual(len(obj.rungs), 6)
+
+        obj.remove_rungs(rungs_to_remove)
+
+        self.assertEqual(len(obj.rungs), 3)
 
     def test_invalidate_rungs(self):
         """Test invalidate_rungs clears the list."""
-        obj = self.ConcreteClass()
-        obj._rungs.extend([Mock(), Mock()])
+        obj = HasRungs()
+        ctrl = ControllerInstanceManager.get_controller()
+        if not ctrl:
+            raise RuntimeError("No controller instance available for testing.")
+
+        obj.add_rungs([ctrl.create_rung() for _ in range(3)])
+        self.assertEqual(len(obj.rungs), 3)
 
         obj.invalidate_rungs()
 
         self.assertEqual(len(obj._rungs), 0)
 
-    def test_compile_rungs_not_implemented(self):
-        """Test that base class compile_rungs raises NotImplementedError."""
+    def test_compile_rungs_method(self):
+        """Test compile_rungs method."""
         obj = HasRungs()
+        ctrl = ControllerInstanceManager.get_controller()
+        if not ctrl:
+            raise RuntimeError("No controller instance available for testing.")
 
-        with self.assertRaises(NotImplementedError):
-            obj.compile_rungs()
+        obj.add_rungs([ctrl.create_rung() for _ in range(3)])
+        self.assertEqual(len(obj.rungs), 3)
 
 
 class TestHasPrograms(unittest.TestCase):
@@ -1157,6 +1267,492 @@ class TestHasTags(unittest.TestCase):
 
         with self.assertRaises(NotImplementedError):
             obj.compile_tags()
+
+
+class TestSupportsMetaDataListAssignment(unittest.TestCase):
+    """Test cases for SupportsMetaDataListAssignment protocol."""
+
+    def test_add_asset_to_meta_data_with_valid_asset(self):
+        """Test add_asset_to_meta_data with valid asset."""
+        obj = SupportsMetaDataListAssignment()
+        mock_asset = Mock(spec=IPlcObject)
+        mock_asset.name = 'TestAsset'
+        mock_asset.meta_data = {'@Name': 'TestAsset'}
+        asset_list = HashList('name')
+        raw_asset_list = []
+
+        obj.add_asset_to_meta_data(
+            asset=mock_asset,
+            asset_list=asset_list,
+            raw_asset_list=raw_asset_list,
+            index=None,
+            inhibit_invalidate=True
+        )
+
+        self.assertIn(mock_asset, asset_list)
+        self.assertEqual(len(raw_asset_list), 1)
+
+    def test_add_asset_to_meta_data_at_index(self):
+        """Test add_asset_to_meta_data at specific index."""
+        obj = SupportsMetaDataListAssignment()
+        mock_asset1 = Mock(spec=IPlcObject)
+        mock_asset1.name = 'Asset1'
+        mock_asset1.meta_data = {'@Name': 'Asset1'}
+        mock_asset2 = Mock(spec=IPlcObject)
+        mock_asset2.name = 'Asset2'
+        mock_asset2.meta_data = {'@Name': 'Asset2'}
+
+        asset_list = HashList('name')
+        asset_list.append(mock_asset1)
+        raw_asset_list = [{'@Name': 'Asset1'}]
+
+        obj.add_asset_to_meta_data(
+            asset=mock_asset2,
+            asset_list=asset_list,
+            raw_asset_list=raw_asset_list,
+            index=0,
+            inhibit_invalidate=True
+        )
+
+        self.assertEqual(asset_list[0], mock_asset2)
+        self.assertEqual(raw_asset_list[0]['@Name'], 'Asset2')
+
+    def test_add_asset_to_meta_data_raises_for_invalid_type(self):
+        """Test add_asset_to_meta_data raises ValueError for invalid type."""
+        obj = SupportsMetaDataListAssignment()
+        asset_list = HashList('name')
+        raw_asset_list = []
+
+        with self.assertRaises(ValueError):
+            obj.add_asset_to_meta_data(
+                asset=123,  # Invalid type
+                asset_list=asset_list,
+                raw_asset_list=raw_asset_list
+            )
+
+    def test_add_asset_to_meta_data_raises_for_duplicate(self):
+        """Test add_asset_to_meta_data raises ValueError for duplicate asset."""
+        obj = SupportsMetaDataListAssignment()
+        mock_asset = Mock()
+        mock_asset.name = 'TestAsset'
+        asset_list = HashList('name')
+        asset_list.append(mock_asset)
+        raw_asset_list = []
+
+        with self.assertRaises(ValueError):
+            obj.add_asset_to_meta_data(
+                asset=mock_asset,
+                asset_list=asset_list,
+                raw_asset_list=raw_asset_list
+            )
+
+    def test_add_asset_to_meta_data_calls_invalidate_method(self):
+        """Test add_asset_to_meta_data calls invalidate method if provided."""
+        obj = SupportsMetaDataListAssignment()
+        mock_asset = Mock(spec=IPlcObject)
+        mock_asset.name = 'TestAsset'
+        mock_asset.meta_data = {'@Name': 'TestAsset'}
+        asset_list = HashList('name')
+        raw_asset_list = []
+        mock_invalidate = Mock()
+
+        obj.add_asset_to_meta_data(
+            asset=mock_asset,
+            asset_list=asset_list,
+            raw_asset_list=raw_asset_list,
+            invalidate_method=mock_invalidate
+        )
+
+        mock_invalidate.assert_called_once()
+
+    def test_remove_asset_from_meta_data_with_valid_asset(self):
+        """Test remove_asset_from_meta_data with valid asset."""
+        obj = SupportsMetaDataListAssignment()
+        mock_asset = Mock(spec=IPlcObject)
+        mock_asset.name = 'TestAsset'
+        mock_asset.meta_data = {'@Name': 'TestAsset'}
+        asset_list = HashList('name')
+        asset_list.append(mock_asset)
+        raw_asset_list = [{'@Name': 'TestAsset'}]
+
+        obj.remove_asset_from_meta_data(
+            asset=mock_asset,
+            asset_list=asset_list,
+            raw_asset_list=raw_asset_list,
+            inhibit_invalidate=True
+        )
+
+        self.assertNotIn(mock_asset, asset_list)
+        self.assertEqual(len(raw_asset_list), 0)
+
+    def test_remove_asset_from_meta_data_raises_for_invalid_type(self):
+        """Test remove_asset_from_meta_data raises ValueError for invalid type."""
+        obj = SupportsMetaDataListAssignment()
+        asset_list = HashList('name')
+        raw_asset_list = []
+
+        with self.assertRaises(ValueError):
+            obj.remove_asset_from_meta_data(
+                asset="not a plc object",
+                asset_list=asset_list,
+                raw_asset_list=raw_asset_list
+            )
+
+    def test_remove_asset_from_meta_data_calls_invalidate_method(self):
+        """Test remove_asset_from_meta_data calls invalidate method if provided."""
+        obj = SupportsMetaDataListAssignment()
+        mock_asset = Mock(spec=IPlcObject)
+        mock_asset.name = 'TestAsset'
+        asset_list = HashList('name')
+        asset_list.append(mock_asset)
+        raw_asset_list = [{'@Name': 'TestAsset'}]
+        mock_invalidate = Mock()
+
+        obj.remove_asset_from_meta_data(
+            asset=mock_asset,
+            asset_list=asset_list,
+            raw_asset_list=raw_asset_list,
+            invalidate_method=mock_invalidate
+        )
+
+        mock_invalidate.assert_called_once()
+
+    def test_remove_asset_from_meta_data_with_dict_lookup_key_and_object_attribute(self):
+        """Test remove_asset_from_meta_data with dict lookup key and object attribute."""
+        obj = SupportsMetaDataListAssignment()
+        mock_asset = Mock(spec=IPlcObject)
+        mock_asset.tag_name = 'Tag1'
+        asset_list = HashList('tag_name')
+        asset_list.append(mock_asset)
+        raw_asset_list = [{'@TagName': 'Tag1'}]
+
+        obj.remove_asset_from_meta_data(
+            asset=mock_asset,
+            asset_list=asset_list,
+            raw_asset_list=raw_asset_list,
+            dict_lookup_key='@TagName',
+            object_attribute='tag_name',
+            inhibit_invalidate=True
+        )
+
+        self.assertNotIn(mock_asset, asset_list)
+        self.assertEqual(len(raw_asset_list), 0)
+
+    def test_remove_asset_from_meta_data_raises_with_missing_lookup_key(self):
+        """Test remove_asset_from_meta_data raises KeyError with missing lookup key."""
+        obj = SupportsMetaDataListAssignment()
+        mock_asset = Mock(spec=IPlcObject)
+        mock_asset.name = 'TestAsset'
+        asset_list = HashList('name')
+        asset_list.append(mock_asset)
+        raw_asset_list = [{'@DifferentKey': 'TestAsset'}]
+
+        with self.assertRaises(KeyError):
+            obj.remove_asset_from_meta_data(
+                asset=mock_asset,
+                asset_list=asset_list,
+                raw_asset_list=raw_asset_list,
+                dict_lookup_key='@Name',
+                object_attribute='name'
+            )
+
+    def test_remove_asset_from_meta_data_raises_when_asset_not_found(self):
+        """Test remove_asset_from_meta_data raises ValueError when asset not found."""
+        obj = SupportsMetaDataListAssignment()
+        mock_asset = Mock(spec=IPlcObject)
+        mock_asset.name = 'NonExistentAsset'
+        asset_list = HashList('name')
+        raw_asset_list = []
+
+        with self.assertRaises(ValueError):
+            obj.remove_asset_from_meta_data(
+                asset=mock_asset,
+                asset_list=asset_list,
+                raw_asset_list=raw_asset_list
+            )
+
+
+class TestHasRungText(unittest.TestCase):
+    """Test cases for HasRungText protocol."""
+
+    def test_init_creates_empty_rung_text(self):
+        """Test initialization creates empty rung text."""
+        obj = HasRungText()
+
+        self.assertEqual(obj.text, '')
+
+    def test_get_rung_text(self):
+        """Test get_rung_text returns rung text."""
+        obj = HasRungText()
+        obj.text = 'XIC(Tag1)OTE(Tag2);'
+
+        result = obj.get_text()
+
+        self.assertEqual(result, 'XIC(Tag1)OTE(Tag2);')
+
+    def test_set_rung_text(self):
+        """Test set_rung_text sets rung text."""
+        obj = HasRungText()
+
+        obj.set_text('XIC(A)OTE(B);')
+
+        self.assertEqual(obj.text, 'XIC(A)OTE(B);')
+
+    def test_tokenize_instruction_meta_data(self):
+        """Test tokenize_instruction_meta_data extracts instruction strings."""
+        obj = HasRungText()
+        obj.text = 'XIC(TagA)XIO(TagB)OTE(Output);'
+
+        tokens = obj.tokenize_instruction_meta_data()
+
+        self.assertIsInstance(tokens, list)
+        self.assertEqual(len(tokens), 3)
+        self.assertIn('XIC(TagA)', tokens)
+        self.assertIn('XIO(TagB)', tokens)
+        self.assertIn('OTE(Output)', tokens)
+
+    def test_tokenize_instruction_meta_data_empty_text(self):
+        """Test tokenize_instruction_meta_data with empty rung text."""
+        obj = HasRungText()
+        obj.text = ''
+
+        tokens = obj.tokenize_instruction_meta_data()
+
+        self.assertEqual(len(tokens), 0)
+
+
+class TestHasBranches(unittest.TestCase):
+    """Test cases for HasBranches protocol."""
+
+    def test_init_creates_empty_branches(self):
+        """Test initialization creates empty branches list."""
+        obj = HasBranches()
+
+        self.assertEqual(obj._branches, {})
+
+    def test_get_branches(self):
+        """Test get_branches returns branches list."""
+        obj = HasBranches()
+        mock_branch = Mock(spec=RungBranch)
+        obj._branches = [mock_branch]
+
+        result = obj.get_branches()
+
+        self.assertEqual(result, [mock_branch])
+
+    def test_set_branches(self):
+        """Test set_branches sets branches list."""
+        obj = HasBranches()
+        mock_branches = [Mock(spec=RungBranch), Mock(spec=RungBranch)]
+
+        obj.set_branches(mock_branches)  # type: ignore
+
+        self.assertEqual(obj._branches, mock_branches)
+
+    def test_has_branches_returns_true_when_branches_exist(self):
+        """Test has_branches returns True when branches exist."""
+        obj = HasBranches()
+        obj._branches = [Mock(spec=RungBranch)]
+
+        self.assertTrue(obj.has_branches())
+
+    def test_has_branches_returns_false_when_no_branches(self):
+        """Test has_branches returns False when no branches exist."""
+        obj = HasBranches()
+        obj._branches = {}
+        with patch('controlrox.models.plc.protocols.HasBranches.compile_branches', return_value=None):
+            self.assertFalse(obj.has_branches())
+
+    def test_find_matching_branch_end(self):
+        """Test find_matching_branch_end finds correct end position."""
+        obj = HasBranches()
+        obj.text = 'XIC(A)[XIC(B),XIC(C)]OTE(D);'
+
+        # Mock sequence with branch markers
+        obj._sequence = [  # type: ignore
+            RungElement(RungElementType.INSTRUCTION, position=0, instruction='XIC(A)'),
+            RungElement(RungElementType.BRANCH_START, position=1, branch_id='branch_0'),
+            RungElement(RungElementType.INSTRUCTION, position=2, instruction='XIC(B)'),
+            RungElement(RungElementType.BRANCH_NEXT, position=3, branch_id='branch_0'),
+            RungElement(RungElementType.INSTRUCTION, position=4, instruction='XIC(C)'),
+            RungElement(RungElementType.BRANCH_END, position=5, branch_id='branch_0'),
+            RungElement(RungElementType.INSTRUCTION, position=6, instruction='OTE(D)'),
+        ]
+
+        end_pos = obj.find_matching_branch_end(1)
+
+        self.assertEqual(end_pos, 5)
+
+    def test_get_branch_nesting_level(self):
+        """Test get_branch_nesting_level returns correct nesting level."""
+        obj = HasBranches()
+        obj.set_text(
+            'XIC(A)[XIC(B)[XIC(C),XIC(D)],XIC(E)]OTE(F);'
+        )
+
+        level = obj.get_branch_nesting_level(2)
+
+        self.assertEqual(level, 1)
+
+    def test_validate_branch_structure_returns_true_for_valid_structure(self):
+        """Test validate_branch_structure returns True for valid branch structure."""
+        obj = HasBranches()
+        obj._sequence = [  # type: ignore
+            RungElement(RungElementType.BRANCH_START, position=0),
+            RungElement(RungElementType.INSTRUCTION, position=1),
+            RungElement(RungElementType.BRANCH_END, position=2),
+        ]
+
+        result = obj.validate_branch_structure()
+
+        self.assertTrue(result)
+
+    def test_validate_branch_structure_returns_false_for_invalid_structure(self):
+        """Test validate_branch_structure returns False for invalid branch structure."""
+        obj = HasBranches()
+        # Unmatched branch start
+        obj.set_text('XIC(A)[XIC(B)OTE(C);')
+
+        result = obj.validate_branch_structure()
+
+        self.assertFalse(result)
+
+
+class TestHasSequencedInstructions(unittest.TestCase):
+    """Test cases for HasSequencedInstructions protocol."""
+
+    def test_init_creates_empty_sequence(self):
+        """Test initialization creates empty sequence."""
+        obj = HasSequencedInstructions()
+
+        self.assertEqual(obj._sequence, [])
+
+    def test_get_sequence(self):
+        """Test get_sequence returns sequence list."""
+        obj = HasSequencedInstructions()
+        mock_elements = [Mock(spec=RungElement), Mock(spec=RungElement)]
+        obj._sequence = mock_elements
+
+        result = obj.get_sequence()
+
+        self.assertEqual(result, mock_elements)
+
+    def test_set_sequence(self):
+        """Test set_sequence sets sequence list."""
+        obj = HasSequencedInstructions()
+        mock_elements = [Mock(spec=RungElement), Mock(spec=RungElement)]
+
+        obj.set_sequence(mock_elements)
+
+        self.assertEqual(obj._sequence, mock_elements)
+
+    def test_build_sequence(self):
+        """Test build_sequence builds instruction sequence."""
+        obj = HasSequencedInstructions()
+        obj.text = 'XIC(A)XIC(B)OTE(C);'
+
+        obj.build_sequence()
+
+        self.assertGreater(len(obj._sequence), 0)
+        # Should have instruction elements
+        self.assertTrue(any(e.element_type == RungElementType.INSTRUCTION for e in obj._sequence))
+
+    def test_compile_sequence(self):
+        """Test compile_sequence tokenizes and builds sequence."""
+        obj = HasSequencedInstructions()
+        obj.text = 'XIC(A)OTE(B);'
+
+        obj.compile_sequence()
+
+        self.assertGreater(len(obj._sequence), 0)
+
+    def test_invalidate_sequence(self):
+        """Test invalidate_sequence clears sequence."""
+        obj = HasSequencedInstructions()
+        obj._sequence = [Mock(), Mock()]
+
+        obj.invalidate_sequence()
+
+        self.assertEqual(len(obj._sequence), 0)
+
+    def test_clear_instructions_also_clears_sequence(self):
+        """Test clear_instructions also clears the sequence."""
+        obj = HasSequencedInstructions()
+        obj._instructions = [Mock(), Mock()]
+        obj._sequence = [Mock(), Mock()]
+
+        obj.clear_instructions()
+
+        self.assertEqual(len(obj._instructions), 0)
+        self.assertEqual(len(obj._sequence), 0)
+
+    def test_compile_instructions_does_not_compile_sequence(self):
+        """Test compile_instructions does not compile the sequence."""
+        obj = HasSequencedInstructions()
+        obj.text = 'XIC(A)OTE(B);'
+
+        obj.compile_instructions()
+
+        self.assertGreater(len(obj._instructions), 0)
+        self.assertEqual(len(obj._sequence), 0)
+
+    def test_get_instruction_by_index(self):
+        """Test get_instruction_by_index returns correct instruction."""
+        obj = HasSequencedInstructions()
+        mock_instruction1 = Mock()
+        mock_instruction2 = Mock()
+        obj._instructions = [mock_instruction1, mock_instruction2]
+
+        result = obj.get_instruction_by_index(1)
+
+        self.assertEqual(result, mock_instruction2)
+
+    def test_get_instruction_by_index_raises_for_invalid_index(self):
+        """Test get_instruction_by_index raises IndexError for invalid index."""
+        obj = HasSequencedInstructions()
+        obj._instructions = [Mock()]
+
+        with self.assertRaises(IndexError):
+            obj.get_instruction_by_index(5)
+
+    def test_remove_instruction_by_index(self):
+        """Test remove_instruction_by_index removes instruction at index."""
+        obj = HasSequencedInstructions()
+        instr1 = Mock(spec=IPlcObject)
+        instr1.name = 'mock1'
+        instr2 = Mock(spec=IPlcObject)
+        instr2.name = 'mock2'
+        instr3 = Mock(spec=IPlcObject)
+        instr3.name = 'mock3'
+        obj._instructions = [instr1, instr2, instr3]
+        obj._sequence = [Mock(), Mock(), Mock()]
+
+        with patch('controlrox.models.plc.protocols.HasInstructions.get_raw_instructions', return_value=[
+            {'@Name': 'mock1'}, {'@Name': 'mock2'}, {'@Name': 'mock3'}
+        ]):
+            obj.remove_instruction_by_index(1)
+
+        # After removing, recompile would be needed so both lists should be cleared
+        self.assertEqual(len(obj._instructions), 0)
+        self.assertEqual(len(obj._sequence), 0)
+
+    def test_move_instruction(self):
+        """Test move_instruction moves instruction to new position."""
+        obj = HasSequencedInstructions()
+
+        # Set initial text state
+        obj.text = 'XIC(Instr1)XIO(Instr2)OTE(Instr3);'
+
+        # Mock tokenize to return the instructions in order
+        with patch.object(obj, 'tokenize_instruction_meta_data', return_value=[
+            'XIC(Instr1)', 'XIO(Instr2)', 'OTE(Instr3)'
+        ]):
+            obj.move_instruction(0, 2)
+
+        # After moving instruction at position 0 to position 2:
+        # Original: [Instr1, Instr2, Instr3] -> [Instr2, Instr3, Instr1]
+        # The text should be reordered
+        self.assertEqual(obj.text, 'XIO(Instr2)OTE(Instr3)XIC(Instr1)')
 
 
 if __name__ == '__main__':

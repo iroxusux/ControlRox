@@ -1,6 +1,6 @@
 """Datatype for a rockwell plc
 """
-from pyrox.models.abc.factory import FactoryTypeMeta
+from pyrox.models.factory import FactoryTypeMeta
 from controlrox.interfaces import (
     ATOMIC_DATATYPES,
     IDatatype

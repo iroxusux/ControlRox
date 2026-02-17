@@ -277,7 +277,7 @@ class App(ControllerApplication):
         super().build()
 
         # Build
-        self.controller_treeview_frame_container = PyroxFrameContainer[ttk.Frame](master=self.workspace.window)
+        self.controller_treeview_frame_container = PyroxFrameContainer[ttk.Frame](master=self.main_window)
         self.treeview_commandbar = commandbar.PyroxCommandBar(self.controller_treeview_frame_container.frame_root)
         self.controller_treeview = treeview.PyroxTreeView(self.controller_treeview_frame_container.frame.root)
 

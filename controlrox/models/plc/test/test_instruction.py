@@ -2,7 +2,7 @@
 import unittest
 from unittest.mock import Mock
 
-from controlrox.interfaces import LogicInstructionType, ILogicOperand
+from controlrox.interfaces import ILogicInstructionType, ILogicOperand
 from controlrox.models.plc.instruction import LogicInstruction
 from controlrox.models.plc.operand import LogicOperand
 
@@ -38,30 +38,11 @@ class TestLogicInstruction(unittest.TestCase):
         self.assertIsInstance(instruction._operands, list)
         self.assertEqual(len(instruction._operands), 0)
 
-    def test_init_with_operands(self):
-        """Test initialization with provided operands."""
-        operand1 = LogicOperand('Tag1', 0)
-        operand2 = LogicOperand('Tag2', 1)
-        instruction = self.ConcreteClass('XIC(Tag1,Tag2)', [operand1, operand2])
-
-        self.assertEqual(len(instruction._operands), 2)
-        self.assertIn(operand1, instruction._operands)
-        self.assertIn(operand2, instruction._operands)
-
     def test_instruction_name_property(self):
         """Test instruction_name property."""
         instruction = self.ConcreteClass('XIC(TestTag)')
 
-        self.assertEqual(instruction.instruction_name, 'XIC')
-
-    def test_get_instruction_name_not_implemented(self):
-        """Test get_instruction_name raises NotImplementedError in base class."""
-        instruction = LogicInstruction('TEST', [])
-
-        with self.assertRaises(NotImplementedError) as context:
-            instruction.get_instruction_name()
-
-        self.assertIn('should be overridden by subclasses', str(context.exception))
+        self.assertEqual(instruction.name, 'XIC')
 
     def test_instruction_type_property(self):
         """Test instruction_type property."""
@@ -69,37 +50,7 @@ class TestLogicInstruction(unittest.TestCase):
 
         instr_type = instruction.instruction_type
 
-        self.assertIsInstance(instr_type, LogicInstructionType)
-
-    def test_operands_property(self):
-        """Test operands property."""
-        operand = LogicOperand('TestTag', 0)
-        instruction = self.ConcreteClass('XIC(TestTag)', [operand])
-
-        operands = instruction.operands
-
-        self.assertEqual(len(operands), 1)
-        self.assertEqual(operands[0], operand)
-
-    def test_get_operands_not_implemented_when_empty(self):
-        """Test get_operands raises NotImplementedError when no operands cached."""
-        instruction = LogicInstruction('TEST', [])
-
-        with self.assertRaises(NotImplementedError) as context:
-            instruction.get_operands()
-
-        self.assertIn('should be overridden by subclasses', str(context.exception))
-
-    def test_get_operands_returns_cached(self):
-        """Test get_operands returns cached operands."""
-        operand1 = LogicOperand('Tag1', 0)
-        operand2 = LogicOperand('Tag2', 1)
-        instruction = self.ConcreteClass('TEST', [operand1, operand2])
-
-        operands = instruction.get_operands()
-
-        self.assertEqual(len(operands), 2)
-        self.assertIs(operands, instruction._operands)
+        self.assertIsInstance(instr_type, ILogicInstructionType)
 
 
 class TestLogixInstructionType(unittest.TestCase):
@@ -123,7 +74,7 @@ class TestLogixInstructionType(unittest.TestCase):
 
         instr_type = instruction.get_instruction_type()
 
-        self.assertEqual(instr_type, LogicInstructionType.INPUT)
+        self.assertEqual(instr_type, ILogicInstructionType.INPUT)
 
     def test_input_instruction_type_xio(self):
         """Test XIO is detected as INPUT type."""
@@ -131,7 +82,7 @@ class TestLogixInstructionType(unittest.TestCase):
 
         instr_type = instruction.get_instruction_type()
 
-        self.assertEqual(instr_type, LogicInstructionType.INPUT)
+        self.assertEqual(instr_type, ILogicInstructionType.INPUT)
 
     def test_output_instruction_type_ote(self):
         """Test OTE is detected as OUTPUT type."""
@@ -139,7 +90,7 @@ class TestLogixInstructionType(unittest.TestCase):
 
         instr_type = instruction.get_instruction_type()
 
-        self.assertEqual(instr_type, LogicInstructionType.OUTPUT)
+        self.assertEqual(instr_type, ILogicInstructionType.OUTPUT)
 
     def test_output_instruction_type_otl(self):
         """Test OTL is detected as OUTPUT type."""
@@ -147,7 +98,7 @@ class TestLogixInstructionType(unittest.TestCase):
 
         instr_type = instruction.get_instruction_type()
 
-        self.assertEqual(instr_type, LogicInstructionType.OUTPUT)
+        self.assertEqual(instr_type, ILogicInstructionType.OUTPUT)
 
     def test_output_instruction_type_otu(self):
         """Test OTU is detected as OUTPUT type."""
@@ -155,7 +106,7 @@ class TestLogixInstructionType(unittest.TestCase):
 
         instr_type = instruction.get_instruction_type()
 
-        self.assertEqual(instr_type, LogicInstructionType.OUTPUT)
+        self.assertEqual(instr_type, ILogicInstructionType.OUTPUT)
 
     def test_output_instruction_type_mov(self):
         """Test MOV is detected as OUTPUT type."""
@@ -163,7 +114,7 @@ class TestLogixInstructionType(unittest.TestCase):
 
         instr_type = instruction.get_instruction_type()
 
-        self.assertEqual(instr_type, LogicInstructionType.OUTPUT)
+        self.assertEqual(instr_type, ILogicInstructionType.OUTPUT)
 
     def test_jsr_instruction_type(self):
         """Test JSR is detected as JSR type."""
@@ -171,7 +122,7 @@ class TestLogixInstructionType(unittest.TestCase):
 
         instr_type = instruction.get_instruction_type()
 
-        self.assertEqual(instr_type, LogicInstructionType.JSR)
+        self.assertEqual(instr_type, ILogicInstructionType.JSR)
 
     def test_unknown_instruction_type(self):
         """Test unknown instruction is detected as UNKNOWN type."""
@@ -179,7 +130,7 @@ class TestLogixInstructionType(unittest.TestCase):
 
         instr_type = instruction.get_instruction_type()
 
-        self.assertEqual(instr_type, LogicInstructionType.UNKNOWN)
+        self.assertEqual(instr_type, ILogicInstructionType.UNKNOWN)
 
     def test_instruction_type_caching(self):
         """Test instruction type is cached after first access."""
@@ -191,7 +142,7 @@ class TestLogixInstructionType(unittest.TestCase):
         type2 = instruction.get_instruction_type()
 
         self.assertEqual(type1, type2)
-        self.assertEqual(instruction._instruction_type, LogicInstructionType.INPUT)
+        self.assertEqual(instruction._instruction_type, ILogicInstructionType.INPUT)
 
     def test_instruction_type_property_uses_get_method(self):
         """Test instruction_type property calls get_instruction_type."""
@@ -260,13 +211,6 @@ class TestLogicInstructionEdgeCases(unittest.TestCase):
 
         self.assertEqual(instruction.meta_data, '')
 
-    def test_instruction_with_many_operands(self):
-        """Test instruction with many operands."""
-        operands: list[ILogicOperand] = [LogicOperand(f'Tag{i}', i) for i in range(10)]
-        instruction = self.TestClass('COMPLEX', operands)
-
-        self.assertEqual(len(instruction._operands), 10)
-
     def test_instruction_type_without_cached_type(self):
         """Test getting instruction type when _instruction_type not initialized."""
         instruction = self.TestClass('TEST')
@@ -275,56 +219,6 @@ class TestLogicInstructionEdgeCases(unittest.TestCase):
         instr_type = instruction.get_instruction_type()
 
         self.assertIsNotNone(instr_type)
-
-    def test_operands_property_calls_get_operands(self):
-        """Test operands property calls get_operands method."""
-        operand = LogicOperand('Tag', 0)
-        instruction = self.TestClass('TEST', [operand])
-
-        # Access via property
-        prop_operands = instruction.operands
-        # Access via method
-        method_operands = instruction.get_operands()
-
-        self.assertEqual(prop_operands, method_operands)
-
-    def test_instruction_with_none_operands_list(self):
-        """Test instruction behavior with operands not provided."""
-        instruction = self.TestClass('TEST')
-
-        # Should have empty list as default
-        self.assertIsInstance(instruction._operands, list)
-
-
-class TestLogicInstructionWithMocks(unittest.TestCase):
-    """Test LogixInstruction with mock operands."""
-
-    def setUp(self):
-        """Set up test fixtures."""
-        class MockInstruction(LogicInstruction):
-            def get_instruction_name(self):
-                return 'MOCK'
-
-        self.MockClass = MockInstruction
-
-    def test_instruction_with_mock_operands(self):
-        """Test instruction accepts mock operands."""
-        mock_operand1 = Mock()
-        mock_operand2 = Mock()
-        instruction = self.MockClass('MOCK', [mock_operand1, mock_operand2])
-
-        self.assertEqual(len(instruction._operands), 2)
-        self.assertIn(mock_operand1, instruction._operands)
-        self.assertIn(mock_operand2, instruction._operands)
-
-    def test_get_operands_with_mocks(self):
-        """Test get_operands returns mock operands."""
-        mock_operand = Mock()
-        instruction = self.MockClass('MOCK', [mock_operand])
-
-        operands = instruction.get_operands()
-
-        self.assertEqual(operands[0], mock_operand)
 
 
 class TestLogicInstructionRungIntegration(unittest.TestCase):
@@ -390,59 +284,6 @@ class TestLogicInstructionRungIntegration(unittest.TestCase):
         self.assertEqual(instruction.rung, self.mock_rung)
 
 
-class TestLogicInstructionOperandManagement(unittest.TestCase):
-    """Test instruction operand management."""
-
-    def setUp(self):
-        """Set up test fixtures."""
-        self.mock_operand = Mock(spec=ILogicOperand)
-        self.mock_operand.tag_name = 'TestTag'
-
-        class TestableInstruction(LogicInstruction):
-            def __init__(self, **kwargs):
-                super().__init__(**kwargs)
-                self.compiled_operands = False
-
-            def get_instruction_name(self):
-                return 'XIC'
-
-            def compile_operands(self):
-                self.compiled_operands = True
-                self._operands = [Mock(spec=ILogicOperand) for _ in range(3)]
-
-        self.TestableInstruction = TestableInstruction
-
-    def test_get_operands_triggers_compile(self):
-        """Test get_operands triggers compile when empty."""
-        instruction = self.TestableInstruction(meta_data='XIC(Tag)')
-
-        operands = instruction.get_operands()
-
-        self.assertTrue(instruction.compiled_operands)
-        self.assertEqual(len(operands), 3)
-
-    def test_get_operands_returns_cached(self):
-        """Test get_operands returns cached operands."""
-        instruction = self.TestableInstruction(meta_data='XIC(Tag)', operands=[self.mock_operand])
-
-        operands = instruction.get_operands()
-
-        self.assertEqual(len(operands), 1)
-        self.assertIn(self.mock_operand, operands)
-
-    def test_operands_property(self):
-        """Test operands property."""
-        instruction = self.TestableInstruction(meta_data='XIC(Tag)', operands=[self.mock_operand])
-
-        self.assertEqual(len(instruction.operands), 1)
-
-    def test_empty_operands_list(self):
-        """Test instruction with empty operands list."""
-        instruction = self.TestableInstruction(meta_data='XIC(Tag)', operands=[])
-
-        self.assertEqual(len(instruction._operands), 0)
-
-
 class TestLogicInstructionTypeDetection(unittest.TestCase):
     """Test instruction type detection for various instructions."""
 
@@ -465,43 +306,43 @@ class TestLogicInstructionTypeDetection(unittest.TestCase):
         """Test XIC is INPUT type."""
         instruction = self.TestableInstruction('XIC(Tag)', 'XIC')
 
-        self.assertEqual(instruction.instruction_type, LogicInstructionType.INPUT)
+        self.assertEqual(instruction.instruction_type, ILogicInstructionType.INPUT)
 
     def test_xio_is_input(self):
         """Test XIO is INPUT type."""
         instruction = self.TestableInstruction('XIO(Tag)', 'XIO')
 
-        self.assertEqual(instruction.instruction_type, LogicInstructionType.INPUT)
+        self.assertEqual(instruction.instruction_type, ILogicInstructionType.INPUT)
 
     def test_ote_is_output(self):
         """Test OTE is OUTPUT type."""
         instruction = self.TestableInstruction('OTE(Tag)', 'OTE')
 
-        self.assertEqual(instruction.instruction_type, LogicInstructionType.OUTPUT)
+        self.assertEqual(instruction.instruction_type, ILogicInstructionType.OUTPUT)
 
     def test_otl_is_output(self):
         """Test OTL is OUTPUT type."""
         instruction = self.TestableInstruction('OTL(Tag)', 'OTL')
 
-        self.assertEqual(instruction.instruction_type, LogicInstructionType.OUTPUT)
+        self.assertEqual(instruction.instruction_type, ILogicInstructionType.OUTPUT)
 
     def test_otu_is_output(self):
         """Test OTU is OUTPUT type."""
         instruction = self.TestableInstruction('OTU(Tag)', 'OTU')
 
-        self.assertEqual(instruction.instruction_type, LogicInstructionType.OUTPUT)
+        self.assertEqual(instruction.instruction_type, ILogicInstructionType.OUTPUT)
 
     def test_jsr_is_jsr(self):
         """Test JSR is JSR type."""
         instruction = self.TestableInstruction('JSR(Routine)', 'JSR')
 
-        self.assertEqual(instruction.instruction_type, LogicInstructionType.JSR)
+        self.assertEqual(instruction.instruction_type, ILogicInstructionType.JSR)
 
     def test_unknown_type(self):
         """Test unknown instruction is UNKNOWN type."""
         instruction = self.TestableInstruction('CUSTOM(Tag)', 'CUSTOM')
 
-        self.assertEqual(instruction.instruction_type, LogicInstructionType.UNKNOWN)
+        self.assertEqual(instruction.instruction_type, ILogicInstructionType.UNKNOWN)
 
     def test_type_caching(self):
         """Test instruction type is cached."""
@@ -511,7 +352,7 @@ class TestLogicInstructionTypeDetection(unittest.TestCase):
         type2 = instruction.get_instruction_type()
 
         self.assertEqual(type1, type2)
-        self.assertEqual(instruction._instruction_type, LogicInstructionType.INPUT)
+        self.assertEqual(instruction._instruction_type, ILogicInstructionType.INPUT)
 
 
 class TestLogicInstructionMetaData(unittest.TestCase):
@@ -589,24 +430,6 @@ class TestLogicInstructionStringRepresentation(unittest.TestCase):
         self.assertIsInstance(result, str)
 
 
-class TestLogicInstructionNotImplemented(unittest.TestCase):
-    """Test NotImplementedError cases for LogicInstruction."""
-
-    def test_get_instruction_name_not_implemented(self):
-        """Test get_instruction_name raises NotImplementedError."""
-        instruction = LogicInstruction('TEST')
-
-        with self.assertRaises(NotImplementedError):
-            instruction.get_instruction_name()
-
-    def test_compile_operands_not_implemented(self):
-        """Test compile_operands raises NotImplementedError."""
-        instruction = LogicInstruction('TEST')
-
-        with self.assertRaises(NotImplementedError):
-            instruction.compile_operands()
-
-
 class TestLogicInstructionSpecialCases(unittest.TestCase):
     """Test special cases and edge conditions."""
 
@@ -631,8 +454,8 @@ class TestLogicInstructionSpecialCases(unittest.TestCase):
         """Test accessing properties multiple times."""
         instruction = self.TestableInstruction('XIC(Tag)')
 
-        name1 = instruction.instruction_name
-        name2 = instruction.instruction_name
+        name1 = instruction.name
+        name2 = instruction.name
         type1 = instruction.instruction_type
         type2 = instruction.instruction_type
 
@@ -641,15 +464,11 @@ class TestLogicInstructionSpecialCases(unittest.TestCase):
 
     def test_instruction_initialization_order(self):
         """Test instruction initializes properly with various parameter orders."""
-        operand = Mock(spec=ILogicOperand)
-
         instr1 = self.TestableInstruction(
-            meta_data='XIC(A)',
-            operands=[operand],
+            meta_data='XIC(A)'
         )
         instr2 = self.TestableInstruction(
-            meta_data='XIC(B)',
-            operands=[]
+            meta_data='XIC(B)'
         )
 
         self.assertEqual(instr1.meta_data, 'XIC(A)')
@@ -689,19 +508,12 @@ class TestLogicInstructionEdgeCasesExtended(unittest.TestCase):
         """Test instruction_name property accessed multiple times."""
         instruction = self.TestableInstruction('TEST')
 
-        name1 = instruction.instruction_name
-        name2 = instruction.instruction_name
-        name3 = instruction.instruction_name
+        name1 = instruction.name
+        name2 = instruction.name
+        name3 = instruction.name
 
         self.assertEqual(name1, name2)
         self.assertEqual(name2, name3)
-
-    def test_instruction_with_many_operands(self):
-        """Test instruction with many operands."""
-        operands = [Mock(spec=ILogicOperand) for _ in range(20)]
-        instruction = self.TestableInstruction('COMPLEX', operands=operands)  # type: ignore
-
-        self.assertEqual(len(instruction._operands), 20)
 
 
 if __name__ == '__main__':

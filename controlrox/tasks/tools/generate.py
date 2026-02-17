@@ -2,7 +2,8 @@
     """
 import tkinter as tk
 from tkinter import ttk
-from pyrox.models.gui import PyroxYamlEditor, TaskFrame
+from pyrox.models.gui import PyroxYamlEditor
+from pyrox.models.gui.tk.frame import TkinterTaskFrame
 from pyrox.services.file import get_save_file
 from pyrox.services.gui import GuiManager
 from pyrox.services.logging import log
@@ -21,15 +22,11 @@ class ControllerGenerateTask(ControllerApplicationTask):
     """
 
     def generate_project_design_checklist(self):
-        ctrl = ControllerInstanceManager.get_controller()
-        if not ctrl:
-            return
-
-        task_frame = TaskFrame(
-            master=self.application.workspace.workspace_area.frame_root,
-            name='Project Design Checklist'
+        task_frame = TkinterTaskFrame(
+            name='Project Design Checklist',
+            parent=self.application.workspace.workspace_area.root
         )
-        self.application.workspace.add_workspace_task_frame(task_frame, True)
+        self.application.workspace.register_frame(task_frame, True)
 
         # Create the YAML editor
         yaml_editor = PyroxYamlEditor(
@@ -73,6 +70,9 @@ class ControllerGenerateTask(ControllerApplicationTask):
             log(self).warning("No output path selected for design checklist export.")
             return
 
+        if not output_path.endswith('.md'):
+            output_path += '.md'
+
         render_checklist(
             input_yaml=yaml_file_path,
             output_markdown=output_path,
@@ -97,15 +97,10 @@ class ControllerGenerateTask(ControllerApplicationTask):
         remove_emulation_routine(ctrl)
 
     def inject(self) -> None:
-        tools_menu = self.application.menu.unsafe_get_tools_menu()
-        items = tools_menu.get_items()
-        if len(items) > 0:
-            tools_menu.add_separator()
-
         backend = GuiManager.unsafe_get_backend()
 
         logic_srvc_dropdown = backend.create_gui_menu(
-            master=tools_menu.menu,
+            master=self.tools_menu.menu,
             name='logic_services',
             tearoff=0
         )
@@ -126,6 +121,5 @@ class ControllerGenerateTask(ControllerApplicationTask):
         emulation_dropdown.add_item(label='Remove Emulation Logic', command=self.remove_emulation_routine)
 
         logic_srvc_dropdown.add_submenu(label='Emulation', submenu=emulation_dropdown)
-        tools_menu.add_submenu(label='Project Services', submenu=project_srvc_dropdown)
-        tools_menu.add_submenu(label='Logic Services', submenu=logic_srvc_dropdown)
-        tools_menu.add_separator()
+        self.tools_menu.add_submenu(label='Project Services', submenu=project_srvc_dropdown)
+        self.tools_menu.add_submenu(label='Logic Services', submenu=logic_srvc_dropdown)

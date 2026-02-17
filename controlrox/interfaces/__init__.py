@@ -16,6 +16,7 @@ Key Design Principles:
 Interface Categories:
     - PLC: Control logic controller abstractions
 """
+from .constants import ControlRoxEnvironmentKeys
 
 from .plc import (
     # Type Variables
@@ -38,6 +39,9 @@ from .plc import (
     IHasController,
     IHasDatatypes,
     IHasInstructions,
+    IHasOperands,
+    IHasRungText,
+    IHasBranches,
     IHasSequencedInstructions,
     IHasMetaData,
     IHasModules,
@@ -54,9 +58,9 @@ from .plc import (
     INSTR_JSR,
     CIPTYPES,
     IPlcObject,
-    LogicAssetType,
-    LogicInstructionType,
-    LogicTagScope,
+    ILogicAssetType,
+    ILogicInstructionType,
+    ILogicTagScope,
 
     # Datatype Interfaces
     IDatatype,
@@ -68,6 +72,9 @@ from .plc import (
 
     # Tag Interfaces
     ITag,
+    ITagKlass,
+    ITagType,
+    ITagExternalAccess,
 
     # Logic Interfaces
     ILogicInstruction,
@@ -101,6 +108,12 @@ from .plc import (
 
     # Generator Interfaces
     IEmulationGenerator,
+
+    # Dialect Interfaces
+    PLCDialect,
+    IHasRungsTranslator,
+    IHasInstructionsTranslator,
+    IHasOperandsTranslator,
 )
 
 from .tasks import (
@@ -109,6 +122,9 @@ from .tasks import (
 
 
 __all__ = (
+    # Constants
+    "ControlRoxEnvironmentKeys",
+
     # Type variables section
     "AOI",
     "CTRL",
@@ -129,6 +145,9 @@ __all__ = (
     'IHasController',
     'IHasDatatypes',
     'IHasInstructions',
+    'IHasOperands',
+    'IHasRungText',
+    'IHasBranches',
     'IHasSequencedInstructions',
     'IHasMetaData',
     'IHasModules',
@@ -145,9 +164,9 @@ __all__ = (
     'INSTR_JSR',
     'CIPTYPES',
     'IPlcObject',
-    'LogicAssetType',
-    'LogicInstructionType',
-    'LogicTagScope',
+    'ILogicAssetType',
+    'ILogicInstructionType',
+    'ILogicTagScope',
 
     # Datatype section
     'IDatatype',
@@ -159,6 +178,9 @@ __all__ = (
 
     # Tag section
     'ITag',
+    'ITagKlass',
+    'ITagType',
+    'ITagExternalAccess',
 
     # Instruction section
     'ILogicInstruction',
@@ -192,6 +214,12 @@ __all__ = (
 
     # Generator section
     'IEmulationGenerator',
+
+    # Dialect section
+    "PLCDialect",
+    "IHasRungsTranslator",
+    "IHasInstructionsTranslator",
+    "IHasOperandsTranslator",
 
     # Tasks section
     "IControllerApplication",

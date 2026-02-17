@@ -1,8 +1,7 @@
 """types module for pyrox"""
 from . import (
-    eplan,
     gui,
-    plc
+    plc,
 )
 
 # PLC section
@@ -58,7 +57,6 @@ from .tasks import (
 
 
 __all__ = (
-    'eplan',
     'gui',
     'plc',
 

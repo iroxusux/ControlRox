@@ -1,15 +1,18 @@
 """Logic operand module."""
 from typing import Optional
+from pyrox.models import FactoryTypeMeta
 from controlrox.interfaces import (
     ILogicInstruction,
     ILogicOperand,
 )
+from controlrox.services import OperandFactory
 from .meta import PlcObject
 
 
 class LogicOperand(
     ILogicOperand,
     PlcObject[str],
+    metaclass=FactoryTypeMeta['LogicOperand', OperandFactory]
 ):
     """Logic Operand
     """
@@ -33,6 +36,10 @@ class LogicOperand(
         self._base_name: str = ''
         self._parents: list[str] = []
         self._trailing_name: str = ''
+
+    @classmethod
+    def get_factory(cls):
+        return OperandFactory
 
     def compile(self):
         return self

@@ -1,10 +1,12 @@
 """PLC type module for Pyrox framework."""
 from typing import (
+    Any,
     List,
     Optional,
+    Union,
 )
 
-from pyrox.models import HashList
+from pyrox.models import HashList, FactoryTypeMeta, MetaFactory
 
 from controlrox.interfaces import (
     IAddOnInstruction,
@@ -19,12 +21,16 @@ from controlrox.interfaces import (
     IProgram,
     IRoutine,
     IRung,
+    PLCDialect,
 )
 
+from controlrox.interfaces.plc.operand import ILogicOperand
 from controlrox.services import (
     AOIFactory,
+    ControllerFactory,
     DatatypeFactory,
     ModuleFactory,
+    OperandFactory,
     ProgramFactory,
     RoutineFactory,
     RungFactory,
@@ -54,7 +60,8 @@ class Controller(
     HasModules,
     HasPrograms,
     HasTags,
-    PlcObject[dict]
+    PlcObject[dict],
+    metaclass=FactoryTypeMeta['Controller', ControllerFactory]
 ):
     """Controller for a PLC project.
 
@@ -65,6 +72,8 @@ class Controller(
         slot (int): The slot number of the controller. Defaults to 0.
     """
 
+    generator_type: str = 'BaseEmulationGenerator'
+
     def __init__(
         self,
         meta_data: Optional[dict] = None,
@@ -73,7 +82,13 @@ class Controller(
         slot: int = 0,
         **kwargs,
     ) -> None:
-        super().__init__(
+        HasAOIs.__init__(self)
+        HasDatatypes.__init__(self)
+        HasModules.__init__(self)
+        HasPrograms.__init__(self)
+        HasTags.__init__(self)
+        PlcObject.__init__(
+            self,
             meta_data=meta_data,
             **kwargs,
         )
@@ -198,21 +213,40 @@ class Controller(
             container=self
         )
 
+    def create_common_object(
+        self,
+        factory: type[MetaFactory],
+        name: str = '',
+        description: str = '',
+        meta_data: Optional[Union[str, dict]] = None,
+        default_type: Optional[type] = None,
+        **kwargs
+    ) -> Any:
+        constructor = factory.get_registered_type_by_supporting_class(self.__class__)
+        if not constructor and default_type:
+            constructor = default_type
+        if not constructor:
+            raise RuntimeError(f'No constructor or default constructor found for this controller type in {factory.__name__}!')
+        return constructor(
+            name=name,
+            description=description,
+            meta_data=meta_data,
+            **kwargs
+        )
+
     def create_aoi(
         self,
         name: str = '',
         description: str = '',
         meta_data: Optional[dict] = None
     ) -> IAddOnInstruction:
-
-        constructor = AOIFactory.get_registered_type_by_supporting_class(self.__class__)
-        if not constructor:
-            raise RuntimeError('No AOI constructor found for this controller type!')
-
-        return constructor(
+        from .rockwell.aoi import RaAddOnInstruction
+        return self.create_common_object(
+            factory=AOIFactory,
             name=name,
             description=description,
-            meta_data=meta_data
+            meta_data=meta_data,
+            default_type=RaAddOnInstruction
         )
 
     def create_datatype(
@@ -221,14 +255,13 @@ class Controller(
         description: str = '',
         meta_data: Optional[dict] = None
     ) -> IDatatype:
-        constructor = DatatypeFactory.get_registered_type_by_supporting_class(self.__class__)
-        if not constructor:
-            raise RuntimeError('No Datatype constructor found for this controller type!')
-
-        return constructor(
+        from .datatype import Datatype
+        return self.create_common_object(
+            factory=DatatypeFactory,
             name=name,
             description=description,
-            meta_data=meta_data
+            meta_data=meta_data,
+            default_type=Datatype
         )
 
     def create_instruction(
@@ -238,15 +271,14 @@ class Controller(
         meta_data: Optional[str] = None,
         rung: Optional[IRung] = None,
     ) -> ILogicInstruction:
-        constructor = InstructionFactory.get_registered_type_by_supporting_class(self.__class__)
-        if not constructor:
-            raise RuntimeError('No Instruction constructor found for this controller type!')
-
-        return constructor(
-            name=name,
-            description=description,
-            meta_data=meta_data,
-            rung=rung
+        from .instruction import LogicInstruction
+        return self.create_common_object(
+            factory=InstructionFactory,
+            name=name or '',
+            description=description or '',
+            meta_data=meta_data or '',
+            default_type=LogicInstruction,
+            rung=rung,
         )
 
     def create_module(
@@ -255,14 +287,32 @@ class Controller(
         description: str = '',
         meta_data: Optional[dict] = None
     ) -> IModule:
-        constructor = ModuleFactory.get_registered_type_by_supporting_class(self.__class__)
-        if not constructor:
-            raise RuntimeError('No Module constructor found for this controller type!')
-
-        return constructor(
+        from .module import Module
+        return self.create_common_object(
+            factory=ModuleFactory,
             name=name,
             description=description,
-            meta_data=meta_data
+            meta_data=meta_data,
+            default_type=Module
+        )
+
+    def create_operand(
+        self,
+        name: str = '',
+        description: str = '',
+        meta_data: Optional[str] = None,
+        instruction: Optional[ILogicInstruction] = None,
+        arg_position: int = -1
+    ) -> ILogicOperand:
+        from .operand import LogicOperand
+        return self.create_common_object(
+            factory=OperandFactory,
+            name=name,
+            description=description,
+            meta_data=meta_data,
+            default_type=LogicOperand,
+            instruction=instruction,
+            arg_position=arg_position
         )
 
     def create_program(
@@ -271,14 +321,13 @@ class Controller(
         description: str = '',
         meta_data: Optional[dict] = None
     ) -> IProgram:
-        constructor = ProgramFactory.get_registered_type_by_supporting_class(self.__class__)
-        if not constructor:
-            raise RuntimeError('No Program constructor found for this controller type!')
-
-        return constructor(
+        from .program import Program
+        return self.create_common_object(
+            factory=ProgramFactory,
             name=name,
             description=description,
-            meta_data=meta_data
+            meta_data=meta_data,
+            default_type=Program
         )
 
     def create_routine(
@@ -288,14 +337,13 @@ class Controller(
         meta_data: Optional[dict] = None,
         container: Optional[IHasRoutines] = None
     ) -> IRoutine:
-        constructor = RoutineFactory.get_registered_type_by_supporting_class(self.__class__)
-        if not constructor:
-            raise RuntimeError('No Routine constructor found for this controller type!')
-
-        return constructor(
+        from .routine import Routine
+        return self.create_common_object(
+            factory=RoutineFactory,
             name=name,
             description=description,
             meta_data=meta_data,
+            default_type=Routine,
             container=container
         )
 
@@ -309,16 +357,17 @@ class Controller(
         rung_text: str = '',
         rung_number: int = -1
     ) -> IRung:
-        constructor = RungFactory.get_registered_type_by_supporting_class(self.__class__)
-        if not constructor:
-            raise RuntimeError('No Rung constructor found for this controller type!')
-
-        return constructor(
-            meta_data=meta_data,
+        from .rung import Rung
+        return self.create_common_object(
+            factory=RungFactory,
+            name=name or '',
+            description=description or '',
+            meta_data=meta_data or {},
+            default_type=Rung,
             routine=routine,
             comment=comment,
             rung_text=rung_text,
-            rung_number=rung_number,
+            rung_number=rung_number
         )
 
     def create_tag(
@@ -328,28 +377,27 @@ class Controller(
         description: str = '',
         container: Optional[IHasTags] = None,
         meta_data: Optional[dict] = None,
-        tag_class: str = '',
+        tag_klass: str = '',
         tag_type: str = 'Base',
         dimensions: str = '',
         constant: bool = False,
         external_access: str = 'Read/Write',
         **_
     ) -> ITag:
-        constructor = TagFactory.get_registered_type_by_supporting_class(self.__class__)
-        if not constructor:
-            raise RuntimeError('No Tag constructor found for this controller type!')
-
-        return constructor(
-            meta_data=meta_data,
+        from .tag import Tag
+        return self.create_common_object(
+            factory=TagFactory,
             name=name,
             description=description,
-            tag_class=tag_class,
-            tag_type=tag_type,
+            meta_data=meta_data,
+            default_type=Tag,
+            container=container,
             datatype=datatype,
+            tag_klass=tag_klass,
+            tag_type=tag_type,
             dimensions=dimensions,
             constant=constant,
-            external_access=external_access,
-            container=container,
+            external_access=external_access
         )
 
     def get_comms_path(self) -> str:
@@ -357,6 +405,9 @@ class Controller(
 
     def get_controller_safety_info(self) -> IControllerSafetyInfo:
         raise NotImplementedError("This method should be overridden by subclasses to get controller safety info.")
+
+    def get_dialect(self) -> PLCDialect:
+        return PLCDialect.RSLOGIX5000  # Default dialect; override in subclasses if needed
 
     def get_file_location(self) -> str:
         return self._file_location  # type: ignore
@@ -420,3 +471,6 @@ class Controller(
 
     def set_modified_date(self, modified_date: str) -> None:
         raise NotImplementedError("set_modified_date should be overridden by subclasses.")
+
+
+PlcObject.supporting_class = Controller

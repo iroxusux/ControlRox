@@ -1,6 +1,12 @@
 """Protocols for PLC models."""
-from typing import Callable, Generic, Optional, Union
-from pyrox.models.abc import HashList, SupportsItemAccess
+from typing import (
+    Callable,
+    Generic,
+    Optional,
+    Union
+)
+from pyrox.models import HashList
+from pyrox.models.meta import SupportsItemAccess
 from controlrox.interfaces import (
     # Protocols
     ICanBeSafe,
@@ -9,6 +15,9 @@ from controlrox.interfaces import (
     IHasDatatypes,
     IHasController,
     IHasInstructions,
+    IHasOperands,
+    IHasRungText,
+    IHasBranches,
     IHasSequencedInstructions,
     IHasMetaData,
     IHasModules,
@@ -30,11 +39,15 @@ from controlrox.interfaces import (
     IRoutine,
     IRung,
     ITag,
+    ILogicOperand,
 
     # Rung related data classes
     RungElement,
     RungBranch,
 )
+from controlrox.interfaces.plc.dialect import IHasInstructionsTranslator, IHasOperandsTranslator, IHasRungsTranslator
+from controlrox.services import extract_instruction_strings, ControllerInstanceManager, DialectTranslatorFactory
+from controlrox.services.plc.instruction import InstructionSequenceBuilder
 
 
 class HasMetaData(
@@ -51,7 +64,7 @@ class HasMetaData(
         **kwargs
     ) -> None:
         if meta_data is None:
-            self._meta_data: META = {}  # type: ignore
+            self._meta_data: META = dict()  # type: ignore
         else:
             self._meta_data: META = meta_data
         super().__init__(**kwargs)
@@ -82,10 +95,18 @@ class HasMetaData(
 
 
 class SupportsMetaDataListAssignment(
-    ISupportsMetaDataListAssignment
+    Generic[META],
+    ISupportsMetaDataListAssignment,
+    HasMetaData[META],
 ):
     """Protocol for objects that support metadata list assignment.
     """
+
+    def __init__(
+        self,
+        **kwargs
+    ) -> None:
+        HasMetaData.__init__(self=self, **kwargs)
 
     def add_asset_to_meta_data(
         self,
@@ -134,7 +155,12 @@ class SupportsMetaDataListAssignment(
                 index = index or len(raw_asset_list)
 
             raw_asset_list.insert(index, asset.meta_data)
-            asset_list.append(asset)
+
+            # Please fix this holy, wow
+            if isinstance(asset_list, HashList):
+                asset_list.insert(asset, index)
+            elif isinstance(asset_list, list):
+                asset_list.insert(index, asset)
 
         if inhibit_invalidate:
             return
@@ -149,7 +175,9 @@ class SupportsMetaDataListAssignment(
         asset_list: Union[list, HashList],
         raw_asset_list: list[dict],
         inhibit_invalidate: bool = False,
-        invalidate_method: Optional[Callable] = None
+        invalidate_method: Optional[Callable] = None,
+        dict_lookup_key: str = '@Name',
+        object_attribute: str = 'name'
     ) -> None:
         """Remove an asset from this object's metadata.
 
@@ -172,10 +200,16 @@ class SupportsMetaDataListAssignment(
         if not isinstance(raw_asset_list, list):
             raise ValueError('raw asset list must be of type list!')
 
+        if not dict_lookup_key or not object_attribute:
+            raise ValueError("dict_lookup_key and object_attribute must be provided!")
+
         if asset in asset_list:
-            raw_asset_to_remove = next((x for x in raw_asset_list if x["@Name"] == asset.name), None)
+            raw_asset_to_remove = next((x for x in raw_asset_list if x[dict_lookup_key] == getattr(asset, object_attribute)), None)
             if raw_asset_to_remove is not None:
                 raw_asset_list.remove(raw_asset_to_remove)
+                asset_list.remove(asset)
+        else:
+            raise ValueError(f"Asset '{asset.name}' not found in asset list!")
 
         if inhibit_invalidate:
             return
@@ -444,13 +478,11 @@ class HasInstructions(
 
     def __init__(
         self,
-        **kwargs
+        **__
     ) -> None:
         self._instructions: list['ILogicInstruction'] = []
         self._input_instructions: list['ILogicInstruction'] = []
         self._output_instructions: list['ILogicInstruction'] = []
-
-        super().__init__(**kwargs)
 
     @property
     def instructions(self) -> list['ILogicInstruction']:
@@ -484,7 +516,22 @@ class HasInstructions(
         self.invalidate_instructions()
 
     def clear_instructions(self) -> None:
-        self.invalidate_instructions()
+        """Clear meta data of all instructions."""
+        raise NotImplementedError("clear_instructions method must be implemented by subclass.")
+
+    def create_instruction_from_text(
+        self,
+        instruction_text: str
+    ) -> ILogicInstruction | None:
+        """Create an instruction object from instruction text.
+
+        Args:
+            instruction_text (str): The instruction text to parse.
+        Returns:
+            ILogicInstruction | None: The created instruction object, or None if parsing failed.
+        """
+        from .instruction import LogicInstruction
+        return LogicInstruction(meta_data=instruction_text)
 
     def compile_instructions(self) -> None:
         raise NotImplementedError("compile_instructions method must be implemented by subclass.")
@@ -499,7 +546,7 @@ class HasInstructions(
         if instruction_filter:
             filtered_instructions = [
                 instr for instr in filtered_instructions
-                if instruction_filter == instr.get_instruction_name()
+                if instruction_filter == instr.name
             ]
 
         if operand_filter:
@@ -509,6 +556,19 @@ class HasInstructions(
             ]
 
         return filtered_instructions
+
+    def get_instruction_translator(self) -> IHasInstructionsTranslator:
+        """Get the instruction translator for this object.
+
+        Returns:
+            IHasInstructionsTranslator: The instruction translator.
+        """
+        ctrl = ControllerInstanceManager.get_controller()
+        if not ctrl:
+            raise ValueError("No active controller found for getting instruction translator.")
+
+        dialect = ctrl.dialect
+        return DialectTranslatorFactory.get_instruction_translator(dialect)
 
     def get_instructions(
         self,
@@ -545,7 +605,7 @@ class HasInstructions(
         self,
         instruction: 'ILogicInstruction'
     ) -> bool:
-        raise NotImplementedError("has_instruction method must be implemented by subclass.")
+        return instruction in self.instructions
 
     def invalidate_instructions(self) -> None:
         self._instructions.clear()
@@ -555,14 +615,15 @@ class HasInstructions(
     def remove_instruction(
         self,
         instruction: 'ILogicInstruction',
-        inhibit_invalidate: bool = False
+        inhibit_invalidate: bool = False,
+        invalidate_method: Optional[Callable] = None
     ) -> None:
         self.remove_asset_from_meta_data(
             asset=instruction,
             asset_list=self.get_instructions(),
             raw_asset_list=self.get_raw_instructions(),
             inhibit_invalidate=inhibit_invalidate,
-            invalidate_method=self.invalidate_instructions
+            invalidate_method=invalidate_method or self.invalidate_instructions
         )
 
     def remove_instructions(self, instructions: list['ILogicInstruction']) -> None:
@@ -580,9 +641,548 @@ class HasInstructions(
         self._instructions = instructions
 
 
+class HasOperands(
+    IHasOperands,
+    HasInstructions,
+):
+    """Protocol for objects that have operands.
+    """
+
+    def __init__(
+        self,
+        **kwargs
+    ) -> None:
+        self._operands: list['ILogicOperand'] = []
+        HasInstructions.__init__(self=self, **kwargs)
+
+    def compile_operands(self) -> None:
+        """Compile the operands for this object."""
+        ctrl = ControllerInstanceManager.get_controller()
+        if not ctrl:
+            raise ValueError("No active controller found for compiling rungs.")
+
+        self.invalidate_operands()
+        matches = self.get_operand_transformer().get_instruction_operands(str(self.meta_data))
+
+        if not matches or len(matches) < 1:
+            return
+
+        for index, match in enumerate(matches):
+            self._operands.append(ctrl.create_operand(meta_data=match))
+
+    def get_operand_transformer(self) -> IHasOperandsTranslator:
+        """Get the operand transformer for this object.
+
+        Returns:
+            IHasOperandsTranslator: The operand transformer.
+        """
+        ctrl = ControllerInstanceManager.get_controller()
+        if not ctrl:
+            raise ValueError("No active controller found for getting operand translator.")
+
+        dialect = ctrl.dialect
+        return DialectTranslatorFactory.get_operand_translator(dialect)
+
+    def get_operands(self) -> list['ILogicOperand']:
+        """Get the list of operands."""
+        if not self._operands:
+            self.compile_operands()
+        return self._operands
+
+    def invalidate_operands(self) -> None:
+        """Invalidate all operands."""
+        self._operands.clear()
+
+
+class HasRungText(
+    IHasRungText,
+    HasOperands,
+):
+    """Protocol for objects that have rung text.
+    """
+
+    def __init__(
+        self,
+        **kwargs
+    ) -> None:
+        self._text: str = ""
+        HasOperands.__init__(self=self, **kwargs)
+
+    def get_text(self) -> str:
+        return self._text
+
+    def set_text(
+        self,
+        text: str
+    ) -> None:
+        self._text = text
+
+    def tokenize_instruction_meta_data(self) -> list[str]:
+        """Tokenize instruction meta_data to identify instructions and branch markers."""
+
+        tokens = []
+        text = self.text
+
+        # First, extract all instructions using the balanced parentheses method
+        instructions = extract_instruction_strings(text)
+        instruction_ranges = []
+
+        # Find the positions of each instruction in the text
+        search_start = 0
+        for instruction in instructions:
+            pos = text.find(instruction, search_start)
+            if pos != -1:
+                instruction_ranges.append((pos, pos + len(instruction)))
+                search_start = pos + len(instruction)
+
+        # Process the text character by character
+        i = 0
+        current_segment = ""
+
+        while i < len(text):
+            char = text[i]
+
+            if char in ['[', ']', ',']:
+                # Check if this symbol is inside any instruction
+                inside_instruction = any(start <= i < end for start, end in instruction_ranges)
+
+                if inside_instruction:
+                    # This bracket is part of an instruction (array reference), keep it
+                    current_segment += char
+                else:
+                    # This is a branch marker or next-branch marker
+                    if current_segment.strip():
+                        # Extract instructions from current segment using our method
+                        segment_instructions = extract_instruction_strings(current_segment)
+                        tokens.extend(segment_instructions)
+                        current_segment = ""
+
+                    # Add the branch marker
+                    tokens.append(char)
+            else:
+                current_segment += char
+
+            i += 1
+
+        # Process any remaining segment
+        if current_segment.strip():
+            segment_instructions = extract_instruction_strings(current_segment)
+            tokens.extend(segment_instructions)
+
+        return tokens
+
+    def remove_token(
+        self,
+        tokens: list[str],
+        index: int
+    ) -> list[str]:
+        """Remove a single token from a token list by index.
+
+        Args:
+            tokens (List[str]): Original token list
+            index (int): Index of the token to remove
+        Returns:
+            List[str]: New token list with the specified token removed
+        """
+        if index < 0 or index >= len(tokens):
+            raise IndexError("Index must be within the bounds of the token list!")
+
+        new_tokens = [
+            token for i, token in enumerate(tokens)
+            if i != index
+        ]
+
+        return new_tokens
+
+    def remove_tokens(
+        self,
+        tokens: list[str],
+        start_index: int,
+        end_index: int
+    ) -> list[str]:
+        """Remove tokens from a token list between specified positions.
+
+        Args:
+            tokens (List[str]): Original token list
+            start_index (int): Start index to remove
+            end_index (int): End index to remove
+        Returns:
+            List[str]: New token list with specified tokens removed
+        Raises:
+            IndexError: If start_index or end_index are out of bounds or invalid
+        """
+        if start_index < 0 or end_index < 0:
+            raise IndexError("Start and end positions must be non-negative!")
+
+        if end_index < start_index:
+            raise IndexError("End position must be greater than or equal to start position!")
+
+        new_tokens = [
+            token for index, token in enumerate(tokens)
+            if index < start_index or index > end_index
+        ]
+
+        return new_tokens
+
+
+class HasBranches(
+    IHasBranches,
+    HasRungText,
+):
+    """Protocol for objects that have branches.
+    """
+
+    _branch_tokens = ['[', ']', ',']
+
+    def __init__(
+        self,
+        **kwargs
+    ) -> None:
+        self._branches: dict[str, RungBranch] = {}
+        HasRungText.__init__(self=self, **kwargs)
+
+    def compile_branches(self) -> None:
+        raise NotImplementedError("compile_branches method must be implemented by subclass.")
+
+    def create_branch(
+        self,
+        branch_id: str,
+        start_position: int,
+        end_position: int
+    ) -> RungBranch:
+        branch = RungBranch(
+            branch_id=branch_id,
+            start_position=start_position,
+            end_position=end_position,
+        )
+        self._branches[branch.branch_id] = branch
+        return branch
+
+    def get_branch_start_token(self) -> str:
+        return self._branch_tokens[0]
+
+    def get_branch_end_token(self) -> str:
+        return self._branch_tokens[1]
+
+    def get_branch_next_token(self) -> str:
+        return self._branch_tokens[2]
+
+    def get_branch_tokens(self) -> list[str]:
+        return self._branch_tokens
+
+    def get_branches(self) -> dict[str, 'RungBranch']:
+        if not self._branches:
+            self.compile_branches()
+        return self._branches
+
+    def set_branches(
+        self,
+        branches: dict[str, 'RungBranch']
+    ) -> None:
+        self._branches = branches
+
+    def has_branches(self) -> bool:
+        return len(self.branches) > 0
+
+    def invalidate_branches(self) -> None:
+        self._branches.clear()
+
+    @staticmethod
+    def _insert_branch_tokens(
+        original_tokens: list[str],
+        start_pos: int,
+        end_pos: int,
+        branch_instructions: list[str]
+    ) -> list[str]:
+        """Insert branch markers and instructions into token sequence.
+
+        Args:
+            original_tokens (List[str]): Original token sequence
+            start_pos (int): Start position for branch
+            end_pos (int): End position for branch
+            branch_instructions (List[str]): Instructions to place in branch
+
+        Returns:
+            List[str]: New token sequence with branch inserted
+        """
+        new_tokens = []
+
+        if end_pos < start_pos:
+            raise ValueError("End position must be greater than or equal to start position!")
+
+        if not original_tokens:
+            original_tokens = ['']
+
+        def write_branch_end():
+            new_tokens.append(',')
+            for instr in branch_instructions:
+                new_tokens.append(instr)
+            new_tokens.append(']')
+
+        for index, token in enumerate(original_tokens):
+            if index == start_pos:
+                new_tokens.append('[')
+            if index == end_pos:
+                write_branch_end()
+            if token:
+                new_tokens.append(token)
+            if (end_pos == len(original_tokens) and index == len(original_tokens) - 1):
+                write_branch_end()
+
+        return new_tokens
+
+    def find_matching_branch_end(
+        self,
+        start_position: int
+    ) -> int:
+        """Find the matching end position for a branch start.
+
+        Args:
+            start_position (int): Position where branch starts
+
+        Returns:
+            int: Position where branch ends, -1 if not found
+        """
+        if not self.text:
+            return -1
+
+        tokens = self.tokenize_instruction_meta_data()
+
+        if len(tokens) <= start_position or tokens[start_position] != '[':
+            raise ValueError("Start position must be a valid branch start token position.")
+
+        bracket_count = 1  # Since we start on a bracket
+        instruction_count = start_position
+
+        for token in tokens[start_position+1:]:
+            instruction_count += 1
+            if token == '[':
+                bracket_count += 1
+            elif token == ']':
+                bracket_count -= 1
+                if bracket_count == 0:
+                    return instruction_count
+
+        return -1
+
+    def get_branch_internal_nesting_level(
+        self,
+        branch_position: int
+    ) -> int:
+        """Get nesting levels of elements inside of a branch.
+        """
+        end_position = self.find_matching_branch_end(branch_position)
+        if end_position is None:
+            raise ValueError(f"No matching end found for branch starting at position {branch_position}.")
+
+        tokens = self.tokenize_instruction_meta_data()
+        open_counter, nesting_counter, nesting_level = 0, 0, 0
+        indexed_tokens = tokens[branch_position+1:end_position]
+        for token in indexed_tokens:
+            if open_counter < 0:
+                raise ValueError("Mismatched brackets in rung text.")
+            if token == '[':
+                open_counter += 1
+            elif token == ',' and open_counter:
+                nesting_counter += 1
+                if nesting_counter > nesting_level:
+                    nesting_level = nesting_counter
+            elif token == ']':
+                open_counter -= 1
+
+        return nesting_level
+
+    def get_branch_nesting_level(self, instruction_position: int) -> int:
+        """Get the nesting level of branches at a specific instruction position.
+
+        Args:
+            instruction_position (int): Position of the instruction (0-based)
+
+        Returns:
+            int: Nesting level (0 = main line, 1+ = inside branches)
+        """
+        if not self.text:
+            return 0
+
+        tokens = self.tokenize_instruction_meta_data()
+        nesting_level = 0
+
+        for index, token in enumerate(tokens):
+            if token == '[':
+                nesting_level += 1
+            elif token == ']':
+                nesting_level -= 1
+            if index == instruction_position:
+                return nesting_level
+
+        return 0
+
+    def get_max_branch_depth(self) -> int:
+        """Get the maximum nesting depth of branches in this rung.
+
+        Returns:
+            int: Maximum branch depth (0 = no branches, 1+ = nested levels)
+        """
+        if not self.text:
+            return 0
+
+        tokens = self.tokenize_instruction_meta_data()
+        first_branch_token_found = False
+        current_depth = 0
+        max_depth = 0
+        restore_depth = 0
+
+        for token in tokens:
+            if token == '[':
+                current_depth += 1
+                max_depth = max(max_depth, current_depth)
+            elif token == ',':
+                # ',' increases the nested branch count
+                # But the first occurence is included with the '[' token
+                # So, ignore the first one and set a flag
+                # Additionally, mark where to restore the depth level when this branch sequence ends
+                if first_branch_token_found is False:
+                    first_branch_token_found = True
+                    restore_depth = current_depth
+                    continue
+                else:
+                    current_depth += 1
+                    max_depth = max(max_depth, current_depth)
+
+            elif token == ']':
+                current_depth -= 1
+                first_branch_token_found = False
+                current_depth = restore_depth
+
+        return max_depth
+
+    def insert_branch(
+        self,
+        start_pos: int = 0,
+        end_pos: int = 0
+    ) -> None:
+        """Insert a new branch structure in the rung.
+
+        Args:
+            start_position (int): Position where the branch should start (0-based)
+            end_position (int): Position where the branch should end (0-based)
+
+        Raises:
+            ValueError: If positions are invalid
+            IndexError: If positions are out of range
+        """
+        original_tokens = self.tokenize_instruction_meta_data()
+
+        if start_pos < 0 or end_pos < 0:
+            raise ValueError("Branch positions must be non-negative!")
+
+        if start_pos > len(original_tokens) or end_pos > len(original_tokens):
+            raise IndexError("Branch positions out of range!")
+
+        if start_pos > end_pos:
+            raise ValueError("Start position must be less than or equal to end position!")
+
+        new_tokens = self._insert_branch_tokens(
+            original_tokens,
+            start_pos,
+            end_pos,
+            []
+        )
+
+        self.set_text("".join(new_tokens))
+
+    def insert_branch_level(
+        self,
+        branch_position: int = 0,
+    ):
+        """Insert a new branch level in the existing branch structure.
+        """
+        original_tokens = self.tokenize_instruction_meta_data()
+
+        if branch_position < 0 or branch_position >= len(original_tokens):
+            raise IndexError("Start position out of range!")
+
+        if original_tokens[branch_position] != '[' and original_tokens[branch_position] != ',':
+            raise ValueError("Start position must be on a branch start token!")
+
+        # Find index of first 'next branch' marker after the start position, which is a ',' token
+        next_branch_index = branch_position + 1
+        nested_branch_count = 0
+
+        while next_branch_index < len(original_tokens):
+            if original_tokens[next_branch_index] == '[':
+                nested_branch_count += 1
+            elif original_tokens[next_branch_index] == ']':
+                if nested_branch_count <= 0:
+                    break
+                nested_branch_count -= 1
+            elif original_tokens[next_branch_index] == ',' and nested_branch_count <= 0:
+                break
+            next_branch_index += 1
+
+        if next_branch_index >= len(original_tokens):
+            raise ValueError("No next branch marker found after the start position!")
+
+        if original_tokens[next_branch_index] != ',' and original_tokens[next_branch_index] != ']':
+            raise ValueError("Next branch marker must be a ',' token!")
+
+        # Insert a ',' at the next branch index
+        new_tokens = original_tokens[:next_branch_index] + [','] + original_tokens[next_branch_index:]
+
+        # Reconstruct text
+        self.set_text("".join(new_tokens))
+
+    def remove_branch(self, branch_id: str):
+        """Remove a branch structure from the rung.
+
+        Args:
+            branch_id (str): ID of the branch to remove
+            keep_instructions (bool): If True, keep branch instructions in main line
+
+        Raises:
+            ValueError: If branch ID doesn't exist
+        """
+        if branch_id not in self._branches:
+            raise ValueError(f"Branch '{branch_id}' not found in rung!")
+
+        branch = self._branches[branch_id]
+        if branch.start_position < 0 or branch.end_position < 0:
+            raise ValueError("Branch start or end position is invalid!")
+
+        tokens = self.tokenize_instruction_meta_data()
+        tokens = self.remove_tokens(tokens, branch.start_position, branch.end_position)
+        for b in branch.nested_branches:
+            if b.branch_id in self._branches:
+                del self._branches[b.branch_id]
+        del self._branches[branch_id]
+        self.set_text("".join(tokens))
+
+    def validate_branch_structure(self) -> bool:
+        """Validate that branch markers are properly paired.
+
+        Returns:
+            bool: True if branch structure is valid, False otherwise
+        """
+        if not self.text:
+            return True
+
+        tokens = self.tokenize_instruction_meta_data()
+        bracket_count = 0
+
+        for token in tokens:
+            if token == '[':
+                bracket_count += 1
+            elif token == ']':
+                bracket_count -= 1
+                if bracket_count < 0:
+                    return False
+
+        return bracket_count == 0
+
+
 class HasSequencedInstructions(
     IHasSequencedInstructions,
-    HasInstructions,
+    HasBranches,
 ):
     """Protocol for objects that have sequenced instructions.
     """
@@ -591,36 +1191,199 @@ class HasSequencedInstructions(
         self,
         **kwargs
     ) -> None:
-        self._branch_id_counter: int = 0
-        self._rung_sequence: list[RungElement] = []
-        self._branches: dict[str, RungBranch] = {}
-        super().__init__(**kwargs)
+        self._sequence: list[RungElement] = []
+        self._sequence_tracked_branches: list[RungBranch] = []
+        HasBranches.__init__(self=self, **kwargs)
 
-    def build_instruction_sequence(self) -> None:
-        raise NotImplementedError("build_instruction_sequence method must be implemented by subclass.")
+    def _process_branch_start_token(
+        self,
+        token: str,
+        index: int,
+    ) -> None:
+        new_branch = self.create_branch(
+            branch_id=f'branch_{index}',
+            start_position=index,
+            end_position=-1,
+        )
+        self._sequence_tracked_branches.append(new_branch)
 
-    def compile_instruction_sequence(self) -> None:
+    def _process_branch_end_token(
+        self,
+        token: str,
+        index: int,
+    ) -> None:
+        try:
+            parent_branch = self._sequence_tracked_branches.pop()
+            parent_branch.end_position = index
+            for nested_branch in parent_branch.nested_branches:
+                nested_branch.end_position = index
+
+            self.create_branch(
+                branch_id=parent_branch.branch_id,
+                start_position=parent_branch.start_position,
+                end_position=index,
+            )
+        except IndexError:
+            raise ValueError("Mismatched branch end token found!") from None
+
+    def _process_branch_next_token(
+        self,
+        token: str,
+        index: int,
+    ) -> None:
+        parent_branch = self._sequence_tracked_branches[-1]
+        if not parent_branch:
+            raise ValueError("Mismatched next-branch token found!")
+
+        next_branch = self.create_branch(
+            branch_id=f'{parent_branch.branch_id}:sub-{index}',
+            start_position=index,
+            end_position=-1,
+        )
+
+        parent_branch.nested_branches.append(next_branch)
+
+    def _process_branch_token(
+        self,
+        token: str,
+        index: int,
+    ) -> None:
+        if token == self.get_branch_end_token():
+            self._process_branch_end_token(token, index)
+
+        elif token == self.get_branch_start_token():
+            self._process_branch_start_token(token, index)
+
+        elif token == self.get_branch_next_token():
+            self._process_branch_next_token(token, index)
+
+    def _process_instruction_token(
+        self,
+        token: str,
+    ) -> None:
+        instruction = self.create_instruction_from_text(token)
+        if not instruction:
+            raise ValueError(f"Failed to create instruction from text: {token}")
+        self._instructions.append(instruction)
+
+    def build_sequence(self) -> None:
+        self.invalidate_sequence()
+        sequence_builder = InstructionSequenceBuilder(self.tokenize_instruction_meta_data())
+        self._sequence = sequence_builder.build_sequence()
+
+    def clear_instructions(self) -> None:
+        self.invalidate_instructions()
+        self.invalidate_sequence()
+        self.set_text('')
+
+    def compile_branches(self) -> None:
+        self.invalidate()
+        self.compile_instructions()
+
+    def compile_instructions(self) -> None:
+        self.invalidate_instructions()
+        self._sequence_tracked_branches.clear()
+        tokens = self.tokenize_instruction_meta_data()
+
+        for index, token in enumerate(tokens):
+            if token in self.branch_tokens:
+                self._process_branch_token(token, index)
+                continue
+
+            else:
+                self._process_instruction_token(token)
+
+    def compile_sequence(self) -> None:
         self.invalidate_instructions()
         self.invalidate_sequence()
         self.compile_instructions()
-        self.build_instruction_sequence()
+        self.build_sequence()
+
+    def get_instruction_by_index(
+        self,
+        index: int
+    ) -> ILogicInstruction:
+        """Get the instruction at a specific index.
+
+        Args:
+            index (int): The index
+
+        Returns:
+            ILogicInstruction: The instruction at that index
+        """
+        if 0 <= index < len(self.instructions):
+            return self.instructions[index]
+        raise IndexError("Instruction index out of range!")
+
+    def get_sequence(self) -> list[RungElement]:
+        if not self._sequence:
+            self.compile_sequence()
+        return self._sequence
+
+    def set_sequence(self, sequence: list[RungElement]) -> None:
+        self._sequence = sequence
+
+    def invalidate(self) -> None:
+        self.invalidate_branches()
+        self.invalidate_instructions()
+        self.invalidate_sequence()
 
     def invalidate_sequence(self) -> None:
-        self._branch_id_counter = 0
-        self._rung_sequence.clear()
-        self._branches.clear()
+        self._sequence.clear()
 
-    def tokenize_instruction_sequence(self) -> list[str]:
-        tokens: list[str] = []
+    def move_instruction(
+        self,
+        old_position: int,
+        new_position: int,
+    ) -> None:
+        """Move an instruction to a new position in the rung.
 
-        for element in self._rung_sequence:
-            if isinstance(element, RungBranch):
-                tokens.append(f"BRANCH_START_{element.branch_id}")
-            elif isinstance(element, ILogicInstruction):
-                tokens.append(element.get_instruction_name())
-            else:
-                tokens.append("UNKNOWN_ELEMENT")
-        return tokens
+        Args:
+            instruction: The instruction to move (LogicInstruction, str, or int index)
+            new_position (int): The new position for the instruction
+            occurrence (int): Which occurrence to move if there are duplicates (0-based)
+        """
+        current_tokens = self.tokenize_instruction_meta_data()
+
+        if not current_tokens:
+            raise ValueError("No instructions found in rung!")
+
+        if new_position < 0 or new_position >= len(current_tokens):
+            raise IndexError(f"New position {new_position} out of range!")
+
+        if old_position < 0 or old_position >= len(current_tokens):
+            raise IndexError(f"Instruction index {old_position} out of range!")
+
+        old_index = old_position
+        if old_index == new_position:
+            return  # No move needed
+
+        # Move the instruction
+        moved_instruction = current_tokens.pop(old_index)
+        current_tokens.insert(new_position, moved_instruction)
+
+        # Rebuild text with reordered instructions
+        self.invalidate()
+        self.set_text("".join(current_tokens))
+
+    def remove_instruction_by_index(
+        self,
+        index: int
+    ) -> None:
+        """Remove the instruction at a specific index.
+
+        Args:
+            index (int): The index
+        """
+        if 0 <= index < len(self.instructions):
+            instruction = self.instructions[index]
+            self.remove_instruction(
+                instruction,
+                False,
+                self.invalidate
+            )
+            return
+        raise IndexError("Instruction index out of range!")
 
 
 class HasModules(
@@ -714,10 +1477,9 @@ class HasRoutines(
 
     def __init__(
         self,
-        **kwargs
+        **__
     ) -> None:
         self._routines: HashList['IRoutine'] = HashList('name')
-        super().__init__(**kwargs)
 
     @property
     def routines(self) -> HashList['IRoutine']:
@@ -807,7 +1569,7 @@ class HasRoutines(
 
 class HasRungs(
     IHasRungs,
-    SupportsMetaDataListAssignment,
+    SupportsMetaDataListAssignment[dict],
 ):
     """Protocol for objects that have rungs.
     """
@@ -817,7 +1579,7 @@ class HasRungs(
         **kwargs
     ) -> None:
         self._rungs: list['IRung'] = []
-        super().__init__(**kwargs)
+        SupportsMetaDataListAssignment.__init__(self=self, **kwargs)
 
     @property
     def rungs(self) -> list['IRung']:
@@ -843,8 +1605,8 @@ class HasRungs(
 
         self.add_asset_to_meta_data(
             asset=rung,
-            asset_list=self.get_rungs(),
-            raw_asset_list=self.get_raw_rungs(),
+            asset_list=self.rungs,
+            raw_asset_list=self.raw_rungs,
             index=index,
             inhibit_invalidate=inhibit_invalidate,
             invalidate_method=self.invalidate_rungs
@@ -857,8 +1619,12 @@ class HasRungs(
         self,
         rungs: list['IRung']
     ) -> None:
-        for rung in rungs:
-            self.add_rung(rung, True)
+        for index, rung in enumerate(rungs):
+            self.add_rung(
+                rung,
+                index=index,
+                inhibit_invalidate=True
+            )
         self.invalidate_rungs()
 
     def clear_rungs(self) -> None:
@@ -866,7 +1632,23 @@ class HasRungs(
         self.invalidate_rungs()
 
     def compile_rungs(self) -> None:
-        raise NotImplementedError("compile_rungs method must be implemented by subclass.")
+        ctrl = ControllerInstanceManager.get_controller()
+        if not ctrl:
+            raise ValueError("No active controller found for compiling rungs.")
+
+        self.invalidate_rungs()
+        for index, rung in enumerate(self.raw_rungs):
+            self._rungs.append(ctrl.create_rung(
+                meta_data=rung,
+                routine=self if isinstance(self, IRoutine) else None,  # TODO: i'm not sure i like this
+                rung_number=index
+            ))
+
+    def get_rung_translator(self) -> IHasRungsTranslator:
+        ctrl = ControllerInstanceManager.get_controller()
+        if not ctrl:
+            raise RuntimeError("No controller instance available for rung translation!")
+        return DialectTranslatorFactory.get_rungs_translator(ctrl.dialect)
 
     def get_rungs(self) -> list['IRung']:
         """Get the list of rungs."""
@@ -875,7 +1657,7 @@ class HasRungs(
         return self._rungs
 
     def get_raw_rungs(self) -> list[dict]:
-        raise NotImplementedError("get_raw_rungs method must be implemented by subclass.")
+        return self.rung_translator.get_raw_rungs(self.meta_data)
 
     def set_raw_rungs(
         self,
@@ -888,8 +1670,8 @@ class HasRungs(
         self._rungs.clear()
 
     def reassign_rung_numbers(self) -> None:
-        for index, rung in enumerate(self.get_rungs()):
-            rung.set_rung_number(index)
+        for index, rung in enumerate(self.rungs):
+            rung.set_number(index)
 
     def remove_rung(
         self,
@@ -901,7 +1683,9 @@ class HasRungs(
             asset_list=self.get_rungs(),
             raw_asset_list=self.get_raw_rungs(),
             inhibit_invalidate=inhibit_invalidate,
-            invalidate_method=self.invalidate_rungs
+            invalidate_method=self.invalidate_rungs,
+            dict_lookup_key='@Number',
+            object_attribute='number'
         )
 
     def remove_rung_by_index(
@@ -1059,12 +1843,11 @@ class HasTags(
 
     def __init__(
         self,
-        **kwargs
+        **__
     ) -> None:
         self._tags: HashList['ITag'] = HashList('name')
         self._safety_tags: HashList['ITag'] = HashList('name')
         self._standard_tags: HashList['ITag'] = HashList('name')
-        super().__init__(**kwargs)
 
     @property
     def tags(self) -> HashList['ITag']:

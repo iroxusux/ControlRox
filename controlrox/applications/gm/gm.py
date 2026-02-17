@@ -260,13 +260,12 @@ class GmRung(
 
     def __init__(
         self,
-        meta_data: dict | None = None,
-        routine: IRoutine | None = None,
-        rung_number: int | str = 0,
-        rung_text: str = '',
-        comment: str = ''
+        meta_data,
+        name: str = '',
+        description: str = '',
+        **kwargs
     ) -> None:
-        super().__init__(meta_data, routine, rung_number, rung_text, comment)
+        super().__init__(meta_data, name, description, **kwargs)
         self._kdiags: list[KDiag] = []
 
     @property

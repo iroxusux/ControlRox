@@ -1,5 +1,6 @@
 """Meta definition for PLC models and architecture.
 """
+import re
 from typing import (
     Callable,
     Generic,
@@ -7,8 +8,7 @@ from typing import (
     Self,
     Union
 )
-from pyrox.models.abc import (
-    EnforcesNaming,
+from pyrox.models import (
     HashList,
     PyroxObject,
 )
@@ -16,12 +16,15 @@ from controlrox.interfaces import IController, IPlcObject, META
 from controlrox.services import ControllerInstanceManager
 from .protocols import HasController, HasMetaData
 
+ALLOWED_CHARS = re.compile(f'[^{r'a-zA-Z0-9_\[\]'}]')
+ALLOWED_REV_CHARS = re.compile(f'[^{r'0-9.'}]')
+ALLOWED_MOD_CHARS = re.compile(f'[^{r'^a-zA-Z0-9\_\.\-\:'}]')
+
 
 class PlcObject(
     IPlcObject[META],
     HasController,
     HasMetaData[META],
-    EnforcesNaming,
     PyroxObject,
     Generic[META],
 ):
@@ -31,13 +34,11 @@ class PlcObject(
         meta_data: Metadata for this object.
         name: The name of this object.
         description: The description of this object.
-        controller: The controller this object belongs to.
 
     Attributes:
         meta_data: The metadata dictionary or string for this object.
         name: The name of this object.
         description: The description of this object.
-        controller: The controller this object belongs to.
     """
 
     def __init__(
@@ -71,40 +72,24 @@ class PlcObject(
         self._name = name or ""
         self._description = description or ""
 
+        # run post init
+        self.__post_init__(**kwargs)
+
     def __repr__(self) -> str:
         return str(self)
 
     def __str__(self) -> str:
         return str(self.name)
 
-    @property
-    def name(self) -> str:
-        """Get this object's name.
-        PlcObject isn't named, so return the class name.
-        This attribute is read-only for this class.
-
-        Returns:
-            str: The name of this object.
+    def __post_init__(
+        self,
+        **kwargs,
+    ) -> None:
+        """Post-initialization method to allow flexibility in private attributes and initialization processes.
+        Due to vendors having different requirements for PLC objects, this method can be overridden in subclasses
+        to handle additional initialization logic.
         """
-        return self._name
-
-    @property
-    def process_name(self) -> str:
-        """Get the process name of this object's controller without plant or customer prefixes / suffixes.
-
-        Returns:
-            str: The process name of this object's controller.
-        """
-        return self.name  # Override in subclasses if needed
-
-    @property
-    def description(self) -> str:
-        """Get the description of this object.
-
-        Returns:
-            str: The description of this object.
-        """
-        return self._description
+        ...
 
     def add_asset_to_meta_data(
         self,
@@ -217,6 +202,14 @@ class PlcObject(
         """
         raise NotImplementedError("This method should be overridden by subclasses to compile the object.")
 
+    def get_description(self) -> str:
+        """Get the description of this object.
+
+        Returns:
+            str: The description of this object.
+        """
+        return self._description
+
     def set_description(
         self,
         description: str
@@ -231,6 +224,14 @@ class PlcObject(
         if isinstance(self.meta_data, dict):
             self.meta_data["Description"] = description
 
+    def get_name(self) -> str:
+        """Get the name of this object.
+
+        Returns:
+            str: The name of this object.
+        """
+        return self._name
+
     def set_name(
         self,
         name: str
@@ -244,13 +245,22 @@ class PlcObject(
             ValueError: If the name is not a valid string.
         """
         if not isinstance(name, str):
-            raise self.InvalidNamingException(f"Name must be a string, got {type(name)}")
-        if not self.is_valid_string(name):
-            raise self.InvalidNamingException(f"Invalid name: {name}")
+            raise ValueError(f"Name must be a string, got {type(name)}")
         self._name = name
+
+        if ALLOWED_CHARS.search(name):
+            raise ValueError(f"Name contains invalid characters: {name}")
 
         if isinstance(self.meta_data, dict):
             self.meta_data["@Name"] = name
+
+    def get_process_name(self) -> str:
+        """Get the process name of this object's controller without plant or customer prefixes / suffixes.
+
+        Returns:
+            str: The process name of this object's controller.
+        """
+        return self.name  # Override in subclasses if needed
 
     def get_controller(self) -> Optional[IController]:
         """Get the controller this object belongs to.

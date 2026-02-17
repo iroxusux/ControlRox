@@ -1,7 +1,7 @@
 """Plc Controller Validator Abstract Base Class and Factory.
 """
-from pyrox.models.abc.meta import PyroxObject
-from pyrox.models.abc.factory import FactoryTypeMeta, MetaFactory
+from pyrox.models.meta import PyroxObject
+from pyrox.models.factory import FactoryTypeMeta, MetaFactory
 from pyrox.services.logging import log
 from pyrox.services.stream import create_stream_to_file, FileStream
 from ..plc.rockwell.controller import RaController

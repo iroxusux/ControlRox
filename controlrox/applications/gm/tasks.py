@@ -27,24 +27,16 @@ class KDiagWrapperTask(ControllerApplicationTask):
         for prog in ctrl.programs:
             for rout in prog.routines:
                 for rung in rout.rungs:
-                    rung.set_rung_comment(wrap_diagnostic_lines(rung.get_rung_comment()))
+                    rung.set_comment(wrap_diagnostic_lines(rung.get_comment()))
 
         log(self).info('kDiag Wrapping Validation Complete')
 
     def inject(self) -> None:
-        tools_menu = self.application.menu.get_tools_menu()
-        if not tools_menu:
-            raise RuntimeError('Tools menu not found!')
 
-        backend = GuiManager.get_backend()
-        if not backend:
-            raise RuntimeError('GUI backend not found!')
-
-        dropdown_menu = backend.create_gui_menu(
-            master=tools_menu.menu,
+        dropdown_menu = self.gui.unsafe_get_backend().create_gui_menu(
+            master=self.tools_menu.menu,
             name='gm_dkiag_wrapper',
             tearoff=0
         )
-        tools_menu.add_submenu(label='GM Tools', submenu=dropdown_menu)
-
+        self.tools_menu.add_submenu(label='GM Tools', submenu=dropdown_menu)
         dropdown_menu.add_item(label='Validate kDiag Wrappings', command=self._work)

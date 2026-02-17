@@ -181,7 +181,7 @@ class TestPlcObject(unittest.TestCase):
         """Test set_name with invalid string containing spaces."""
         obj = self.ConcreteTestPlcObject()
 
-        with self.assertRaises(obj.InvalidNamingException) as context:
+        with self.assertRaises(ValueError) as context:
             obj.set_name('Invalid Name With Spaces')
 
         self.assertIn('valid', str(context.exception).lower())
@@ -190,7 +190,7 @@ class TestPlcObject(unittest.TestCase):
         """Test set_name with invalid string containing special characters."""
         obj = self.ConcreteTestPlcObject()
 
-        with self.assertRaises(obj.InvalidNamingException) as context:
+        with self.assertRaises(ValueError) as context:
             obj.set_name('Invalid@Name!')
 
         self.assertIn('valid', str(context.exception).lower())
@@ -241,28 +241,12 @@ class TestPlcObject(unittest.TestCase):
         # Should have PyroxObject attributes
         self.assertTrue(hasattr(obj, 'id'))
 
-    def test_inheritance_from_enforces_naming(self):
-        """Test that PlcObject inherits from EnforcesNaming."""
-        obj = self.ConcreteTestPlcObject()
-
-        # Should have EnforcesNaming methods
-        self.assertTrue(hasattr(obj, 'is_valid_string'))
-        self.assertTrue(hasattr(obj, 'InvalidNamingException'))
-
     def test_inheritance_from_supports_metadata(self):
         """Test that PlcObject inherits from SupportsMetaData."""
         obj = self.ConcreteTestPlcObject()
 
         # Should have SupportsMetaData attributes
         self.assertTrue(hasattr(obj, 'meta_data'))
-
-    def test_enforces_naming_validation(self):
-        """Test that EnforcesNaming validation works."""
-        obj = self.ConcreteTestPlcObject()
-
-        # Test validation methods
-        self.assertTrue(obj.is_valid_string('ValidName'))
-        self.assertFalse(obj.is_valid_string('Invalid Name'))
 
     def test_metadata_attribute_exists(self):
         """Test that meta_data attribute exists and is accessible."""
@@ -281,6 +265,272 @@ class TestPlcObject(unittest.TestCase):
         obj1.set_name('Modified1')
         self.assertEqual(obj1.name, 'Modified1')
         self.assertEqual(obj2.name, 'Object2')  # Should not be affected
+
+
+class TestPlcObjectPostInit(unittest.TestCase):
+    """Test cases for PlcObject __post_init__ method."""
+
+    def setUp(self):
+        """Set up test fixtures."""
+        # Create a concrete subclass for testing
+        class ConcreteTestPlcObject(PlcObject):
+            """Concrete implementation for testing."""
+
+            def compile(self) -> Self:
+                """Implement compile method."""
+                self.compiled = True
+                return self
+
+            def invalidate(self) -> None:
+                """Implement invalidate method."""
+                self.invalidated = True
+
+            @property
+            def process_name(self) -> str:
+                """Implement process_name property."""
+                return "TestProcess"
+
+        self.ConcreteTestPlcObject = ConcreteTestPlcObject
+
+    def test_post_init_is_called_during_initialization(self):
+        """Test that __post_init__ is called during object initialization."""
+        # Create a subclass that tracks if __post_init__ was called
+        class TrackingPlcObject(PlcObject):
+            def __init__(self, *args, **kwargs):
+                self.post_init_called = False
+                super().__init__(*args, **kwargs)
+
+            def __post_init__(self, **kwargs):
+                self.post_init_called = True
+                super().__post_init__(**kwargs)
+
+            def compile(self) -> Self:
+                return self
+
+            def invalidate(self) -> None:
+                pass
+
+            @property
+            def process_name(self) -> str:
+                return "Test"
+
+        obj = TrackingPlcObject(name='Test')
+
+        self.assertTrue(obj.post_init_called)
+
+    def test_post_init_receives_kwargs(self):
+        """Test that __post_init__ receives kwargs passed to __init__."""
+        # Create a subclass that captures kwargs in __post_init__
+        class KwargsCapturingPlcObject(PlcObject):
+            def __init__(self, *args, **kwargs):
+                # Extract custom parameters before passing to parent
+                custom_param = kwargs.pop('custom_param', None)
+                another_param = kwargs.pop('another_param', None)
+                self.captured_kwargs = None
+                self.custom_param = custom_param
+                self.another_param = another_param
+                super().__init__(*args, **kwargs)
+
+            def __post_init__(self, **kwargs):
+                # Store original kwargs for verification
+                self.captured_kwargs = {
+                    'custom_param': self.custom_param,
+                    'another_param': self.another_param
+                }
+                super().__post_init__(**kwargs)
+
+            def compile(self) -> Self:
+                return self
+
+            def invalidate(self) -> None:
+                pass
+
+            @property
+            def process_name(self) -> str:
+                return "Test"
+
+        obj = KwargsCapturingPlcObject(
+            name='Test',
+            custom_param='value',
+            another_param=42
+        )
+
+        self.assertIsNotNone(obj.captured_kwargs)
+        self.assertIn('custom_param', obj.captured_kwargs)
+        self.assertEqual(obj.captured_kwargs['custom_param'], 'value')
+        self.assertIn('another_param', obj.captured_kwargs)
+        self.assertEqual(obj.captured_kwargs['another_param'], 42)
+
+    def test_post_init_override_with_custom_logic(self):
+        """Test that __post_init__ can be overridden to perform custom initialization."""
+        # Create a subclass with custom __post_init__ logic
+        class CustomInitPlcObject(PlcObject):
+            def __init__(self, *args, **kwargs):
+                # Extract custom parameter before passing to parent
+                custom_value = kwargs.pop('custom_value', None)
+                self.custom_attribute = None
+                self._custom_value = custom_value
+                super().__init__(*args, **kwargs)
+
+            def __post_init__(self, **kwargs):
+                # Custom initialization logic
+                if self._custom_value is not None:
+                    self.custom_attribute = self._custom_value.upper()
+                else:
+                    self.custom_attribute = 'DEFAULT'
+                super().__post_init__(**kwargs)
+
+            def compile(self) -> Self:
+                return self
+
+            def invalidate(self) -> None:
+                pass
+
+            @property
+            def process_name(self) -> str:
+                return "Test"
+
+        obj1 = CustomInitPlcObject(name='Test1', custom_value='hello')
+        obj2 = CustomInitPlcObject(name='Test2')
+
+        self.assertEqual(obj1.custom_attribute, 'HELLO')
+        self.assertEqual(obj2.custom_attribute, 'DEFAULT')
+
+    def test_post_init_can_modify_private_attributes(self):
+        """Test that __post_init__ can modify private attributes set in __init__."""
+        # Create a subclass that modifies attributes in __post_init__
+        class AttributeModifyingPlcObject(PlcObject):
+            def __init__(self, *args, **kwargs):
+                # Extract custom flags before passing to parent
+                self._uppercase_name = kwargs.pop('uppercase_name', False)
+                self._add_prefix = kwargs.pop('add_prefix', False)
+                super().__init__(*args, **kwargs)
+
+            def __post_init__(self, **kwargs):
+                # Modify private attributes if certain conditions are met
+                if self._uppercase_name:
+                    self._name = self._name.upper()
+                if self._add_prefix:
+                    self._description = f"PREFIX: {self._description}"
+                super().__post_init__(**kwargs)
+
+            def compile(self) -> Self:
+                return self
+
+            def invalidate(self) -> None:
+                pass
+
+            @property
+            def process_name(self) -> str:
+                return "Test"
+
+        obj1 = AttributeModifyingPlcObject(
+            name='TestName',
+            description='Test Description',
+            uppercase_name=True,
+            add_prefix=True
+        )
+        obj2 = AttributeModifyingPlcObject(
+            name='NormalName',
+            description='Normal Description'
+        )
+
+        self.assertEqual(obj1.name, 'TESTNAME')
+        self.assertEqual(obj1.description, 'PREFIX: Test Description')
+        self.assertEqual(obj2.name, 'NormalName')
+        self.assertEqual(obj2.description, 'Normal Description')
+
+    def test_post_init_execution_order(self):
+        """Test that __post_init__ is called after all parent __init__ calls."""
+        # Create a subclass that tracks initialization order
+        class OrderTrackingPlcObject(PlcObject):
+            def __init__(self, *args, **kwargs):
+                self.init_order = []
+                self.init_order.append('child_init_start')
+                super().__init__(*args, **kwargs)
+                self.init_order.append('child_init_end')
+
+            def __post_init__(self, **kwargs):
+                self.init_order.append('post_init')
+                # Verify that name and description are set before post_init
+                self.name_set_before_post_init = bool(self._name or self._description)
+                super().__post_init__(**kwargs)
+
+            def compile(self) -> Self:
+                return self
+
+            def invalidate(self) -> None:
+                pass
+
+            @property
+            def process_name(self) -> str:
+                return "Test"
+
+        obj = OrderTrackingPlcObject(name='Test', description='Description')
+
+        # Verify __post_init__ is called during parent __init__
+        self.assertIn('post_init', obj.init_order)
+        # post_init should be called before child_init_end
+        post_init_index = obj.init_order.index('post_init')
+        child_end_index = obj.init_order.index('child_init_end')
+        self.assertLess(post_init_index, child_end_index)
+        # Verify attributes are set before __post_init__
+        self.assertTrue(obj.name_set_before_post_init)
+
+    def test_post_init_with_no_kwargs(self):
+        """Test that __post_init__ works correctly when no extra kwargs are passed."""
+        obj = self.ConcreteTestPlcObject(name='Test', description='Description')
+
+        # Should initialize successfully even without extra kwargs
+        self.assertEqual(obj.name, 'Test')
+        self.assertEqual(obj.description, 'Description')
+
+    def test_post_init_default_implementation_does_nothing(self):
+        """Test that the default __post_init__ implementation has no side effects."""
+        # The default implementation should just pass (...)
+        obj1 = self.ConcreteTestPlcObject(name='Before')
+        name_before = obj1.name
+
+        obj2 = self.ConcreteTestPlcObject(name='After')
+        name_after = obj2.name
+
+        # Names should be as set, unmodified by default __post_init__
+        self.assertEqual(name_before, 'Before')
+        self.assertEqual(name_after, 'After')
+
+    def test_post_init_with_vendor_specific_kwargs(self):
+        """Test __post_init__ with vendor-specific initialization parameters."""
+        # Simulate vendor-specific subclass behavior
+        class VendorSpecificPlcObject(PlcObject):
+            def __init__(self, *args, **kwargs):
+                # Extract vendor-specific parameter before passing to parent
+                vendor_param = kwargs.pop('vendor_param', 'default_value')
+                self.vendor_specific_attr = None
+                self._vendor_param = vendor_param
+                super().__init__(*args, **kwargs)
+
+            def __post_init__(self, **kwargs):
+                # Use the extracted vendor-specific parameter
+                self.vendor_specific_attr = self._vendor_param
+                super().__post_init__(**kwargs)
+
+            def compile(self) -> Self:
+                return self
+
+            def invalidate(self) -> None:
+                pass
+
+            @property
+            def process_name(self) -> str:
+                return "VendorTest"
+
+        obj = VendorSpecificPlcObject(
+            name='VendorObject',
+            vendor_param='special_value'
+        )
+
+        self.assertEqual(obj.vendor_specific_attr, 'special_value')
+        self.assertEqual(obj.name, 'VendorObject')
 
 
 class TestPlcObjectEdgeCases(unittest.TestCase):
@@ -664,7 +914,7 @@ class TestPlcObjectNameValidation(unittest.TestCase):
         """Test invalid name with space."""
         obj = self.ConcreteTestPlcObject()
 
-        with self.assertRaises(obj.InvalidNamingException):
+        with self.assertRaises(ValueError):
             obj.set_name('Invalid Name')
 
     def test_invalid_name_with_special_chars(self):
@@ -673,29 +923,15 @@ class TestPlcObjectNameValidation(unittest.TestCase):
 
         invalid_names = ['Name@Test', 'Name!', 'Name#', 'Name$', 'Name%']
         for invalid_name in invalid_names:
-            with self.assertRaises(obj.InvalidNamingException):
+            with self.assertRaises(ValueError):
                 obj.set_name(invalid_name)
 
     def test_invalid_name_with_hyphen(self):
         """Test invalid name with hyphen."""
         obj = self.ConcreteTestPlcObject()
 
-        with self.assertRaises(obj.InvalidNamingException):
+        with self.assertRaises(ValueError):
             obj.set_name('Invalid-Name')
-
-    def test_is_valid_string_method(self):
-        """Test is_valid_string method directly."""
-        obj = self.ConcreteTestPlcObject()
-
-        self.assertTrue(obj.is_valid_string('ValidName'))
-        self.assertTrue(obj.is_valid_string('Valid_Name'))
-        self.assertTrue(obj.is_valid_string('_Name'))
-        self.assertTrue(obj.is_valid_string('Name123'))
-        self.assertTrue(obj.is_valid_string('Array[0]'))
-
-        self.assertFalse(obj.is_valid_string('Invalid Name'))
-        self.assertFalse(obj.is_valid_string('Invalid@Name'))
-        self.assertFalse(obj.is_valid_string('Invalid-Name'))
 
 
 class TestPlcObjectInheritanceChain(unittest.TestCase):
@@ -738,13 +974,6 @@ class TestPlcObjectInheritanceChain(unittest.TestCase):
         self.assertTrue(hasattr(obj, 'get_meta_data'))
         self.assertTrue(hasattr(obj, 'set_meta_data'))
         self.assertTrue(hasattr(obj, 'meta_data'))
-
-    def test_has_naming_methods(self):
-        """Test that object has EnforcesNaming methods."""
-        obj = self.ConcreteTestPlcObject()
-
-        self.assertTrue(hasattr(obj, 'is_valid_string'))
-        self.assertTrue(hasattr(obj, 'InvalidNamingException'))
 
     def test_multiple_inheritance_resolution(self):
         """Test that multiple inheritance is properly resolved."""

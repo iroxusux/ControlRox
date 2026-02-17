@@ -1,7 +1,7 @@
 """Program module for pyrox
 """
 from typing import Optional
-from pyrox.models.abc.factory import FactoryTypeMeta
+from pyrox.models.factory import FactoryTypeMeta
 from controlrox.interfaces import (
     ILogicInstruction,
     IRoutine,
@@ -93,9 +93,9 @@ class RaProgram(
             rung = jsr.get_rung()
             if not rung:
                 raise ValueError(f'JSR instruction {jsr.name} has no rung!')
-            if rung.get_rung_text().startswith(f'XIC({blocking_bit})'):
+            if rung.text.startswith(f'XIC({blocking_bit})'):
                 continue
-            rung.set_rung_text(f'XIC({blocking_bit}){rung.get_rung_text()}')
+            rung.set_text(f'XIC({blocking_bit}){rung.get_text()}')
 
     def compile_instructions(self) -> None:
         """Compile instructions for this program."""
@@ -209,6 +209,6 @@ class RaProgram(
             rung = jsr.get_rung()
             if not rung:
                 raise ValueError(f'JSR instruction {jsr.name} has no rung!')
-            if not rung.get_rung_text().startswith(f'XIC({blocking_bit})'):
+            if not rung.get_text().startswith(f'XIC({blocking_bit})'):
                 continue
-            rung.set_rung_text(rung.get_rung_text().replace(f'XIC({blocking_bit})', '', 1))
+            rung.set_text(rung.get_text().replace(f'XIC({blocking_bit})', '', 1))

@@ -15,11 +15,14 @@ from .design import (
 
 # Plc service classes
 from .plc import (
+    # Connection imports
+    PlcConnectionManager,
     # Factory imports
     AOIFactory,
     DatatypeFactory,
     InstructionFactory,
     ModuleFactory,
+    OperandFactory,
     ProgramFactory,
     RoutineFactory,
     RungFactory,
@@ -30,6 +33,9 @@ from .plc import (
     ControllerFactory,
     ControllerMatcherFactory,
     ControllerInstanceManager,
+
+    # Dialect imports
+    DialectTranslatorFactory,
 
     # Emulation services
     emu,
@@ -53,11 +59,15 @@ __all__ = (
     'convert_markdown_to_html',
     'render_checklist',
 
+    # Connection imports
+    'PlcConnectionManager',
+
     # Plc Factory services
     'AOIFactory',
     'DatatypeFactory',
     'InstructionFactory',
     'ModuleFactory',
+    'OperandFactory',
     'ProgramFactory',
     'RoutineFactory',
     'RungFactory',
@@ -68,6 +78,9 @@ __all__ = (
     'ControllerFactory',
     'ControllerMatcherFactory',
     'ControllerInstanceManager',
+
+    # Dialect services
+    'DialectTranslatorFactory',
 
     # Emulation services
     'create_checklist_from_template',

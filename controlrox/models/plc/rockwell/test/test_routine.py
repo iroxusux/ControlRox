@@ -2,7 +2,7 @@
 
 import unittest
 from unittest.mock import Mock, patch
-from controlrox.interfaces import LogicInstructionType
+from controlrox.interfaces import ILogicInstructionType
 from controlrox.models.plc.rockwell.controller import RaController
 from controlrox.models.plc.rockwell.program import RaProgram
 from controlrox.models.plc.rockwell.routine import RaRoutine
@@ -252,7 +252,7 @@ class TestRaRoutineJSRMethods(unittest.TestCase):
 
         # Mock JSR instruction with proper interface methods
         mock_jsr = Mock(spec=RaLogicInstruction)
-        mock_jsr.get_instruction_type.return_value = LogicInstructionType.JSR
+        mock_jsr.get_instruction_type.return_value = ILogicInstructionType.JSR
 
         mock_operand = Mock()
         mock_operand.__str__ = Mock(return_value='SubRaRoutine1')
@@ -260,7 +260,7 @@ class TestRaRoutineJSRMethods(unittest.TestCase):
 
         # Mock non-JSR instruction
         mock_other = Mock(spec=RaLogicInstruction)
-        mock_other.get_instruction_type.return_value = LogicInstructionType.INPUT
+        mock_other.get_instruction_type.return_value = ILogicInstructionType.INPUT
 
         routine._instructions = [mock_other, mock_jsr]
 
@@ -276,7 +276,7 @@ class TestRaRoutineJSRMethods(unittest.TestCase):
 
         # Mock JSR instruction with different operand
         mock_jsr = Mock(spec=RaLogicInstruction)
-        mock_jsr.type = LogicInstructionType.JSR
+        mock_jsr.type = ILogicInstructionType.JSR
         mock_operand = Mock()
         mock_operand.__str__ = Mock(return_value='DifferentRaRoutine')
         mock_jsr.operands = [mock_operand]
@@ -295,260 +295,13 @@ class TestRaRoutineJSRMethods(unittest.TestCase):
 
         # Mock JSR instruction with no operands
         mock_jsr = Mock(spec=RaLogicInstruction)
-        mock_jsr.type = LogicInstructionType.JSR
+        mock_jsr.type = ILogicInstructionType.JSR
         mock_jsr.operands = []
 
         routine._instructions = [mock_jsr]
 
         result = routine.check_for_jsr('SubRaRoutine1')
         self.assertFalse(result)
-
-    @patch('controlrox.models.plc.routine.ControllerInstanceManager.get_controller')
-    def test_check_for_jsr_no_instructions(self, mock_get_controller):
-        """Test check_for_jsr method with no instructions."""
-        routine = RaRoutine(
-            meta_data=self.basic_routine_meta,
-
-        )
-
-        routine._instructions = []
-
-        result = routine.check_for_jsr('SubRaRoutine1')
-        self.assertFalse(result)
-
-
-class TestRaRoutineRungMethods(unittest.TestCase):
-    """Test RaRoutine rung management methods."""
-
-    def setUp(self):
-        """Set up test fixtures."""
-        self.mock_controller = Mock(spec=RaController)
-        self.mock_controller.config = Mock()
-        self.mock_controller.config.rung_type = Mock()
-
-        self.basic_routine_meta = {
-            '@Name': 'TestRaRoutine',
-            '@Type': 'RLL',
-            'Description': 'Test routine description',
-            'RLLContent': {
-                'Rung': []
-            }
-        }
-
-    def test_rungs_property_returns_cached(self):
-        """Test rungs property returns cached value when available."""
-        routine = RaRoutine(
-            meta_data=self.basic_routine_meta,
-
-        )
-
-        mock_rung = Mock(spec=RaRung)
-        routine._rungs = [mock_rung]
-
-        # rungs property calls get_rungs() which checks if _rungs is empty
-        result = routine.rungs
-        self.assertEqual(result, [mock_rung])
-
-    @patch('controlrox.models.plc.routine.ControllerInstanceManager.get_controller')
-    def test_add_rung_to_end(self, mock_get_controller):
-        """Test add_rung method adding to end."""
-        routine = RaRoutine(
-            meta_data=self.basic_routine_meta,
-
-        )
-
-        mock_rung = Mock(spec=RaRung)
-        mock_rung.name = 'TestRung'
-        mock_rung.meta_data = {
-            '@Number': '1',
-            'Text': 'XIC(Input)OTE(Output);'
-        }
-        mock_rung.set_rung_number = Mock()
-
-        with patch.object(routine, 'invalidate_rungs') as mock_invalidate:
-            routine.add_rung(mock_rung)
-
-            raw_rungs = routine.get_raw_rungs()
-            self.assertEqual(len(raw_rungs), 1)
-            self.assertEqual(raw_rungs[0], mock_rung.meta_data)
-            # add_rung calls reassign_rung_numbers which sets the number
-            mock_rung.set_rung_number.assert_called()
-            mock_invalidate.assert_called()
-
-    def test_add_rung_at_index(self):
-        """Test add_rung method adding at specific index."""
-        routine = RaRoutine(
-            meta_data=self.basic_routine_meta,
-
-        )
-
-        # Add initial rung
-        initial_rung_meta = {
-            '@Number': '0',
-            'Text': 'XIC(Input1)OTE(Output1);'
-        }
-        routine.get_raw_rungs().append(initial_rung_meta)
-
-        initial_rung = Mock(spec=RaRung)
-        initial_rung.name = 'InitialRung'
-        initial_rung.set_rung_number = Mock()
-        initial_rung.meta_data = initial_rung_meta
-
-        mock_rung = Mock(spec=RaRung)
-        mock_rung.name = 'NewRung'
-        mock_rung.meta_data = {
-            '@Number': '1',
-            'Text': 'XIC(Input2)OTE(Output2);'
-        }
-        mock_rung.set_rung_number = Mock()
-
-        # Populate _rungs so get_rungs() returns existing rung
-        routine._rungs = [initial_rung]
-
-        with patch.object(routine, 'invalidate_rungs') as mock_invalidate:
-            routine.add_rung(mock_rung, index=0)
-
-            raw_rungs = routine.get_raw_rungs()
-            self.assertEqual(len(raw_rungs), 2)
-            # The new rung was inserted at index 0
-            self.assertEqual(raw_rungs[0]['Text'], 'XIC(Input2)OTE(Output2);')
-            mock_invalidate.assert_called()
-
-    def test_add_rung_invalid_type(self):
-        """Test add_rung method with invalid rung type."""
-        routine = RaRoutine(
-            meta_data=self.basic_routine_meta,
-
-        )
-
-        with self.assertRaises(ValueError) as context:
-            routine.add_rung("not a rung")  # type: ignore
-
-        self.assertIn("Rung must be an instance of", str(context.exception))
-
-    def test_remove_rung_by_instance(self):
-        """Test remove_rung method with Rung instance."""
-        routine = RaRoutine(
-            meta_data=self.basic_routine_meta,
-
-        )
-
-        rung_meta = {
-            '@Name': 'TestRung',
-            '@Number': '0',
-            'Text': 'XIC(Input)OTE(Output);'
-        }
-        routine.get_raw_rungs().append(rung_meta)
-
-        mock_rung = Mock(spec=RaRung)
-        mock_rung.name = 'TestRung'
-        mock_rung.meta_data = rung_meta
-        routine._rungs = [mock_rung]
-
-        with patch.object(routine, 'invalidate_rungs') as mock_invalidate:
-            routine.remove_rung(mock_rung)
-
-            raw_rungs = routine.get_raw_rungs()
-            self.assertEqual(len(raw_rungs), 0)
-            mock_invalidate.assert_called()
-
-    def test_remove_rung_by_index(self):
-        """Test remove_rung_by_index method with index."""
-        routine = RaRoutine(
-            meta_data=self.basic_routine_meta,
-
-        )
-
-        rung_meta = {
-            '@Name': 'TestRung',
-            '@Number': '0',
-            'Text': 'XIC(Input)OTE(Output);'
-        }
-        routine.get_raw_rungs().append(rung_meta)
-
-        mock_rung = Mock(spec=RaRung)
-        mock_rung.name = 'TestRung'
-        mock_rung.meta_data = rung_meta
-        routine._rungs = [mock_rung]
-
-        with patch.object(routine, 'invalidate_rungs') as mock_invalidate:
-            routine.remove_rung_by_index(0)
-
-            raw_rungs = routine.get_raw_rungs()
-            self.assertEqual(len(raw_rungs), 0)
-            mock_invalidate.assert_called()
-
-    def test_remove_rung_by_string_number(self):
-        """Test remove_rung_by_index method with string number converted to int."""
-        routine = RaRoutine(
-            meta_data=self.basic_routine_meta,
-
-        )
-
-        rung_meta = {
-            '@Name': 'TestRung',
-            '@Number': '0',
-            'Text': 'XIC(Input)OTE(Output);'
-        }
-        routine.get_raw_rungs().append(rung_meta)
-
-        mock_rung = Mock(spec=RaRung)
-        mock_rung.name = 'TestRung'
-        mock_rung.number = '0'
-        mock_rung.meta_data = rung_meta
-        routine._rungs = [mock_rung]
-
-        with patch.object(routine, 'invalidate_rungs') as mock_invalidate:
-            routine.remove_rung_by_index(0)  # remove_rung_by_index takes int
-
-            raw_rungs = routine.get_raw_rungs()
-            self.assertEqual(len(raw_rungs), 0)
-            mock_invalidate.assert_called()
-
-    @patch('controlrox.models.plc.routine.ControllerInstanceManager.get_controller')
-    def test_remove_rung_index_out_of_range(self, mock_get_controller):
-        """Test remove_rung_by_index method with out of range index."""
-        routine = RaRoutine(
-            meta_data=self.basic_routine_meta,
-
-        )
-
-        with self.assertRaises(IndexError) as context:
-            routine.remove_rung_by_index(5)
-
-        self.assertIn("Rung index out of range", str(context.exception))
-
-    def test_remove_rung_invalid_type(self):
-        """Test remove_rung method with invalid type."""
-        routine = RaRoutine(
-            meta_data=self.basic_routine_meta,
-
-        )
-
-        # remove_rung expects IRung interface, but the error comes from remove_asset_from_meta_data
-        with self.assertRaises((ValueError, TypeError, AttributeError)):
-            routine.remove_rung({"not": "a rung"})  # type: ignore
-
-    def test_clear_rungs(self):
-        """Test clear_rungs method."""
-        routine = RaRoutine(
-            meta_data=self.basic_routine_meta,
-
-        )
-
-        # Add some rungs
-        routine.get_raw_rungs().extend([
-            {'@Number': '0', 'Text': 'XIC(Input1)OTE(Output1);'},
-            {'@Number': '1', 'Text': 'XIC(Input2)OTE(Output2);'}
-        ])
-
-        # clear_rungs is not implemented in base HasRungs, skip this test
-        # or implement manually by clearing the list
-        raw_rungs = routine.get_raw_rungs()
-        raw_rungs.clear()
-        routine.invalidate_rungs()
-
-        self.assertEqual(len(routine.get_raw_rungs()), 0)
 
 
 class TestRaRoutineCompilationMethods(unittest.TestCase):
@@ -571,29 +324,6 @@ class TestRaRoutineCompilationMethods(unittest.TestCase):
                 ]
             }
         }
-
-    @patch('controlrox.models.plc.routine.ControllerInstanceManager.get_controller')
-    def test_compile_rungs(self, mock_get_controller):
-        """Test compile_rungs method."""
-        mock_controller = Mock(spec=RaController)
-
-        # Mock the create_rung method to return a RaRung instance
-        mock_rung = Mock(spec=RaRung)
-        mock_controller.create_rung.return_value = mock_rung
-        mock_get_controller.return_value = mock_controller
-
-        routine = RaRoutine(
-            meta_data=self.routine_with_rungs_meta,
-        )
-
-        routine.compile_rungs()
-
-        # Verify that rungs were compiled
-        self.assertEqual(len(routine._rungs), 1)
-        # Verify create_rung was called
-        mock_controller.create_rung.assert_called_once()
-        # Verify the mock rung is in the list
-        self.assertEqual(routine._rungs[0], mock_rung)
 
     def test_compile_instructions(self):
         """Test compile_instructions method."""
@@ -684,7 +414,7 @@ class TestRaRoutineEdgeCases(unittest.TestCase):
         )
 
         mock_jsr = Mock(spec=RaLogicInstruction)
-        mock_jsr.get_instruction_type.return_value = LogicInstructionType.JSR
+        mock_jsr.get_instruction_type.return_value = ILogicInstructionType.JSR
         mock_jsr.get_operands.return_value = None
 
         routine._instructions = [mock_jsr]

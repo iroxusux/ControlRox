@@ -1,27 +1,45 @@
 """PLC Inspection Application
-    """
-import importlib
-from controlrox.applications import plcio
-from controlrox.models.tasks.task import ControllerApplicationTask
+"""
+from pyrox.services import EnvManager
+from controlrox.models import ControllerApplicationTask
+from controlrox.models.gui.plcio import PlcIoFrame
+from controlrox.services import PlcConnectionManager
 
 
 class PlcIoTask(ControllerApplicationTask):
     """Controller verification task for the PLC verification Application.
     """
 
-    def run(self) -> None:
-        mgr = getattr(self, 'manager', None)
-        if mgr:
-            del self.manager
-        importlib.reload(plcio)
-        self.manager = plcio.PlcIoApplicationManager(self.application)
-
-    def inject(self) -> None:
-        tools_menu = self.application.menu.get_tools_menu()
-        if not tools_menu:
-            raise RuntimeError('Tools menu not found')
-
-        tools_menu.add_item(
+    def __init__(self, application) -> None:
+        super().__init__(application)
+        self._frame: PlcIoFrame | None = None
+        self.register_menu_command(
+            menu=self.tools_menu,
+            registry_id='plc.io',
+            registry_path='Tools/PLC IO',
+            index=0,
             label='PLC I/O',
-            command=self.run
+            command=self.show_plc_io_frame,
+            underline=0,
+            accelerator='Ctrl+Shift+P',
         )
+
+        # start connection manager if required
+        PlcConnectionManager.load_connection_parameters()
+        if EnvManager.get('PLC_IO_AUTO_INIT', default=False, cast_type=bool):
+            PlcConnectionManager.connect()
+
+    def _create_frame(self) -> PlcIoFrame:
+        """Create the PLC I/O frame.
+        """
+        if self._frame is None or not self._frame.root.winfo_exists():
+            self._frame = PlcIoFrame(self.application.workspace.root)
+            self.application.workspace.register_frame(self._frame)
+        else:
+            self.application.workspace.raise_frame(self._frame)
+        return self._frame
+
+    def show_plc_io_frame(self) -> None:
+        """Show the PLC I/O frame.
+        """
+        self._create_frame()

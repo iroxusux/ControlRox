@@ -3,7 +3,7 @@ import os
 from typing import Optional, Union
 from pathlib import Path
 
-from pyrox.models import Application, ApplicationTaskFactory
+from pyrox import Application
 from pyrox.services.env import get_env, set_env, EnvManager
 from pyrox.services.logging import log
 from controlrox.interfaces import IControllerApplication, IController
@@ -23,12 +23,6 @@ class ControllerApplication(
     HasController,
     IControllerApplication,
 ):
-
-    def build(self):
-        super().build()
-
-        # Load Application Tasks
-        ApplicationTaskFactory.build_tasks(self)
 
     def invalidate(self) -> None:
         if self.controller:
@@ -113,11 +107,11 @@ class ControllerApplication(
         ctrl = ControllerInstanceManager.get_controller()
 
         if ctrl:
-            self.window.set_title(
+            self.main_window.set_title(
                 f'{title} - [{ctrl.name}] - [{ctrl.file_location or "Unsaved*"}]'
             )
         else:
-            self.window.set_title(title)
+            self.main_window.set_title(title)
 
     def get_controller(self) -> Optional[IController]:
         """Get the current controller for the application.

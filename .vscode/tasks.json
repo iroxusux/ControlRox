@@ -12,7 +12,14 @@
         {
             "label": "generate system markdown",
             "type": "shell",
-            "command": " & C:\\Git\\ControlRox\\.venv\\Scripts\\python.exe c:/Git/ControlRox/docs/controls/design/render_controls_design_checklist.py --input docs/controls/design/CONTROLS_DESIGN_CHECKLIST.filled.example.yaml --output docs/controls/design/CONTROLS_DESIGN_CHECKLIST.filled.example.md",
+            "command": "${workspaceFolder}/.venv/Scripts/python.exe",
+            "args": [
+                "${workspaceFolder}/controlrox/services/design/render_controls_design_checklist.py",
+                "--input",
+                "docs/controls/design/CONTROLS_DESIGN_CHECKLIST.filled.example.yaml",
+                "--output",
+                "docs/controls/design/CONTROLS_DESIGN_CHECKLIST.filled.example.md"
+            ],
             "group": {
                 "kind": "build",
                 "isDefault": true
@@ -24,7 +31,7 @@
             "type": "shell",
             "command": "${workspaceFolder}/.venv/Scripts/python.exe",
             "args": [
-                "docs/controls/design/convert_markdown_to_html.py",
+                "${workspaceFolder}/controlrox/services/design/convert_markdown_to_html.py",
                 "--input",
                 "docs/controls/design/CONTROLS_DESIGN_CHECKLIST.filled.example.md",
                 "--output",

@@ -12,10 +12,10 @@ from .protocols import (
 class IProgram(
     ICanBeSafe,
     ICanEnableDisable,
-    IPlcObject[dict],
     IHasInstructions,
     IHasRoutines,
     IHasTags,
+    IPlcObject[dict],
 ):
     """Program interface for PLCs.
     """

@@ -22,26 +22,34 @@ from .aoi import IAddOnInstruction
 from .datatype import IDatatype
 from .instruction import ILogicInstruction
 from .module import IModule
+from .operand import ILogicOperand
 from .program import IProgram
 from .routine import IRoutine
 from .rung import IRung
 from .tag import ITag
 
+from .dialect import PLCDialect
+
 
 class IController(
-    IPlcObject[dict],
     IHasRevision,
     IHasAOIs,
     IHasDatatypes,
     IHasModules,
     IHasPrograms,
     IHasTags,
+    IPlcObject[dict],
 ):
 
     @property
     def created_date(self) -> str:
         """Get the created date of the controller."""
         return self.get_created_date()
+
+    @property
+    def dialect(self) -> PLCDialect:
+        """Get the PLC dialect of the controller."""
+        return self.get_dialect()
 
     @property
     def modified_date(self) -> str:
@@ -196,6 +204,28 @@ class IController(
         raise NotImplementedError("This method should be overridden by subclasses to create a module.")
 
     @abstractmethod
+    def create_operand(
+        self,
+        name: str = '',
+        description: str = '',
+        meta_data: Optional[str] = None,
+        instruction: Optional[ILogicInstruction] = None,
+        arg_position: int = -1,
+    ) -> 'ILogicOperand':
+        """Create an operand instance.
+
+        Args:
+            name: The name of the operand.
+            description: The description of the operand.
+            meta_data: Optional metadata for the operand.
+            instruction: The instruction to associate with the operand.
+            arg_position: The argument position of the operand. Defaults to last position.
+        Returns:
+            ILogicOperand: The created operand instance.
+        """
+        raise NotImplementedError("This method should be overridden by subclasses to create an operand.")
+
+    @abstractmethod
     def create_program(
         self,
         name: str = '',
@@ -307,6 +337,15 @@ class IController(
             str: The creation date.
         """
         raise NotImplementedError("This method should be overridden by subclasses to get the creation date.")
+
+    @abstractmethod
+    def get_dialect(self) -> PLCDialect:
+        """Get the PLC dialect of the controller.
+
+        Returns:
+            PLCDialect: The PLC dialect.
+        """
+        raise NotImplementedError("This method should be overridden by subclasses to get the PLC dialect.")
 
     @abstractmethod
     def get_file_location(self) -> str:

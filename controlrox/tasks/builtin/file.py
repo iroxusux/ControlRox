@@ -1,15 +1,70 @@
 """ file tasks
 """
 from typing import Optional
-import sys
-
-from pyrox.services.file import get_open_file, get_save_file
-from pyrox.services.gui import GuiManager
-from pyrox.services.logging import log
-from controlrox.models.tasks.task import ControllerApplicationTask
+from pyrox.services import GuiManager, log, get_open_file, get_save_file
+from controlrox.models import ControllerApplicationTask
 
 
-class FileTask(ControllerApplicationTask):
+class ControlRoxFileTask(ControllerApplicationTask):
+    def __init__(self, application):
+        super().__init__(application)
+
+        self.file_menu.insert_separator(index=4)
+        self.register_menu_command(
+            menu=self.file_menu,
+            registry_id="new",
+            registry_path="File/New Controller",
+            index=5,
+            label="New Controller",
+            command=self._on_file_new,
+            accelerator="Ctrl+N",
+            underline=0,
+            category="controller",
+        )
+        self.register_menu_command(
+            menu=self.file_menu,
+            registry_id="open",
+            registry_path="File/Open Controller",
+            index=6,
+            label="Open Controller",
+            command=self._on_file_open,
+            accelerator="Ctrl+O",
+            underline=0,
+            category="controller",
+        )
+        self.register_menu_command(
+            menu=self.file_menu,
+            registry_id="save",
+            registry_path="File/Save Controller",
+            index=7,
+            label="Save Controller",
+            command=self._on_file_save,
+            accelerator="Ctrl+S",
+            underline=0,
+            category="controller",
+        )
+        self.register_menu_command(
+            menu=self.file_menu,
+            registry_id="save_as",
+            registry_path="File/Save Controller As",
+            index=8,
+            label="Save Controller As...",
+            command=lambda: self._on_file_save(save_as=True),
+            accelerator="Ctrl+Shift+S",
+            underline=0,
+            category="controller",
+        )
+        self.register_menu_command(
+            menu=self.file_menu,
+            registry_id="close",
+            registry_path="File/Close Controller",
+            index=9,
+            label="Close Controller",
+            command=self._on_file_close,
+            accelerator="Ctrl+W",
+            underline=0,
+            category="controller",
+        )
 
     def _prompt_for_controller_closing(self) -> bool:
         # Prompt if a controller is already loaded
@@ -78,64 +133,3 @@ class FileTask(ControllerApplicationTask):
             return log(self).warning('No save location selected...')
 
         self.application.save_controller(file_location=file_location)
-
-    def inject(self) -> None:
-        if not self.application.menu:
-            log(self).error('Application menu not found, cannot inject file tasks.')
-            return
-
-        file_menu = self.application.menu.get_file_menu()
-        if not file_menu:
-            return
-
-        file_menu.add_item(
-            index=0,
-            label='New Controller',
-            command=self._on_file_new,
-            accelerator='Ctrl+N',
-            underline=0,
-            binding_info=('<Control-n>', lambda e: self._on_file_new())
-        )
-        file_menu.add_separator()
-        file_menu.add_item(
-            index=2,
-            label='Open Controller',
-            command=self._on_file_open,
-            accelerator='Ctrl+O',
-            underline=0,
-            binding_info=('<Control-o>', lambda e: self._on_file_open())
-        )
-        file_menu.add_item(
-            index=3,
-            label='Save Controller',
-            command=self._on_file_save,
-            accelerator='Ctrl+S',
-            underline=0,
-            binding_info=('<Control-s>', lambda e: self._on_file_save())
-        )
-        file_menu.add_item(
-            index=4,
-            label='Save Controller As...',
-            command=lambda: self._on_file_save(save_as=True),
-            accelerator='Ctrl+Shift+S',
-            underline=0,
-            binding_info=('<Control-Shift-s>', lambda e: self._on_file_save(save_as=True))
-        )
-        file_menu.add_separator()
-        file_menu.add_item(
-            index=6,
-            label='Close Controller',
-            command=self._on_file_close,
-            accelerator='Ctrl+W',
-            underline=0,
-            binding_info=('<Control-w>', lambda e: self._on_file_close())
-        )
-        file_menu.add_separator()
-        file_menu.add_item(
-            index=8,
-            label='Exit',
-            command=lambda: sys.exit(0),
-            accelerator='Ctrl+Q',
-            underline=0,
-            binding_info=('<Control-q>', lambda e: sys.exit(0))
-        )

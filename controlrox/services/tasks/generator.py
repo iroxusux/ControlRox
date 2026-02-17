@@ -1,5 +1,5 @@
-from pyrox.models.abc import factory
+from pyrox.models import MetaFactory
 
 
-class EmulationGeneratorFactory(factory.MetaFactory):
+class EmulationGeneratorFactory(MetaFactory):
     """Factory for creating EmulationGenerator instances."""

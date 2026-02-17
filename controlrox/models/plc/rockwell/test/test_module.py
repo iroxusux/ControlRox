@@ -527,18 +527,6 @@ class TestModule(unittest.TestCase):
         assert module.catalog_number == '1756-L74'
         assert module['@CatalogNumber'] == '1756-L74'
 
-    def test_catalog_number_property_setter_invalid(self):
-        """Test catalog_number property setter with invalid value."""
-        with patch('controlrox.models.plc.rockwell.module.compile'):
-            module = RaModule(
-                meta_data=self.sample_module_data,
-
-            )
-
-        with patch.object(module, 'is_valid_module_string', return_value=False):
-            with self.assertRaises(module.InvalidNamingException):
-                module.set_catalog_number('invalid-catalog')
-
     def test_communications_property_getter(self):
         """Test communications property getter."""
         with patch('controlrox.models.plc.rockwell.module.compile'):

@@ -1,8 +1,12 @@
+# Connection imports
+from .connection import PlcConnectionManager
+
 # Factory imports
 from .aoi import AOIFactory
 from .datatype import DatatypeFactory
 from .instruction import InstructionFactory, extract_instruction_strings
 from .module import ModuleFactory
+from .operand import OperandFactory
 from .program import ProgramFactory
 from .routine import RoutineFactory
 from .rung import RungFactory
@@ -16,6 +20,8 @@ from .controller import (
     ControllerInstanceManager,
 )
 
+from .dialect import DialectTranslatorFactory
+
 from .emu import (
     create_checklist_from_template,
     inject_emulation_routine,
@@ -24,11 +30,14 @@ from .emu import (
 
 
 __all__ = (
+    # Connection imports
+    'PlcConnectionManager',
     # Factory imports
     'AOIFactory',
     'DatatypeFactory',
     'InstructionFactory',
     'ModuleFactory',
+    'OperandFactory',
     'ProgramFactory',
     'RoutineFactory',
     'RungFactory',
@@ -39,6 +48,9 @@ __all__ = (
     'ControllerFactory',
     'ControllerMatcherFactory',
     'ControllerInstanceManager',
+
+    # Dialect imports
+    'DialectTranslatorFactory',
 
     # Emulation imports
     'create_checklist_from_template',

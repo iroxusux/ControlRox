@@ -174,7 +174,7 @@ CIPTYPES = {
 }
 
 
-class LogicTagScope(Enum):
+class ILogicTagScope(Enum):
     """logix tag scope enumeration
     """
     PROGRAM = 0
@@ -182,7 +182,7 @@ class LogicTagScope(Enum):
     CONTROLLER = 2
 
 
-class LogicInstructionType(Enum):
+class ILogicInstructionType(Enum):
     """logix instruction type enumeration
     """
     INPUT = 1
@@ -192,7 +192,7 @@ class LogicInstructionType(Enum):
     AOI = 5
 
 
-class LogicAssetType(Enum):
+class ILogicAssetType(Enum):
     """logix element resolver enumeration
     """
     DEFAULT = 0
@@ -207,6 +207,18 @@ class LogicAssetType(Enum):
     ALL = 9
 
 
+class IExternalAccessMixin(Enum):
+    READ_ONLY = 'READ_ONLY'
+    WRITE_ONLY = 'WRITE_ONLY'
+    READ_WRITE = 'READ_WRITE'
+    NONE = 'NONE'
+
+
+class IStandardSafetyMixin(Enum):
+    STANDARD = 'STANDARD'
+    SAFETY = 'SAFETY'
+
+
 class IPlcObject(
     IHasController,
     IHasMetaData[META],
@@ -216,34 +228,31 @@ class IPlcObject(
     """
 
     @property
-    @abstractmethod
     def description(self) -> str:
         """Get the description of this object.
 
         Returns:
             str: The description of this object.
         """
-        raise NotImplementedError("This method should be overridden by subclasses to get the description.")
+        return self.get_description()
 
     @property
-    @abstractmethod
     def name(self) -> str:
         """Get the name of this object.
 
         Returns:
             str: The name of this object.
         """
-        raise NotImplementedError("This method should be overridden by subclasses to get the object's name.")
+        return self.get_name()
 
     @property
-    @abstractmethod
     def process_name(self) -> str:
         """Get the process name of this object's controller without plant or customer prefixes / suffixes.
 
         Returns:
             str: The process name of this object's controller.
         """
-        raise NotImplementedError("This method should be overridden by subclasses to get the process name.")
+        return self.get_process_name()
 
     @abstractmethod
     def compile(self) -> Self:
@@ -265,6 +274,24 @@ class IPlcObject(
         raise NotImplementedError("This method should be overridden by subclasses to invalidate the object.")
 
     @abstractmethod
+    def get_process_name(self) -> str:
+        """Get the process name of this object's controller without plant or customer prefixes / suffixes.
+
+        Returns:
+            str: The process name of this object's controller.
+        """
+        raise NotImplementedError("This method should be overridden by subclasses to get the process name.")
+
+    @abstractmethod
+    def get_description(self) -> str:
+        """Get the description of this object.
+
+        Returns:
+            str: The description of this object.
+        """
+        raise NotImplementedError("This method should be overridden by subclasses to get the description.")
+
+    @abstractmethod
     def set_description(
         self,
         description: str
@@ -275,6 +302,15 @@ class IPlcObject(
             description: The description to set.
         """
         raise NotImplementedError("This method should be overridden by subclasses to set the description.")
+
+    @abstractmethod
+    def get_name(self) -> str:
+        """Get the name of this object.
+
+        Returns:
+            str: The name of this object.
+        """
+        raise NotImplementedError("This method should be overridden by subclasses to get the name.")
 
     @abstractmethod
     def set_name(
@@ -291,8 +327,8 @@ class IPlcObject(
 
 __all__ = [
     'IPlcObject',
-    'LogicTagScope',
-    'LogicInstructionType',
-    'LogicAssetType',
+    'ILogicTagScope',
+    'ILogicInstructionType',
+    'ILogicAssetType',
     'CIPTYPES',
 ]
