@@ -16,6 +16,7 @@ Key Design Principles:
 Interface Categories:
     - PLC: Control logic controller abstractions
 """
+from .constants import ControlRoxEnvironmentKeys
 
 from .plc import (
     # Type Variables
@@ -121,6 +122,9 @@ from .tasks import (
 
 
 __all__ = (
+    # Constants
+    "ControlRoxEnvironmentKeys",
+
     # Type variables section
     "AOI",
     "CTRL",

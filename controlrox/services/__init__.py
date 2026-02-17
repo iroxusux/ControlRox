@@ -15,6 +15,8 @@ from .design import (
 
 # Plc service classes
 from .plc import (
+    # Connection imports
+    PlcConnectionManager,
     # Factory imports
     AOIFactory,
     DatatypeFactory,
@@ -56,6 +58,9 @@ __all__ = (
     # Design services
     'convert_markdown_to_html',
     'render_checklist',
+
+    # Connection imports
+    'PlcConnectionManager',
 
     # Plc Factory services
     'AOIFactory',

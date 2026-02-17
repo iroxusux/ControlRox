@@ -3,7 +3,7 @@
 import tkinter as tk
 from tkinter import ttk
 from pyrox.models.gui import PyroxYamlEditor
-from pyrox.models.gui.tk.frame import TaskFrame
+from pyrox.models.gui.tk.frame import TkinterTaskFrame
 from pyrox.services.file import get_save_file
 from pyrox.services.gui import GuiManager
 from pyrox.services.logging import log
@@ -22,11 +22,11 @@ class ControllerGenerateTask(ControllerApplicationTask):
     """
 
     def generate_project_design_checklist(self):
-        task_frame = TaskFrame(
-            master=self.application.workspace.workspace_area.frame_root,
-            name='Project Design Checklist'
+        task_frame = TkinterTaskFrame(
+            name='Project Design Checklist',
+            parent=self.application.workspace.workspace_area.root
         )
-        self.application.workspace.add_workspace_task_frame(task_frame, True)
+        self.application.workspace.register_frame(task_frame, True)
 
         # Create the YAML editor
         yaml_editor = PyroxYamlEditor(

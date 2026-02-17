@@ -1,3 +1,6 @@
+# Connection imports
+from .connection import PlcConnectionManager
+
 # Factory imports
 from .aoi import AOIFactory
 from .datatype import DatatypeFactory
@@ -27,6 +30,8 @@ from .emu import (
 
 
 __all__ = (
+    # Connection imports
+    'PlcConnectionManager',
     # Factory imports
     'AOIFactory',
     'DatatypeFactory',

@@ -1,11 +1,13 @@
 """Unit tests for PLC connection services."""
 import unittest
 from unittest.mock import Mock, patch, MagicMock
+from datetime import datetime
 
 from controlrox.services.plc.connection import (
     ConnectionParameters,
     ConnectionCommandType,
     ConnectionCommand,
+    WatchTableEntry,
     PlcConnectionManager,
 )
 from pyrox.models.network import Ipv4Address
@@ -74,6 +76,50 @@ class TestConnectionCommandType(unittest.TestCase):
         self.assertNotEqual(ConnectionCommandType.READ, ConnectionCommandType.WRITE)
 
 
+class TestWatchTableEntry(unittest.TestCase):
+    """Test cases for WatchTableEntry dataclass."""
+
+    def test_default_initialization(self):
+        """Test WatchTableEntry with default values."""
+        entry = WatchTableEntry(tag_name='TestTag')
+        self.assertEqual(entry.tag_name, 'TestTag')
+        self.assertEqual(entry.data_type, 0)
+        self.assertIsNone(entry.last_value)
+        self.assertIsNone(entry.last_update)
+        self.assertEqual(entry.error_count, 0)
+        self.assertEqual(entry.callbacks, [])
+
+    def test_custom_initialization(self):
+        """Test WatchTableEntry with custom values."""
+        mock_callback = Mock()
+        test_time = datetime.now()
+        entry = WatchTableEntry(
+            tag_name='CustomTag',
+            data_type=5,
+            last_value=42,
+            last_update=test_time,
+            error_count=3,
+            callbacks=[mock_callback]
+        )
+        self.assertEqual(entry.tag_name, 'CustomTag')
+        self.assertEqual(entry.data_type, 5)
+        self.assertEqual(entry.last_value, 42)
+        self.assertEqual(entry.last_update, test_time)
+        self.assertEqual(entry.error_count, 3)
+        self.assertIn(mock_callback, entry.callbacks)
+
+    def test_callbacks_list_default_factory(self):
+        """Test that callbacks list is independent for each instance."""
+        entry1 = WatchTableEntry(tag_name='Tag1')
+        entry2 = WatchTableEntry(tag_name='Tag2')
+
+        mock_callback = Mock()
+        entry1.callbacks.append(mock_callback)
+
+        self.assertIn(mock_callback, entry1.callbacks)
+        self.assertNotIn(mock_callback, entry2.callbacks)
+
+
 class TestConnectionCommand(unittest.TestCase):
     """Test cases for ConnectionCommand dataclass."""
 
@@ -134,6 +180,7 @@ class TestPlcConnectionManager(unittest.TestCase):
         PlcConnectionManager._connected = False
         PlcConnectionManager._commands = []
         PlcConnectionManager._subscribers = []
+        PlcConnectionManager._watch_table = {}
         PlcConnectionManager._timer_service.clear_all_tasks()
 
     def tearDown(self):
@@ -141,6 +188,7 @@ class TestPlcConnectionManager(unittest.TestCase):
         PlcConnectionManager._connected = False
         PlcConnectionManager._commands = []
         PlcConnectionManager._subscribers = []
+        PlcConnectionManager._watch_table = {}
         PlcConnectionManager._timer_service.clear_all_tasks()
 
     def test_cannot_instantiate(self):
@@ -490,6 +538,342 @@ class TestPlcConnectionManager(unittest.TestCase):
         PlcConnectionManager._schedule()
         final_tasks = len(PlcConnectionManager._timer_service._tasks)
         self.assertEqual(initial_tasks, final_tasks)
+
+    def test_add_watch_tag_new(self):
+        """Test adding a new tag to watch table."""
+        PlcConnectionManager.add_watch_tag('TestTag', data_type=5)
+
+        self.assertIn('TestTag', PlcConnectionManager._watch_table)
+        entry = PlcConnectionManager._watch_table['TestTag']
+        self.assertEqual(entry.tag_name, 'TestTag')
+        self.assertEqual(entry.data_type, 5)
+        self.assertIsNone(entry.last_value)
+
+    def test_add_watch_tag_with_callback(self):
+        """Test adding a tag with a callback."""
+        mock_callback = Mock()
+        PlcConnectionManager.add_watch_tag('TestTag', callback=mock_callback)
+
+        entry = PlcConnectionManager._watch_table['TestTag']
+        self.assertIn(mock_callback, entry.callbacks)
+
+    def test_add_watch_tag_duplicate(self):
+        """Test adding a tag that's already in watch table."""
+        PlcConnectionManager.add_watch_tag('TestTag', data_type=5)
+        PlcConnectionManager.add_watch_tag('TestTag', data_type=10)  # Different data type
+
+        # Should keep original entry
+        entry = PlcConnectionManager._watch_table['TestTag']
+        self.assertEqual(entry.data_type, 5)  # Original data type preserved
+
+    def test_add_watch_tag_duplicate_with_new_callback(self):
+        """Test adding callback to existing watched tag."""
+        callback1 = Mock()
+        callback2 = Mock()
+
+        PlcConnectionManager.add_watch_tag('TestTag', callback=callback1)
+        PlcConnectionManager.add_watch_tag('TestTag', callback=callback2)
+
+        entry = PlcConnectionManager._watch_table['TestTag']
+        self.assertIn(callback1, entry.callbacks)
+        self.assertIn(callback2, entry.callbacks)
+
+    def test_remove_watch_tag_existing(self):
+        """Test removing an existing watched tag."""
+        PlcConnectionManager.add_watch_tag('TestTag')
+        result = PlcConnectionManager.remove_watch_tag('TestTag')
+
+        self.assertTrue(result)
+        self.assertNotIn('TestTag', PlcConnectionManager._watch_table)
+
+    def test_remove_watch_tag_nonexistent(self):
+        """Test removing a tag that's not in watch table."""
+        result = PlcConnectionManager.remove_watch_tag('NonexistentTag')
+        self.assertFalse(result)
+
+    def test_clear_watch_table(self):
+        """Test clearing all tags from watch table."""
+        PlcConnectionManager.add_watch_tag('Tag1')
+        PlcConnectionManager.add_watch_tag('Tag2')
+        PlcConnectionManager.add_watch_tag('Tag3')
+
+        self.assertEqual(len(PlcConnectionManager._watch_table), 3)
+
+        PlcConnectionManager.clear_watch_table()
+        self.assertEqual(len(PlcConnectionManager._watch_table), 0)
+
+    def test_get_watch_table(self):
+        """Test getting a copy of the watch table."""
+        PlcConnectionManager.add_watch_tag('Tag1')
+        PlcConnectionManager.add_watch_tag('Tag2')
+
+        watch_table = PlcConnectionManager.get_watch_table()
+
+        self.assertEqual(len(watch_table), 2)
+        self.assertIn('Tag1', watch_table)
+        self.assertIn('Tag2', watch_table)
+
+        # Verify it's a copy, not the original
+        watch_table['Tag3'] = WatchTableEntry(tag_name='Tag3')
+        self.assertNotIn('Tag3', PlcConnectionManager._watch_table)
+
+    def test_get_watched_tag_value_exists(self):
+        """Test getting value of watched tag."""
+        PlcConnectionManager.add_watch_tag('TestTag')
+        PlcConnectionManager._watch_table['TestTag'].last_value = 42
+
+        value = PlcConnectionManager.get_watched_tag_value('TestTag')
+        self.assertEqual(value, 42)
+
+    def test_get_watched_tag_value_not_watched(self):
+        """Test getting value of tag not in watch table."""
+        value = PlcConnectionManager.get_watched_tag_value('NonexistentTag')
+        self.assertIsNone(value)
+
+    def test_get_watched_tag_value_no_value_yet(self):
+        """Test getting value of watched tag before any reads."""
+        PlcConnectionManager.add_watch_tag('TestTag')
+        value = PlcConnectionManager.get_watched_tag_value('TestTag')
+        self.assertIsNone(value)
+
+    @patch('controlrox.services.plc.connection.PLC')
+    def test_run_watch_table_reads_success(self, mock_plc_class):
+        """Test automatic reading of watched tags."""
+        mock_plc = MagicMock()
+        mock_plc_class.return_value.__enter__.return_value = mock_plc
+
+        mock_response = Response(tag_name='TestTag', value=42, status='Success')
+        mock_plc.Read.return_value = mock_response
+
+        PlcConnectionManager.add_watch_tag('TestTag', data_type=5)
+        PlcConnectionManager._connected = True
+
+        PlcConnectionManager._run_commands()
+
+        # Verify the tag was read
+        mock_plc.Read.assert_called_with('TestTag', datatype=5)
+
+        # Verify the entry was updated
+        entry = PlcConnectionManager._watch_table['TestTag']
+        self.assertEqual(entry.last_value, 42)
+        self.assertIsNotNone(entry.last_update)
+        self.assertEqual(entry.error_count, 0)
+
+    @patch('controlrox.services.plc.connection.PLC')
+    def test_run_watch_table_reads_with_callback(self, mock_plc_class):
+        """Test that callbacks are invoked when watched tags are read."""
+        mock_plc = MagicMock()
+        mock_plc_class.return_value.__enter__.return_value = mock_plc
+
+        mock_response = Response(tag_name='TestTag', value=100, status='Success')
+        mock_plc.Read.return_value = mock_response
+
+        mock_callback = Mock()
+        PlcConnectionManager.add_watch_tag('TestTag', callback=mock_callback)
+        PlcConnectionManager._connected = True
+
+        PlcConnectionManager._run_commands()
+
+        # Verify callback was called with response
+        mock_callback.assert_called_once()
+        call_args = mock_callback.call_args[0][0]
+        self.assertEqual(call_args.Value, 100)
+
+    @patch('controlrox.services.plc.connection.PLC')
+    def test_run_watch_table_reads_failure(self, mock_plc_class):
+        """Test error handling when watched tag read fails."""
+        mock_plc = MagicMock()
+        mock_plc_class.return_value.__enter__.return_value = mock_plc
+
+        mock_response = Response(tag_name='TestTag', value=None, status='Failed')
+        mock_plc.Read.return_value = mock_response
+
+        PlcConnectionManager.add_watch_tag('TestTag')
+        PlcConnectionManager._connected = True
+
+        PlcConnectionManager._run_commands()
+
+        # Verify error count was incremented
+        entry = PlcConnectionManager._watch_table['TestTag']
+        self.assertEqual(entry.error_count, 1)
+
+    @patch('controlrox.services.plc.connection.PLC')
+    def test_run_watch_table_reads_exception(self, mock_plc_class):
+        """Test error handling when exception occurs during watch read."""
+        mock_plc = MagicMock()
+        mock_plc_class.return_value.__enter__.return_value = mock_plc
+        mock_plc.Read.side_effect = Exception('Read error')
+
+        PlcConnectionManager.add_watch_tag('TestTag')
+        PlcConnectionManager._connected = True
+
+        PlcConnectionManager._run_commands()
+
+        # Verify error count was incremented
+        entry = PlcConnectionManager._watch_table['TestTag']
+        self.assertEqual(entry.error_count, 1)
+
+    @patch('controlrox.services.plc.connection.PLC')
+    def test_run_watch_table_reads_list_response(self, mock_plc_class):
+        """Test handling of list response from PLC read."""
+        mock_plc = MagicMock()
+        mock_plc_class.return_value.__enter__.return_value = mock_plc
+
+        # Some pylogix operations return lists
+        mock_response = Response(tag_name='TestTag', value=99, status='Success')
+        mock_plc.Read.return_value = [mock_response]
+
+        PlcConnectionManager.add_watch_tag('TestTag')
+        PlcConnectionManager._connected = True
+
+        PlcConnectionManager._run_commands()
+
+        # Verify the first response was used
+        entry = PlcConnectionManager._watch_table['TestTag']
+        self.assertEqual(entry.last_value, 99)
+
+    @patch('controlrox.services.plc.connection.PLC')
+    def test_run_watch_table_reads_multiple_tags(self, mock_plc_class):
+        """Test automatic reading of multiple watched tags."""
+        mock_plc = MagicMock()
+        mock_plc_class.return_value.__enter__.return_value = mock_plc
+
+        def mock_read(tag_name, datatype):
+            if tag_name == 'Tag1':
+                return Response(tag_name='Tag1', value=10, status='Success')
+            elif tag_name == 'Tag2':
+                return Response(tag_name='Tag2', value=20, status='Success')
+            return Response(tag_name=tag_name, value=None, status='Error')
+
+        mock_plc.Read.side_effect = mock_read
+
+        PlcConnectionManager.add_watch_tag('Tag1')
+        PlcConnectionManager.add_watch_tag('Tag2')
+        PlcConnectionManager._connected = True
+
+        PlcConnectionManager._run_commands()
+
+        # Verify both tags were read
+        self.assertEqual(PlcConnectionManager._watch_table['Tag1'].last_value, 10)
+        self.assertEqual(PlcConnectionManager._watch_table['Tag2'].last_value, 20)
+
+    @patch('controlrox.services.plc.connection.PLC')
+    def test_write_watch_tag_new_tag(self, mock_plc_class):
+        """Test writing to a tag not in watch table."""
+        mock_plc = MagicMock()
+        mock_plc_class.return_value.__enter__.return_value = mock_plc
+
+        mock_response = Response(tag_name='NewTag', value=50, status='Success')
+        mock_plc.Write.return_value = mock_response
+
+        PlcConnectionManager._connected = True
+        PlcConnectionManager.write_watch_tag('NewTag', 50)
+
+        # Should add write command to buffer
+        PlcConnectionManager._run_commands()
+
+        mock_plc.Write.assert_called_once_with('NewTag', 50, datatype=0)
+
+    @patch('controlrox.services.plc.connection.PLC')
+    def test_write_watch_tag_watched_tag(self, mock_plc_class):
+        """Test writing to a tag in watch table."""
+        mock_plc = MagicMock()
+        mock_plc_class.return_value.__enter__.return_value = mock_plc
+
+        mock_response = Response(tag_name='TestTag', value=75, status='Success')
+        mock_plc.Write.return_value = mock_response
+
+        PlcConnectionManager.add_watch_tag('TestTag', data_type=5)
+        PlcConnectionManager._connected = True
+        PlcConnectionManager.write_watch_tag('TestTag', 75)
+
+        PlcConnectionManager._run_commands()
+
+        # Should use data type from watch table
+        mock_plc.Write.assert_called_once_with('TestTag', 75, datatype=5)
+
+        # Should update watch table entry
+        entry = PlcConnectionManager._watch_table['TestTag']
+        self.assertEqual(entry.last_value, 75)
+
+    @patch('controlrox.services.plc.connection.PLC')
+    def test_write_watch_tag_with_callback(self, mock_plc_class):
+        """Test writing with custom callback."""
+        mock_plc = MagicMock()
+        mock_plc_class.return_value.__enter__.return_value = mock_plc
+
+        mock_response = Response(tag_name='TestTag', value=30, status='Success')
+        mock_plc.Write.return_value = mock_response
+
+        mock_callback = Mock()
+        PlcConnectionManager._connected = True
+        PlcConnectionManager.write_watch_tag('TestTag', 30, callback=mock_callback)
+
+        PlcConnectionManager._run_commands()
+
+        # Custom callback should be called
+        mock_callback.assert_called_once()
+
+    @patch('controlrox.services.plc.connection.PLC')
+    def test_write_watch_tag_failure(self, mock_plc_class):
+        """Test write failure handling."""
+        mock_plc = MagicMock()
+        mock_plc_class.return_value.__enter__.return_value = mock_plc
+
+        mock_response = Response(tag_name='TestTag', value=None, status='Failed')
+        mock_plc.Write.return_value = mock_response
+
+        PlcConnectionManager.add_watch_tag('TestTag')
+        PlcConnectionManager._connected = True
+        PlcConnectionManager.write_watch_tag('TestTag', 100)
+
+        PlcConnectionManager._run_commands()
+
+        # Watch table should not be updated on failure
+        entry = PlcConnectionManager._watch_table['TestTag']
+        self.assertIsNone(entry.last_value)  # Should still be None
+
+    @patch('controlrox.services.plc.connection.PLC')
+    def test_write_watch_tag_list_response(self, mock_plc_class):
+        """Test handling list response from write operation."""
+        mock_plc = MagicMock()
+        mock_plc_class.return_value.__enter__.return_value = mock_plc
+
+        mock_response = Response(tag_name='TestTag', value=88, status='Success')
+        mock_plc.Write.return_value = [mock_response]
+
+        PlcConnectionManager.add_watch_tag('TestTag')
+        PlcConnectionManager._connected = True
+        PlcConnectionManager.write_watch_tag('TestTag', 88)
+
+        PlcConnectionManager._run_commands()
+
+        # Should handle list response and update watch table
+        entry = PlcConnectionManager._watch_table['TestTag']
+        self.assertEqual(entry.last_value, 88)
+
+    @patch('controlrox.services.plc.connection.PLC')
+    def test_watch_callback_exception_handling(self, mock_plc_class):
+        """Test that callback exceptions don't break watch reads."""
+        mock_plc = MagicMock()
+        mock_plc_class.return_value.__enter__.return_value = mock_plc
+
+        mock_response = Response(tag_name='TestTag', value=123, status='Success')
+        mock_plc.Read.return_value = mock_response
+
+        # Callback that raises exception
+        def bad_callback(response):
+            raise RuntimeError('Callback error')
+
+        PlcConnectionManager.add_watch_tag('TestTag', callback=bad_callback)
+        PlcConnectionManager._connected = True
+
+        # Should not raise exception
+        PlcConnectionManager._run_commands()
+
+        # Entry should still be updated despite callback error
+        entry = PlcConnectionManager._watch_table['TestTag']
+        self.assertEqual(entry.last_value, 123)
 
 
 if __name__ == '__main__':

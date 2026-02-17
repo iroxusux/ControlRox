@@ -64,7 +64,15 @@ class TestApp(unittest.TestCase):
     def test_init(self):
         """Test initialization of App."""
         with patch('pyrox.services.gui.GuiManager'):
-            with patch('pyrox.application.EnvManager.get', return_value=False):  # Disable GUI for this test
+            def env_side_effect_no_gui(key, default=None, *args, **kwargs):
+                # Return False for GUI setting to disable GUI, but allow other env vars
+                if 'gui' in str(key).lower():
+                    return False
+                elif 'log' in str(key).lower() or 'format' in str(key).lower():
+                    return default if isinstance(default, str) else '%(asctime)s | %(name)s | %(levelname)s | %(message)s'
+                return default
+
+            with patch('pyrox.application.EnvManager.get', side_effect=env_side_effect_no_gui):
                 app = App()
 
         self.assertIsInstance(app._object_lookup_cache, dict)
