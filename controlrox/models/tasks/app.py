@@ -107,11 +107,11 @@ class ControllerApplication(
         ctrl = ControllerInstanceManager.get_controller()
 
         if ctrl:
-            self.main_window.set_title(
+            self.main_window.wm_title(
                 f'{title} - [{ctrl.name}] - [{ctrl.file_location or "Unsaved*"}]'
             )
         else:
-            self.main_window.set_title(title)
+            self.main_window.wm_title(title)
 
     def get_controller(self) -> Optional[IController]:
         """Get the current controller for the application.

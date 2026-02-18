@@ -104,7 +104,7 @@ class ControlRoxFileTask(ControllerApplicationTask):
             return
 
         if not file_location:
-            file_location = get_open_file([("L5X XML Files", ".L5X")])
+            file_location = get_open_file('Open L5X Controller', [("L5X XML Files", ".L5X")])
 
         if not file_location:
             log(self).warning('No file selected...')
@@ -127,7 +127,7 @@ class ControlRoxFileTask(ControllerApplicationTask):
             file_location = None
 
         if not file_location:
-            file_location = get_save_file([("L5X XML Files", ".L5X")])
+            file_location = get_save_file('Choose Save Location...', [("L5X XML Files", ".L5X")])
 
         if not file_location:
             return log(self).warning('No save location selected...')

@@ -79,6 +79,9 @@ class Rung(
         self.compile_sequence()
         return self
 
+    def compile_instructions(self, rung: IRung | None = None) -> None:
+        return super().compile_instructions(self)  # override to pass rung to instruction compilation
+
     def get_comment(self) -> str:
         return self.meta_data.get('Comment', '')
 

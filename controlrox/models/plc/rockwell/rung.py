@@ -34,6 +34,8 @@ class RaRung(
 
     ):
         """type class for plc Rung"""
+        if rung_number is None:
+            rung_number = 0
         super().__init__(
             meta_data=meta_data,
             name=name,

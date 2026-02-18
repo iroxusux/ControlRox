@@ -521,7 +521,8 @@ class HasInstructions(
 
     def create_instruction_from_text(
         self,
-        instruction_text: str
+        instruction_text: str,
+        rung: Optional[IRung] = None
     ) -> ILogicInstruction | None:
         """Create an instruction object from instruction text.
 
@@ -531,7 +532,10 @@ class HasInstructions(
             ILogicInstruction | None: The created instruction object, or None if parsing failed.
         """
         from .instruction import LogicInstruction
-        return LogicInstruction(meta_data=instruction_text)
+        return LogicInstruction(
+            meta_data=instruction_text,
+            rung=rung
+        )
 
     def compile_instructions(self) -> None:
         raise NotImplementedError("compile_instructions method must be implemented by subclass.")
@@ -1260,8 +1264,9 @@ class HasSequencedInstructions(
     def _process_instruction_token(
         self,
         token: str,
+        rung: Optional[IRung] = None
     ) -> None:
-        instruction = self.create_instruction_from_text(token)
+        instruction = self.create_instruction_from_text(token, rung)
         if not instruction:
             raise ValueError(f"Failed to create instruction from text: {token}")
         self._instructions.append(instruction)
@@ -1280,7 +1285,10 @@ class HasSequencedInstructions(
         self.invalidate()
         self.compile_instructions()
 
-    def compile_instructions(self) -> None:
+    def compile_instructions(
+        self,
+        rung: Optional[IRung] = None
+    ) -> None:
         self.invalidate_instructions()
         self._sequence_tracked_branches.clear()
         tokens = self.tokenize_instruction_meta_data()
@@ -1291,7 +1299,7 @@ class HasSequencedInstructions(
                 continue
 
             else:
-                self._process_instruction_token(token)
+                self._process_instruction_token(token, rung)
 
     def compile_sequence(self) -> None:
         self.invalidate_instructions()

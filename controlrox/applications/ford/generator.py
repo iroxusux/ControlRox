@@ -67,7 +67,7 @@ class FordEmulationGenerator(BaseEmulationGenerator):
                 log().debug(f"No Comm Edit routine found in program {program.name}, skipping.")
                 continue
             for instruction in comm_edit.instructions:
-                if 'CommOk' in instruction.meta_data and instruction.instruction_name in ['OTE', 'OTL']:
+                if 'CommOk' in instruction.meta_data and instruction.name in ['OTE', 'OTL']:
                     comm_ok_bits.append(instruction)
         return comm_ok_bits
 

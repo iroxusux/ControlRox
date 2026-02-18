@@ -122,15 +122,15 @@ class ControlRoxApplication(ControllerApplication):
     def _config_menu_file_entries(self) -> None:
         """Configure the file menu entries based on the controller state."""
         log(self).debug('Configuring file menu entries based on controller state.')
-        self.menu.get_file_menu().config_item(
+        self.gui.gui_menu().file_menu.config_item(
             index='Save Controller',
             state='disabled' if not self.controller else 'normal'
         )
-        self.menu.get_file_menu().config_item(
+        self.gui.gui_menu().file_menu.config_item(
             index='Save Controller As...',
             state='disabled' if not self.controller else 'normal'
         )
-        self.menu.get_file_menu().config_item(
+        self.gui.gui_menu().file_menu.config_item(
             index='Close Controller',
             state='disabled' if not self.controller else 'normal'
         )
@@ -304,10 +304,10 @@ class ControlRoxApplication(ControllerApplication):
     def on_close(self) -> None:
         """Clean up ControlRox-specific resources before closing."""
         log(self).debug('ControlRox application closing - cleaning up PLC connections...')
-        
+
         # Import here to avoid circular import
         from controlrox.services.plc.connection import PlcConnectionManager
-        
+
         try:
             # Disconnect from PLC if connected (this stops timer loops)
             if PlcConnectionManager._connected:
@@ -316,13 +316,13 @@ class ControlRoxApplication(ControllerApplication):
                 log(self).debug('PLC disconnected successfully.')
         except Exception as e:
             log(self).error(f'Error disconnecting PLC during close: {e}')
-        
+
         # Clear object lookup cache
         try:
             self._object_lookup_cache.clear()
         except Exception as e:
             log(self).error(f'Error clearing object cache: {e}')
-        
+
         # Call parent on_close
         super().on_close()
 
