@@ -8,11 +8,12 @@ from tkinter import ttk, messagebox
 from typing import Optional
 from pyrox.services.logging import log
 from pyrox.interfaces import IScene
+from pyrox.models.gui.tk.frame import TkinterTaskFrame
 from controlrox.services.plc.bridge import PlcSceneBridge, PlcTagBinding, BindingDirection
 from controlrox.services.plc.connection import PlcConnectionManager
 
 
-class PlcSceneBridgeDialog(tk.Toplevel):
+class PlcSceneBridgeDialog(TkinterTaskFrame):
     """Dialog for managing PLC-Scene bindings.
 
     Allows users to:
@@ -24,12 +25,12 @@ class PlcSceneBridgeDialog(tk.Toplevel):
     """
 
     def __init__(self, parent, bridge: PlcSceneBridge, scene: Optional[IScene] = None):
-        super().__init__(parent)
+        super().__init__(
+            name='plc_bridge_dialog',
+            parent=parent,
+        )
         self.bridge = bridge
         self.scene = scene
-
-        self.title("PLC-Scene Bridge Manager")
-        self.geometry("1000x700")
 
         # Create UI
         self._create_toolbar()
@@ -43,12 +44,9 @@ class PlcSceneBridgeDialog(tk.Toplevel):
         # Auto-refresh
         self._schedule_refresh()
 
-        # Handle close
-        self.protocol("WM_DELETE_WINDOW", self._on_close)
-
     def _create_toolbar(self):
         """Create toolbar with control buttons."""
-        toolbar = tk.Frame(self)
+        toolbar = tk.Frame(self.root)
         toolbar.pack(side=tk.TOP, fill=tk.X, padx=5, pady=5)
 
         # Bridge controls
@@ -109,7 +107,7 @@ class PlcSceneBridgeDialog(tk.Toplevel):
 
     def _create_bindings_view(self):
         """Create treeview for bindings."""
-        view_frame = tk.Frame(self)
+        view_frame = tk.Frame(self.root)
         view_frame.pack(side=tk.TOP, fill=tk.BOTH, expand=True, padx=5, pady=5)
 
         # Scrollbars
@@ -163,7 +161,7 @@ class PlcSceneBridgeDialog(tk.Toplevel):
         """Create status bar."""
         self.status_var = tk.StringVar(value="Ready")
         status_bar = tk.Label(
-            self,
+            self.root,
             textvariable=self.status_var,
             relief=tk.SUNKEN,
             anchor=tk.W
@@ -238,8 +236,8 @@ class PlcSceneBridgeDialog(tk.Toplevel):
 
     def _add_binding_dialog(self):
         """Show dialog to add a new binding."""
-        dialog = AddBindingDialog(self, self.bridge, self.scene)
-        self.wait_window(dialog)
+        dialog = AddBindingDialog(self.root, self.bridge, self.scene)
+        self.root.wait_window(dialog)
         self._refresh_bindings()
 
     def _edit_selected_binding(self):
@@ -261,8 +259,8 @@ class PlcSceneBridgeDialog(tk.Toplevel):
                     and b.property_path == property_path]
 
         if bindings:
-            dialog = EditBindingDialog(self, self.bridge, bindings[0])
-            self.wait_window(dialog)
+            dialog = EditBindingDialog(self.root, self.bridge, bindings[0])
+            self.root.wait_window(dialog)
             self._refresh_bindings()
 
     def _remove_selected_binding(self):
@@ -319,7 +317,7 @@ class PlcSceneBridgeDialog(tk.Toplevel):
         if item_id:
             self.tree.selection_set(item_id)
 
-            menu = tk.Menu(self, tearoff=0)
+            menu = tk.Menu(self.root, tearoff=0)
             menu.add_command(label="Edit", command=self._edit_selected_binding)
             menu.add_command(label="Remove", command=self._remove_selected_binding)
             menu.add_separator()
@@ -331,11 +329,7 @@ class PlcSceneBridgeDialog(tk.Toplevel):
         """Schedule periodic refresh."""
         if self.bridge._active:
             self._refresh_bindings()
-        self.after(1000, self._schedule_refresh)
-
-    def _on_close(self):
-        """Handle window close."""
-        self.destroy()
+        self.root.after(1000, self._schedule_refresh)
 
 
 class AddBindingDialog(tk.Toplevel):

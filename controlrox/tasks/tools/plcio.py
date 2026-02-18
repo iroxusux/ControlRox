@@ -33,7 +33,7 @@ class PlcIoTask(ControllerApplicationTask):
         """Create the PLC I/O frame.
         """
         if self._frame is None or not self._frame.root.winfo_exists():
-            self._frame = PlcIoFrame(self.application.workspace.root)
+            self._frame = PlcIoFrame(self.application.workspace.workspace_area)
             self.application.workspace.register_frame(self._frame)
         else:
             self.application.workspace.raise_frame(self._frame)
@@ -43,3 +43,16 @@ class PlcIoTask(ControllerApplicationTask):
         """Show the PLC I/O frame.
         """
         self._create_frame()
+
+    def uninject(self) -> None:
+        """Clean up PLC connections when task is removed."""
+        try:
+            # Disconnect from PLC to stop timer loops
+            if PlcConnectionManager._connected:
+                PlcConnectionManager.disconnect()
+        except Exception as e:
+            # Log but don't raise - we want cleanup to continue
+            print(f"Error during PLC disconnection: {e}")
+
+        # Call parent uninject
+        super().uninject()

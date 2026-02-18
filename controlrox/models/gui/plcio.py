@@ -263,7 +263,7 @@ class PlcIoFrame(TkinterTaskFrame):
             return
 
         if self._watch_table_dialog is None or not self._watch_table_dialog.winfo_exists():
-            self._watch_table_dialog = WatchTableDialog(self, PlcConnectionManager)
+            self._watch_table_dialog = WatchTableDialog(self.root, PlcConnectionManager)
         else:
             self._watch_table_dialog.lift()
             self._watch_table_dialog.focus()
@@ -288,11 +288,9 @@ class PlcIoFrame(TkinterTaskFrame):
         else:
             self._plc_bridge.set_scene(scene)
 
-        if self._bridge_dialog is None or not self._bridge_dialog.winfo_exists():
+        if self._bridge_dialog is None or not self._bridge_dialog.root.winfo_exists():
             self._bridge_dialog = PlcSceneBridgeDialog(self.root, self._plc_bridge, scene)
-        else:
-            self._bridge_dialog.lift()
-            self._bridge_dialog.focus()
+            self._bridge_dialog.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
     def on_connect_pb_clicked(self, callback) -> None:
         """Set custom callback for connect button (in addition to default behavior)."""
