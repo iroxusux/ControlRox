@@ -7,7 +7,6 @@ from pyrox.models import HashList, PyroxObject
 from pyrox.models.gui import commandbar
 from pyrox.models.gui import contextmenu
 from pyrox.models.gui import treeview
-from pyrox.models.gui import PyroxFrameContainer
 from pyrox.services.logging import log
 from pyrox.services import object as object_services
 from controlrox.applications.constants import TreeViewMode
@@ -21,14 +20,40 @@ from controlrox.services import plc_gui_introspection
 
 
 __all__ = [
-    'App',
+    'ControlRoxApplication',
 ]
 
 
-class App(ControllerApplication):
+class ControlRoxApplication(ControllerApplication):
     def __init__(self) -> None:
         super().__init__()
         self._object_lookup_cache: dict[str, object] = {}
+
+        # Build
+        self.controller_treeview_frame = ttk.Frame(
+            master=self.main_window
+        )
+        self.treeview_commandbar = commandbar.PyroxCommandBar(
+            master=self.controller_treeview_frame
+        )
+        self.controller_treeview = treeview.PyroxTreeView(
+            parent=self.controller_treeview_frame  # TODO: parent should be named master to be consistent
+        )
+
+        # Layout
+        self.treeview_commandbar.frame.pack(fill='x', side='bottom')
+        self.controller_treeview.pack(fill='both', expand=True, side='top')
+
+        # Initialize
+        self._build_workspace_elements()
+        self.controller_treeview.subscribe_to_selection(self._handle_treeview_selection)
+        self._build_treeview_command_bar()
+
+        # Load last opened controller
+        self.load_last_opened_controller()
+
+        # Set initial status
+        self.workspace.set_status("Ready")
 
     def _build_treeview_command_bar(self) -> None:
         """Build the command bar for the controller treeview."""
@@ -85,9 +110,9 @@ class App(ControllerApplication):
             selectable=True
         ))
 
-    def add_workspace_elements(self) -> None:
+    def _build_workspace_elements(self) -> None:
         self.workspace.add_sidebar_widget(
-            self.controller_treeview_frame_container.frame_root,
+            self.controller_treeview_frame,
             "",
             "controller",
             "📁",
@@ -272,33 +297,34 @@ class App(ControllerApplication):
         if isinstance(selected_object, Routine):
             return self._populate_context_menu_from_routine(selected_object, context_menu)
 
-    def build(self):
-        # begin build with parent class
-        super().build()
-
-        # Build
-        self.controller_treeview_frame_container = PyroxFrameContainer[ttk.Frame](master=self.main_window)
-        self.treeview_commandbar = commandbar.PyroxCommandBar(self.controller_treeview_frame_container.frame_root)
-        self.controller_treeview = treeview.PyroxTreeView(self.controller_treeview_frame_container.frame.root)
-
-        # Layout
-        self.treeview_commandbar.frame.pack(fill='x', side='bottom')
-        self.controller_treeview.pack(fill='both', expand=True, side='top')
-
-        # Initialize
-        self.add_workspace_elements()
-        self.controller_treeview.subscribe_to_selection(self._handle_treeview_selection)
-        self._build_treeview_command_bar()
-
-        # Load last opened controller
-        self.load_last_opened_controller()
-
-        # Set initial status
-        self.workspace.set_status("Ready")
-
     def invalidate(self) -> None:
         super().invalidate()
         self._object_lookup_cache.clear()
+
+    def on_close(self) -> None:
+        """Clean up ControlRox-specific resources before closing."""
+        log(self).debug('ControlRox application closing - cleaning up PLC connections...')
+        
+        # Import here to avoid circular import
+        from controlrox.services.plc.connection import PlcConnectionManager
+        
+        try:
+            # Disconnect from PLC if connected (this stops timer loops)
+            if PlcConnectionManager._connected:
+                log(self).info('Disconnecting from PLC before application close...')
+                PlcConnectionManager.disconnect()
+                log(self).debug('PLC disconnected successfully.')
+        except Exception as e:
+            log(self).error(f'Error disconnecting PLC during close: {e}')
+        
+        # Clear object lookup cache
+        try:
+            self._object_lookup_cache.clear()
+        except Exception as e:
+            log(self).error(f'Error clearing object cache: {e}')
+        
+        # Call parent on_close
+        super().on_close()
 
     def refresh(
         self,

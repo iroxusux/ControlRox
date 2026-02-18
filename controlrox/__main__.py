@@ -1,6 +1,6 @@
 """run this app
     """
-from controlrox.applications import App
+from controlrox.application import ControlRoxApplication
 
 if __name__ == '__main__':
-    App().run()
+    ControlRoxApplication().run()

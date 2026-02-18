@@ -7,8 +7,8 @@ controller management, GUI operations, and application lifecycle.
 import unittest
 from unittest.mock import MagicMock, patch
 
-from pyrox.models.gui import commandbar, contextmenu
-from controlrox.applications.app import App
+from pyrox.models.gui import contextmenu
+from controlrox.application import ControlRoxApplication
 from controlrox.applications.constants import TreeViewMode
 from controlrox.interfaces import IController
 from controlrox.models import Routine
@@ -19,21 +19,34 @@ class TestApp(unittest.TestCase):
 
     def setUp(self):
         """Set up test fixtures."""
-        # Mock GUI Manager to avoid tkinter initialization
-        self.gui_manager_patcher = patch('pyrox.services.gui.GuiManager')
+        # Mock all the service classes like in pyrox tests
+        self.gui_manager_patcher = patch('pyrox.models.services.GuiManager')
         self.mock_gui_manager = self.gui_manager_patcher.start()
 
-        # Create mock backend with properly mocked menu
+        # Create mock backend with properly mocked menu and ALL GUI methods
         mock_backend = MagicMock()
+        mock_backend.root_window = MagicMock()  # Add root_window property
+        # Mock all backend methods that might create GUI elements
+        mock_backend.create_root_window = MagicMock()
+        mock_backend.restore_window_geometry = MagicMock()
+        mock_backend.create_application_gui_menu = MagicMock()
+        mock_backend.subscribe_to_window_change_event = MagicMock()
+        mock_backend.reroute_excepthook = MagicMock()
+        mock_backend.subscribe_to_window_close_event = MagicMock()
+        mock_backend.set_title = MagicMock()
+        mock_backend.set_icon = MagicMock()
+        mock_backend.save_window_geometry = MagicMock()
+        mock_backend.get_root_window = MagicMock(return_value=MagicMock())
+        # Mock menu structure
         mock_menu = MagicMock()
         mock_menu.get_file_menu = MagicMock(return_value=MagicMock())
         mock_backend.get_root_application_gui_menu.return_value = mock_menu
-        mock_backend.get_root_gui_window.return_value = MagicMock()
+        mock_backend.get_gui_application_menu.return_value = MagicMock()
         self.mock_gui_manager.unsafe_get_backend.return_value = mock_backend
         self.mock_gui_manager.is_gui_available.return_value = True
 
         # Mock environment variable for GUI with side_effect to return correct types
-        self.env_patcher = patch('pyrox.application.EnvManager.get')
+        self.env_patcher = patch('pyrox.services.env.EnvManager.get')
         self.mock_get_env = self.env_patcher.start()
 
         def env_side_effect(key, default=None, *args, **kwargs):
@@ -45,8 +58,37 @@ class TestApp(unittest.TestCase):
             return default
         self.mock_get_env.side_effect = env_side_effect
 
+        # Patch workspace elements to avoid GUI initialization issues
+        self.workspace_patcher = patch('controlrox.application.ControlRoxApplication._build_workspace_elements')
+        self.mock_workspace_build = self.workspace_patcher.start()
+
+        # Mock ttk.Frame to avoid real tkinter widget creation
+        self.frame_patcher = patch('controlrox.application.ttk.Frame')
+        self.mock_frame_class = self.frame_patcher.start()
+        mock_frame_instance = MagicMock()
+        mock_frame_instance.frame_root = MagicMock()
+        self.mock_frame_class.return_value = mock_frame_instance
+
+        # Mock commandbar
+        self.commandbar_patcher = patch('controlrox.application.commandbar.PyroxCommandBar')
+        self.mock_commandbar_class = self.commandbar_patcher.start()
+        self.mock_commandbar_class.return_value = MagicMock()
+
+        # Mock treeview
+        self.treeview_patcher = patch('controlrox.application.treeview.PyroxTreeView')
+        self.mock_treeview_class = self.treeview_patcher.start()
+        self.mock_treeview_class.return_value = MagicMock()
+
+        # Mock TkWorkspace to avoid real GUI initialization
+        self.tkworkspace_patcher = patch('pyrox.application.TkWorkspace')
+        self.mock_tkworkspace_class = self.tkworkspace_patcher.start()
+        mock_workspace_instance = MagicMock()
+        mock_workspace_instance.set_status = MagicMock()
+        mock_workspace_instance.add_sidebar_widget = MagicMock()
+        self.mock_tkworkspace_class.return_value = mock_workspace_instance
+
         # Create app with mocked GUI
-        self.app = App()
+        self.app = ControlRoxApplication()
 
         # Mock window, workspace, and treeview properties
         mock_window = MagicMock()
@@ -58,22 +100,61 @@ class TestApp(unittest.TestCase):
 
     def tearDown(self):
         """Clean up test fixtures."""
+        self.tkworkspace_patcher.stop()
+        self.treeview_patcher.stop()
+        self.commandbar_patcher.stop()
+        self.frame_patcher.stop()
+        self.workspace_patcher.stop()
         self.gui_manager_patcher.stop()
         self.env_patcher.stop()
 
     def test_init(self):
         """Test initialization of App."""
-        with patch('pyrox.services.gui.GuiManager'):
+        with patch('pyrox.models.services.GuiManager') as mock_gui:
+            # Set up mock backend with all necessary mocked methods
+            mock_backend = MagicMock()
+            mock_backend.root_window = MagicMock()  # Add root_window property
+            # Mock all backend methods that might create GUI elements
+            mock_backend.create_root_window = MagicMock()
+            mock_backend.restore_window_geometry = MagicMock()
+            mock_backend.create_application_gui_menu = MagicMock()
+            mock_backend.subscribe_to_window_change_event = MagicMock()
+            mock_backend.reroute_excepthook = MagicMock()
+            mock_backend.subscribe_to_window_close_event = MagicMock()
+            mock_backend.set_title = MagicMock()
+            mock_backend.set_icon = MagicMock()
+            mock_backend.save_window_geometry = MagicMock()
+            mock_backend.get_root_window.return_value = MagicMock()
+            # Mock menu structure
+            mock_menu = MagicMock()
+            mock_menu.get_file_menu = MagicMock(return_value=MagicMock())
+            mock_backend.get_root_application_gui_menu.return_value = mock_menu
+            mock_backend.get_gui_application_menu.return_value = MagicMock()
+            mock_gui.unsafe_get_backend.return_value = mock_backend
+            mock_gui.is_gui_available.return_value = True
+
             def env_side_effect_no_gui(key, default=None, *args, **kwargs):
                 # Return False for GUI setting to disable GUI, but allow other env vars
                 if 'gui' in str(key).lower():
                     return False
                 elif 'log' in str(key).lower() or 'format' in str(key).lower():
-                    return default if isinstance(default, str) else '%(asctime)s | %(name)s | %(levelname)s | %(message)s'
+                    return default if isinstance(default, str) else '%(asctime)s | %(name)s | %(levelname)s | %(levelname)s | %(message)s'
                 return default
 
-            with patch('pyrox.application.EnvManager.get', side_effect=env_side_effect_no_gui):
-                app = App()
+            with patch('pyrox.services.env.EnvManager.get', side_effect=env_side_effect_no_gui), \
+                    patch('pyrox.application.TkWorkspace') as mock_workspace, \
+                    patch('controlrox.application.ttk.Frame') as mock_frame, \
+                    patch('controlrox.application.commandbar.PyroxCommandBar') as mock_commandbar, \
+                    patch('controlrox.application.treeview.PyroxTreeView') as mock_treeview, \
+                    patch('controlrox.application.ControlRoxApplication._build_workspace_elements'):
+
+                # Set up mock returns
+                mock_workspace.return_value = MagicMock()
+                mock_frame.return_value = MagicMock()
+                mock_commandbar.return_value = MagicMock()
+                mock_treeview.return_value = MagicMock()
+
+                app = ControlRoxApplication()
 
         self.assertIsInstance(app._object_lookup_cache, dict)
         self.assertEqual(len(app._object_lookup_cache), 0)
@@ -81,7 +162,7 @@ class TestApp(unittest.TestCase):
     def test_build_treeview_command_bar(self):
         """Test building treeview command bar."""
         # Setup mocks
-        self.app.treeview_commandbar = MagicMock(spec=commandbar.PyroxCommandBar)
+        self.app.treeview_commandbar = MagicMock()
 
         self.app._build_treeview_command_bar()
 
@@ -101,18 +182,31 @@ class TestApp(unittest.TestCase):
 
     def test_add_workspace_elements(self):
         """Test adding workspace elements."""
-        self.app.controller_treeview_frame_container = MagicMock()
-        self.app.controller_treeview_frame_container.frame_root = MagicMock()
+        # Stop the workspace patch temporarily to test the real method
+        self.workspace_patcher.stop()
 
-        self.app.add_workspace_elements()
+        # Set up the mock frame
+        mock_frame = MagicMock()
+        self.app.controller_treeview_frame = mock_frame
 
-        self.app.workspace.add_sidebar_widget.assert_called_once_with(  # type: ignore
-            self.app.controller_treeview_frame_container.frame_root,
+        # Mock the workspace add_sidebar_widget method
+        self.app.workspace.add_sidebar_widget = MagicMock()
+
+        # Call the real method
+        self.app._build_workspace_elements()
+
+        # Verify the call
+        self.app.workspace.add_sidebar_widget.assert_called_once_with(
+            mock_frame,
             "",
             "controller",
             "📁",
             closeable=False
         )
+
+        # Restart the patcher for other tests
+        self.workspace_patcher = patch('controlrox.application.ControlRoxApplication._build_workspace_elements')
+        self.mock_workspace_build = self.workspace_patcher.start()
 
     def test_config_menu_file_entries_no_controller(self):
         """Test configuring file menu entries with no controller."""
@@ -149,7 +243,7 @@ class TestApp(unittest.TestCase):
         self.app.controller_treeview.clear.assert_called_once()
 
     @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
-    @patch('controlrox.applications.app.plc_gui_introspection.create_attribute_value_dict')
+    @patch('controlrox.application.plc_gui_introspection.create_attribute_value_dict')
     def test_display_common_list_in_treeview_with_items(self, mock_create_dict, mock_get_controller):
         """Test displaying list with items."""
         mock_controller = MagicMock(spec=IController)
@@ -173,7 +267,7 @@ class TestApp(unittest.TestCase):
         self.app.controller_treeview.display_object.assert_called_once()
 
     @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
-    @patch('controlrox.applications.app.plc_gui_introspection.create_attribute_value_dict')
+    @patch('controlrox.application.plc_gui_introspection.create_attribute_value_dict')
     def test_display_controller_properties_in_treeview(self, mock_create_dict, mock_get_controller):
         """Test displaying controller properties."""
         object.__setattr__(self.app, '_controller', MagicMock(spec=IController))
@@ -209,7 +303,7 @@ class TestApp(unittest.TestCase):
         self.assertIsNone(result)
 
     @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
-    @patch('controlrox.applications.app.object_services.resolve_object_path_with_parent')
+    @patch('controlrox.application.object_services.resolve_object_path_with_parent')
     def test_get_plc_object_from_selected_tree_item_tags_view(self, mock_resolve, mock_get_controller):
         """Test getting PLC object from tags view."""
         mock_controller = MagicMock(spec=IController)
@@ -230,7 +324,7 @@ class TestApp(unittest.TestCase):
         mock_resolve.assert_called_once()
 
     @patch('controlrox.models.plc.meta.ControllerInstanceManager.get_controller')
-    @patch('controlrox.applications.app.object_services.resolve_object_path_with_parent')
+    @patch('controlrox.application.object_services.resolve_object_path_with_parent')
     def test_get_plc_object_from_selected_tree_item_programs_view(self, mock_resolve, mock_get_controller):
         """Test getting PLC object from programs view."""
         mock_controller = MagicMock(spec=IController)
@@ -282,7 +376,7 @@ class TestApp(unittest.TestCase):
 
         mock_context_menu.show_at_event.assert_called_once_with(mock_event)
 
-    @patch('controlrox.applications.app.LadderEditorApplicationTask')
+    @patch('controlrox.application.LadderEditorApplicationTask')
     def test_launch_ladder_editor_for_routine(self, mock_ladder_task):
         """Test launching ladder editor for routine."""
         mock_routine = MagicMock(spec=Routine)
