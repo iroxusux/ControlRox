@@ -73,6 +73,15 @@ class LogicInstruction(
                 self._name = self.meta_data.strip()
         return self._name
 
+    @property
+    def instruction_name(self) -> str:
+        """Get the instruction name (e.g. 'XIC', 'OTE').
+
+        Returns:
+            str: The instruction name.
+        """
+        return self.get_name()
+
     def compile(self):
         self.compile_operands()
         return self

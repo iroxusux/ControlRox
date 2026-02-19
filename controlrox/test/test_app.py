@@ -58,10 +58,6 @@ class TestApp(unittest.TestCase):
             return default
         self.mock_get_env.side_effect = env_side_effect
 
-        # Patch workspace elements to avoid GUI initialization issues
-        self.workspace_patcher = patch('controlrox.application.ControlRoxApplication._build_workspace_elements')
-        self.mock_workspace_build = self.workspace_patcher.start()
-
         # Mock ttk.Frame to avoid real tkinter widget creation
         self.frame_patcher = patch('controlrox.application.ttk.Frame')
         self.mock_frame_class = self.frame_patcher.start()
@@ -86,6 +82,10 @@ class TestApp(unittest.TestCase):
         mock_workspace_instance.set_status = MagicMock()
         mock_workspace_instance.add_sidebar_widget = MagicMock()
         self.mock_tkworkspace_class.return_value = mock_workspace_instance
+
+        # Mock _build_workspace_elements to avoid real sidebar GUI initialization
+        self.workspace_patcher = patch('controlrox.application.ControlRoxApplication._build_workspace_elements')
+        self.mock_workspace_build = self.workspace_patcher.start()
 
         # Create app with mocked GUI
         self.app = ControlRoxApplication()
@@ -145,8 +145,7 @@ class TestApp(unittest.TestCase):
                     patch('pyrox.application.TkWorkspace') as mock_workspace, \
                     patch('controlrox.application.ttk.Frame') as mock_frame, \
                     patch('controlrox.application.commandbar.PyroxCommandBar') as mock_commandbar, \
-                    patch('controlrox.application.treeview.PyroxTreeView') as mock_treeview, \
-                    patch('controlrox.application.ControlRoxApplication._build_workspace_elements'):
+                    patch('controlrox.application.treeview.PyroxTreeView') as mock_treeview:
 
                 # Set up mock returns
                 mock_workspace.return_value = MagicMock()

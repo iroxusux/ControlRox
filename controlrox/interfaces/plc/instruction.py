@@ -16,6 +16,15 @@ class ILogicInstruction(
     """
 
     @property
+    def instruction_name(self) -> str:
+        """Get the instruction name (e.g. 'XIC', 'OTE').
+
+        Returns:
+            str: The instruction name.
+        """
+        return self.get_name()
+
+    @property
     def instruction_type(self) -> 'ILogicInstructionType':
         """get the instruction type for this instruction
 

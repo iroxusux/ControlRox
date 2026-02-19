@@ -29,10 +29,25 @@ class ControlRoxApplication(ControllerApplication):
         super().__init__()
         self._object_lookup_cache: dict[str, object] = {}
 
-        # Build
+        # Create the sidebar frame first, then delegate the rest of workspace setup
         self.controller_treeview_frame = ttk.Frame(
-            master=self.main_window
+            master=self.workspace.sidebar_organizer,
         )
+        self._build_workspace_elements()
+
+        # Load last opened controller
+        self.load_last_opened_controller()
+
+    def _build_workspace_elements(self) -> None:
+        """Build and register all workspace sidebar elements."""
+        self.workspace.add_sidebar_widget(
+            self.controller_treeview_frame,
+            "",
+            "controller",
+            "📁",
+            closeable=False
+        )
+
         self.treeview_commandbar = commandbar.PyroxCommandBar(
             master=self.controller_treeview_frame
         )
@@ -45,12 +60,8 @@ class ControlRoxApplication(ControllerApplication):
         self.controller_treeview.pack(fill='both', expand=True, side='top')
 
         # Initialize
-        self._build_workspace_elements()
         self.controller_treeview.subscribe_to_selection(self._handle_treeview_selection)
         self._build_treeview_command_bar()
-
-        # Load last opened controller
-        self.load_last_opened_controller()
 
         # Set initial status
         self.workspace.set_status("Ready")
@@ -109,15 +120,6 @@ class ControlRoxApplication(ControllerApplication):
             tooltip='View controller Data Types',
             selectable=True
         ))
-
-    def _build_workspace_elements(self) -> None:
-        self.workspace.add_sidebar_widget(
-            self.controller_treeview_frame,
-            "",
-            "controller",
-            "📁",
-            closeable=False
-        )
 
     def _config_menu_file_entries(self) -> None:
         """Configure the file menu entries based on the controller state."""
