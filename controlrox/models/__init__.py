@@ -55,6 +55,9 @@ from .tasks import (
     ControllerValidator,
 )
 
+# Scene section
+from . import scene
+
 
 __all__ = (
     'gui',
@@ -105,5 +108,8 @@ __all__ = (
 
     # Task section
     'ControllerApplicationTask',
+
+    # Scene section
+    'scene',
 
 )
