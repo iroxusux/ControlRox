@@ -1,6 +1,13 @@
 # Connection imports
 from .connection import PlcConnectionManager
 
+# Event bus imports
+from .events import (
+    PlcConnectionEvent,
+    PlcConnectionEventBus,
+    PlcConnectionEventType,
+)
+
 # Factory imports
 from .aoi import AOIFactory
 from .datatype import DatatypeFactory
@@ -32,6 +39,10 @@ from .emu import (
 __all__ = (
     # Connection imports
     'PlcConnectionManager',
+    # Event bus imports
+    'PlcConnectionEvent',
+    'PlcConnectionEventBus',
+    'PlcConnectionEventType',
     # Factory imports
     'AOIFactory',
     'DatatypeFactory',

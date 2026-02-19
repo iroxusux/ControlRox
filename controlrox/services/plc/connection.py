@@ -11,6 +11,11 @@ from pyrox.services import log, EnvManager, TimerService
 from pyrox.models.network import Ipv4Address
 
 from controlrox.interfaces import ControlRoxEnvironmentKeys
+from controlrox.services.plc.events import (
+    PlcConnectionEvent,
+    PlcConnectionEventBus,
+    PlcConnectionEventType,
+)
 
 
 @dataclass
@@ -70,15 +75,44 @@ class PlcConnectionManager:
         """
         try:
             if not cls._strobe_plc():
+                was_connected = cls._connected
                 cls._connected = False
                 log(cls).warning('Failed to strobe PLC at %s', cls.connection_parameters.ip_address)
+                PlcConnectionEventBus.publish(PlcConnectionEvent(
+                    event_type=PlcConnectionEventType.CONNECTION_FAILED,
+                    ip_address=str(cls.connection_parameters.ip_address),
+                    slot=cls.connection_parameters.slot,
+                ))
+                if was_connected:
+                    PlcConnectionEventBus.publish(PlcConnectionEvent(
+                        event_type=PlcConnectionEventType.DISCONNECTED,
+                        ip_address=str(cls.connection_parameters.ip_address),
+                        slot=cls.connection_parameters.slot,
+                    ))
                 return
             if not cls._connected:
                 log(cls).info('Connected to PLC at %s', cls.connection_parameters.ip_address)
                 cls._connected = True
+                PlcConnectionEventBus.publish(PlcConnectionEvent(
+                    event_type=PlcConnectionEventType.CONNECTED,
+                    ip_address=str(cls.connection_parameters.ip_address),
+                    slot=cls.connection_parameters.slot,
+                ))
         except Exception:
             log(cls).error('Error connecting to PLC at %s', cls.connection_parameters.ip_address)
+            was_connected = cls._connected
             cls._connected = False
+            PlcConnectionEventBus.publish(PlcConnectionEvent(
+                event_type=PlcConnectionEventType.CONNECTION_FAILED,
+                ip_address=str(cls.connection_parameters.ip_address),
+                slot=cls.connection_parameters.slot,
+            ))
+            if was_connected:
+                PlcConnectionEventBus.publish(PlcConnectionEvent(
+                    event_type=PlcConnectionEventType.DISCONNECTED,
+                    ip_address=str(cls.connection_parameters.ip_address),
+                    slot=cls.connection_parameters.slot,
+                ))
             return
 
         [callback() for callback in cls._subscribers]
@@ -218,6 +252,11 @@ class PlcConnectionManager:
         log(cls).info('Disconnecting from PLC at %s...', cls.connection_parameters.ip_address)
         cls._connected = False
         cls._timer_service.clear_all_tasks()
+        PlcConnectionEventBus.publish(PlcConnectionEvent(
+            event_type=PlcConnectionEventType.DISCONNECTED,
+            ip_address=str(cls.connection_parameters.ip_address),
+            slot=cls.connection_parameters.slot,
+        ))
 
     @classmethod
     def subscribe_to_ticks(cls, callback: Callable) -> None:
@@ -391,6 +430,11 @@ class PlcConnectionManager:
             ControlRoxEnvironmentKeys.plc.PLC_DEFAULT_IP,
             str(cls.connection_parameters.ip_address)
         )
+        PlcConnectionEventBus.publish(PlcConnectionEvent(
+            event_type=PlcConnectionEventType.PARAMETERS_CHANGED,
+            ip_address=str(cls.connection_parameters.ip_address),
+            slot=cls.connection_parameters.slot,
+        ))
         EnvManager.set(
             ControlRoxEnvironmentKeys.plc.PLC_DEFAULT_SLOT,
             str(cls.connection_parameters.slot)

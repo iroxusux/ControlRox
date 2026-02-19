@@ -178,7 +178,7 @@ class TestControllerApplication(unittest.TestCase):
 
         app.set_app_title()
 
-        self.mock_window.set_title.assert_called_once_with('ControlRox')
+        self.mock_backend.set_title.assert_called_once_with('ControlRox')
 
     @patch('controlrox.models.tasks.app.EnvManager.get')
     @patch('controlrox.models.tasks.app.ControllerInstanceManager.get_controller')
@@ -191,7 +191,7 @@ class TestControllerApplication(unittest.TestCase):
         app.set_app_title()
 
         expected_title = 'ControlRox - [TestController] - [/path/to/controller.L5X]'
-        self.mock_window.set_title.assert_called_once_with(expected_title)
+        self.mock_backend.set_title.assert_called_once_with(expected_title)
 
     @patch('controlrox.models.tasks.app.EnvManager.get')
     @patch('controlrox.models.tasks.app.ControllerInstanceManager.get_controller')
@@ -209,7 +209,7 @@ class TestControllerApplication(unittest.TestCase):
         app.set_app_title()
 
         expected_title = 'ControlRox - [UnsavedController] - [Unsaved*]'
-        self.mock_window.set_title.assert_called_once_with(expected_title)
+        self.mock_backend.set_title.assert_called_once_with(expected_title)
 
     @patch('controlrox.models.tasks.app.set_env')
     @patch('controlrox.models.tasks.app.ControllerInstanceManager.set_controller')
