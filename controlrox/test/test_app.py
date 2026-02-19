@@ -184,24 +184,22 @@ class TestApp(unittest.TestCase):
         # Stop the workspace patch temporarily to test the real method
         self.workspace_patcher.stop()
 
-        # Set up the mock frame
-        mock_frame = MagicMock()
-        self.app.controller_treeview_frame = mock_frame
-
         # Mock the workspace add_sidebar_widget method
         self.app.workspace.add_sidebar_widget = MagicMock()
 
         # Call the real method
         self.app._build_workspace_elements()
 
-        # Verify the call
-        self.app.workspace.add_sidebar_widget.assert_called_once_with(
-            mock_frame,
-            "",
-            "controller",
-            "📁",
-            closeable=False
-        )
+        # Verify the call – controller_treeview_frame is created inside the method
+        # now (using the mocked ttk.Frame), so check positional / keyword args.
+        self.app.workspace.add_sidebar_widget.assert_called_once()
+        args, kwargs = self.app.workspace.add_sidebar_widget.call_args
+        # The first arg is the ttk.Frame instance (mocked in setUp)
+        self.assertIs(args[0], self.mock_frame_class.return_value)
+        self.assertEqual(args[1], "")
+        self.assertEqual(args[2], "controller")
+        self.assertEqual(args[3], "📁 PLC")
+        self.assertEqual(kwargs.get("closeable"), False)
 
         # Restart the patcher for other tests
         self.workspace_patcher = patch('controlrox.application.ControlRoxApplication._build_workspace_elements')

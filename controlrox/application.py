@@ -29,10 +29,7 @@ class ControlRoxApplication(ControllerApplication):
         super().__init__()
         self._object_lookup_cache: dict[str, object] = {}
 
-        # Create the sidebar frame first, then delegate the rest of workspace setup
-        self.controller_treeview_frame = ttk.Frame(
-            master=self.workspace.sidebar_organizer,
-        )
+        # Build workspace elements and load last controller
         self._build_workspace_elements()
 
         # Load last opened controller
@@ -40,11 +37,19 @@ class ControlRoxApplication(ControllerApplication):
 
     def _build_workspace_elements(self) -> None:
         """Build and register all workspace sidebar elements."""
+        # Create the frame with sidebar_organizer as master so add_sidebar_widget
+        # can use pack(in_=...) to place it inside the tab container.  Do NOT call
+        # .pack() here – add_sidebar_widget handles all geometry management and
+        # also ensures the widget is lifted above the notebook's tab frame so it
+        # is visible (ttk.Notebook raises the active tab frame on selection).
+        self.controller_treeview_frame = ttk.Frame(
+            master=self.workspace.sidebar_organizer,
+        )
         self.workspace.add_sidebar_widget(
             self.controller_treeview_frame,
             "",
             "controller",
-            "📁",
+            "📁 PLC",
             closeable=False
         )
 
