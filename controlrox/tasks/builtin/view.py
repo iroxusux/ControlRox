@@ -1,10 +1,8 @@
 """ view tasks
     """
 from __future__ import annotations
-
-from pyrox.interfaces import IGuiBackend
+import tkinter as tk
 from pyrox.services.logging import log
-from pyrox.services.gui import GuiManager
 from controlrox.models.tasks.task import ControllerApplicationTask
 
 
@@ -25,19 +23,19 @@ class ViewTask(ControllerApplicationTask):
             log(self).error(f'Failed to open directory: {e}')
 
     def inject(self) -> None:
-        dropdown_menu = self.gui.unsafe_get_backend().create_gui_menu(
-            master=self.view_menu.menu,
+        dropdown_menu = tk.Menu(
+            master=self.view_menu,
             name='application_directories',
             tearoff=0
         )
 
-        self.view_menu.add_submenu(
-            submenu=dropdown_menu,
+        self.view_menu.add_cascade(
+            menu=dropdown_menu,
             label='Application Directories',
         )
 
         for dir_name in self.application.directory.all_directories():
-            dropdown_menu.add_item(
+            dropdown_menu.add_command(
                 label=dir_name,
                 command=lambda d=dir_name: self._open_dir(
                     self.application.directory.all_directories()[d]
@@ -45,7 +43,7 @@ class ViewTask(ControllerApplicationTask):
             )
 
         self.view_menu.add_separator()
-        self.view_menu.add_item(
+        self.view_menu.add_command(
             label='Toggle Organizer',
             command=self.application.workspace.toggle_sidebar,
             accelerator='Ctrl+B',

@@ -1,7 +1,7 @@
 """GM Tasks
     """
+import tkinter as tk
 from pyrox.services import log
-from pyrox.services.gui import GuiManager
 from controlrox.models.tasks.task import ControllerApplicationTask
 from controlrox.services import (
     ControllerInstanceManager,
@@ -33,10 +33,10 @@ class KDiagWrapperTask(ControllerApplicationTask):
 
     def inject(self) -> None:
 
-        dropdown_menu = self.gui.unsafe_get_backend().create_gui_menu(
-            master=self.tools_menu.menu,
+        dropdown_menu = tk.Menu(
+            master=self.tools_menu,
             name='gm_dkiag_wrapper',
             tearoff=0
         )
-        self.tools_menu.add_submenu(label='GM Tools', submenu=dropdown_menu)
-        dropdown_menu.add_item(label='Validate kDiag Wrappings', command=self._work)
+        self.tools_menu.add_cascade(label='GM Tools', menu=dropdown_menu)
+        dropdown_menu.add_command(label='Validate kDiag Wrappings', command=self._work)

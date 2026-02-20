@@ -5,7 +5,6 @@ from tkinter import ttk
 from pyrox.models.gui import PyroxYamlEditor
 from pyrox.models.gui.tk.frame import TkinterTaskFrame
 from pyrox.services.file import get_save_file
-from pyrox.services.gui import GuiManager
 from pyrox.services.logging import log
 from controlrox.models.tasks.task import ControllerApplicationTask
 from controlrox.services import (
@@ -97,29 +96,28 @@ class ControllerGenerateTask(ControllerApplicationTask):
         remove_emulation_routine(ctrl)
 
     def inject(self) -> None:
-        backend = GuiManager.unsafe_get_backend()
 
-        logic_srvc_dropdown = backend.create_gui_menu(
-            master=self.tools_menu.menu,
+        logic_srvc_dropdown = tk.Menu(
+            master=self.tools_menu,
             name='logic_services',
             tearoff=0
         )
 
-        project_srvc_dropdown = backend.create_gui_menu(
-            master=logic_srvc_dropdown.menu,
+        project_srvc_dropdown = tk.Menu(
+            master=logic_srvc_dropdown,
             name='project_services',
             tearoff=0
         )
-        project_srvc_dropdown.add_item(label='Generate Project Design Sheet', command=self.generate_project_design_checklist)
+        project_srvc_dropdown.add_command(label='Generate Project Design Sheet', command=self.generate_project_design_checklist)
 
-        emulation_dropdown = backend.create_gui_menu(
-            master=logic_srvc_dropdown.menu,
+        emulation_dropdown = tk.Menu(
+            master=logic_srvc_dropdown,
             name='emulation_generation',
             tearoff=0
         )
-        emulation_dropdown.add_item(label='Inject Emulation Logic', command=self.inject_emulation_routine)
-        emulation_dropdown.add_item(label='Remove Emulation Logic', command=self.remove_emulation_routine)
+        emulation_dropdown.add_command(label='Inject Emulation Logic', command=self.inject_emulation_routine)
+        emulation_dropdown.add_command(label='Remove Emulation Logic', command=self.remove_emulation_routine)
 
-        logic_srvc_dropdown.add_submenu(label='Emulation', submenu=emulation_dropdown)
-        self.tools_menu.add_submenu(label='Project Services', submenu=project_srvc_dropdown)
-        self.tools_menu.add_submenu(label='Logic Services', submenu=logic_srvc_dropdown)
+        logic_srvc_dropdown.add_cascade(label='Emulation', menu=emulation_dropdown)
+        self.tools_menu.add_cascade(label='Project Services', menu=project_srvc_dropdown)
+        self.tools_menu.add_cascade(label='Logic Services', menu=logic_srvc_dropdown)

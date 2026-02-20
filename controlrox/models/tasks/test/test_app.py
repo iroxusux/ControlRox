@@ -24,7 +24,7 @@ class TestControllerApplication(unittest.TestCase):
         # DON'T mock HasController.__init__ - let it run to set _controller properly
 
         # Mock GuiManager for main_window access
-        self.gui_manager_patcher = patch('pyrox.services.gui.GuiManager')
+        self.gui_manager_patcher = patch('pyrox.services.gui.TkGuiManager')
         self.mock_gui_manager_class = self.gui_manager_patcher.start()
 
         # Create mock window
@@ -39,7 +39,7 @@ class TestControllerApplication(unittest.TestCase):
         self.mock_gui_manager_class.unsafe_get_backend.return_value = self.mock_backend
 
         # Also patch it in the models.services module where it's accessed
-        self.gui_manager_services_patcher = patch('pyrox.models.services.GuiManager')
+        self.gui_manager_services_patcher = patch('pyrox.models.services.TkGuiManager')
         self.mock_gui_manager_services = self.gui_manager_services_patcher.start()
         self.mock_gui_manager_services.unsafe_get_backend.return_value = self.mock_backend
 

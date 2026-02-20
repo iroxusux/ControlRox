@@ -20,29 +20,12 @@ class TestApp(unittest.TestCase):
     def setUp(self):
         """Set up test fixtures."""
         # Mock all the service classes like in pyrox tests
-        self.gui_manager_patcher = patch('pyrox.models.services.GuiManager')
+        self.gui_manager_patcher = patch('pyrox.models.services.TkGuiManager')
         self.mock_gui_manager = self.gui_manager_patcher.start()
 
-        # Create mock backend with properly mocked menu and ALL GUI methods
-        mock_backend = MagicMock()
-        mock_backend.root_window = MagicMock()  # Add root_window property
-        # Mock all backend methods that might create GUI elements
-        mock_backend.create_root_window = MagicMock()
-        mock_backend.restore_window_geometry = MagicMock()
-        mock_backend.create_application_gui_menu = MagicMock()
-        mock_backend.subscribe_to_window_change_event = MagicMock()
-        mock_backend.reroute_excepthook = MagicMock()
-        mock_backend.subscribe_to_window_close_event = MagicMock()
-        mock_backend.set_title = MagicMock()
-        mock_backend.set_icon = MagicMock()
-        mock_backend.save_window_geometry = MagicMock()
-        mock_backend.get_root_window = MagicMock(return_value=MagicMock())
         # Mock menu structure
         mock_menu = MagicMock()
         mock_menu.get_file_menu = MagicMock(return_value=MagicMock())
-        mock_backend.get_root_application_gui_menu.return_value = mock_menu
-        mock_backend.get_gui_application_menu.return_value = MagicMock()
-        self.mock_gui_manager.unsafe_get_backend.return_value = mock_backend
         self.mock_gui_manager.is_gui_available.return_value = True
 
         # Mock environment variable for GUI with side_effect to return correct types
@@ -110,27 +93,10 @@ class TestApp(unittest.TestCase):
 
     def test_init(self):
         """Test initialization of App."""
-        with patch('pyrox.models.services.GuiManager') as mock_gui:
-            # Set up mock backend with all necessary mocked methods
-            mock_backend = MagicMock()
-            mock_backend.root_window = MagicMock()  # Add root_window property
-            # Mock all backend methods that might create GUI elements
-            mock_backend.create_root_window = MagicMock()
-            mock_backend.restore_window_geometry = MagicMock()
-            mock_backend.create_application_gui_menu = MagicMock()
-            mock_backend.subscribe_to_window_change_event = MagicMock()
-            mock_backend.reroute_excepthook = MagicMock()
-            mock_backend.subscribe_to_window_close_event = MagicMock()
-            mock_backend.set_title = MagicMock()
-            mock_backend.set_icon = MagicMock()
-            mock_backend.save_window_geometry = MagicMock()
-            mock_backend.get_root_window.return_value = MagicMock()
+        with patch('pyrox.models.services.TkGuiManager') as mock_gui:
             # Mock menu structure
             mock_menu = MagicMock()
             mock_menu.get_file_menu = MagicMock(return_value=MagicMock())
-            mock_backend.get_root_application_gui_menu.return_value = mock_menu
-            mock_backend.get_gui_application_menu.return_value = MagicMock()
-            mock_gui.unsafe_get_backend.return_value = mock_backend
             mock_gui.is_gui_available.return_value = True
 
             def env_side_effect_no_gui(key, default=None, *args, **kwargs):

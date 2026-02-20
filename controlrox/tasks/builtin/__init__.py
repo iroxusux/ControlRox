@@ -5,8 +5,6 @@ each directory and file is scanned by pyrox to discover tasks and automatically 
 from . import (
     edit,
     file,
-    help,
-    tools,
     view
 )
 
@@ -14,7 +12,5 @@ from . import (
 __all__ = (
     'edit',
     'file',
-    'help',
-    'tools',
     'view',
 )

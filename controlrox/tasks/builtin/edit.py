@@ -29,7 +29,7 @@ class LaunchToStudioTask(ControllerApplicationTask):
         execute_file_as_subprocess(ctrl.file_location)
 
     def inject(self) -> None:
-        self.edit_menu.add_item(
+        self.edit_menu.add_command(
             label='Launch to Studio 5000',
             command=self.launch_studio,
         )

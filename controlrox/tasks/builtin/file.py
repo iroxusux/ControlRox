@@ -1,7 +1,7 @@
 """ file tasks
 """
 from typing import Optional
-from pyrox.services import GuiManager, log, get_open_file, get_save_file
+from pyrox.services import TkGuiManager, log, get_open_file, get_save_file
 from controlrox.models import ControllerApplicationTask
 
 
@@ -69,11 +69,8 @@ class ControlRoxFileTask(ControllerApplicationTask):
     def _prompt_for_controller_closing(self) -> bool:
         # Prompt if a controller is already loaded
         if self.application.controller is not None:
-            backend = GuiManager.get_backend()
-            if not backend:
-                raise RuntimeError('No GUI backend available for prompting user.')
 
-            return backend.prompt_user_yes_no(
+            return TkGuiManager.prompt_user_yes_no(
                 "Open New File",
                 "A controller is currently loaded. Do you want to continue and open a new file?"
             )
