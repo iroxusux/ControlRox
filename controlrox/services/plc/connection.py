@@ -41,7 +41,7 @@ class ConnectionCommand:
     tag_name: str
     tag_value: int
     data_type: int
-    response_cb: Callable[[Response | list[Response]], None]
+    response_cb: Callable[[Response], None]
 
 
 @dataclass
@@ -53,7 +53,7 @@ class WatchTableEntry:
     last_value: Any = None
     last_update: datetime | None = None
     error_count: int = 0
-    callbacks: list[Callable[[Response | list[Response]], None]] = field(default_factory=list)
+    callbacks: list[Callable[[Response], None]] = field(default_factory=list)
 
 
 class PlcConnectionManager:
@@ -155,7 +155,7 @@ class PlcConnectionManager:
                     command.tag_name,
                     datatype=command.data_type
                 )
-                command.response_cb(response)
+                command.response_cb(response if not isinstance(response, list) else response[0])
             except KeyError:
                 command.response_cb(
                     Response(
@@ -181,7 +181,7 @@ class PlcConnectionManager:
                     tag_value,
                     datatype=command.data_type
                 )
-                command.response_cb(response)
+                command.response_cb(response if not isinstance(response, list) else response[0])
             except KeyError:
                 command.response_cb(
                     Response(
@@ -194,7 +194,7 @@ class PlcConnectionManager:
     def _run_watch_table_reads(cls, comm: PLC) -> None:
         """Automatically read all tags in the watch table.
         """
-        for tag_name, entry in cls._watch_table.items():
+        for tag_name, entry in list(cls._watch_table.items()):
             try:
                 response = comm.Read(tag_name, datatype=entry.data_type)
 
@@ -280,6 +280,28 @@ class PlcConnectionManager:
             cls._subscribers.remove(callback)
 
     @classmethod
+    def read_plc_tag(
+        cls,
+        tag_name: str,
+        data_type: int = 0
+    ) -> Response:
+        """Read a single PLC tag.
+
+        Args:
+            tag_name: Name of the PLC tag to read
+            data_type: PyLogix data type code (0 for auto-detect)
+
+        Returns:
+            Response: A response object containing the tag value or an error status
+        """
+        with PLC(
+            ip_address=str(cls.connection_parameters.ip_address),
+            slot=cls.connection_parameters.slot
+        ) as comm:
+            val = comm.Read(tag_name, datatype=data_type)
+            return val if isinstance(val, Response) else Response(tag_name, None, 'Error')
+
+    @classmethod
     def read_plc_tag_table(
         cls,
         all_tags: bool = True
@@ -303,7 +325,7 @@ class PlcConnectionManager:
         cls,
         tag_name: str,
         data_type: int = 0,
-        callback: Callable[[Response | list[Response]], None] | None = None
+        callback: Callable[[Response], None] | None = None
     ) -> None:
         """Add a tag to the watch table for automatic monitoring.
 
@@ -374,7 +396,7 @@ class PlcConnectionManager:
         cls,
         tag_name: str,
         value: Any,
-        callback: Callable[[Response | list[Response]], None] | None = None
+        callback: Callable[[Response], None] | None = None
     ) -> None:
         """Write a value to a watched tag (or any tag).
 
@@ -392,7 +414,7 @@ class PlcConnectionManager:
             data_type = cls._watch_table[tag_name].data_type
 
         # Create default callback if none provided
-        def default_callback(response: Response | list[Response]) -> None:
+        def default_callback(response: Response) -> None:
             # Handle both single Response and list[Response]
             if isinstance(response, list):
                 response = response[0] if response else Response(tag_name, None, 'Error')

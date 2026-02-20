@@ -7,7 +7,7 @@
 [![Python Version](https://img.shields.io/badge/python-3.13+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Development Status](https://img.shields.io/badge/status-beta-orange.svg)](https://github.com/iroxusux/ControlRox)
-![Version](https://img.shields.io/badge/version-2.4.2-blue.svg)
+![Version](https://img.shields.io/badge/version-2.4.3-blue.svg)
 
 [Features](#-features) • [Installation](#-installation) • [Quick Start](#-quick-start) • [Architecture](#%EF%B8%8F-architecture) • [Documentation](#-documentation) • [Contributing](#-contributing)
 

@@ -39,7 +39,7 @@ from typing import Any
 
 from pylogix import PLC
 
-from controlrox.services.plc.connection import PlcConnectionManager
+from controlrox.services.plc.connection import PlcConnectionManager, PlcConnectionEventBus, PlcConnectionEventType
 from pyrox.services.logging import log
 from pyrox.services.scene import SceneBridgeService
 
@@ -102,11 +102,63 @@ class LogixSource:
         # {sanitised_attr_name: original_plc_tag_name}
         object.__setattr__(self, '_tag_map', {})
 
+        PlcConnectionEventBus.subscribe(
+            PlcConnectionEventType.CONNECTED,
+            lambda _: self.reseed(scalar_only=scalar_only)
+        )
+
         self._seed_from_plc(scalar_only=scalar_only)
+
+    def __getattribute__(self, name: str) -> Any:
+        # Override to provide a clearer error message when accessing an unknown tag.
+        tag_map: dict = object.__getattribute__(self, '_tag_map')
+        if name in tag_map:
+            return self._track_tag_value(name)
+        else:
+            return super().__getattribute__(name)
+
+    def __setattr__(self, name: str, value: Any) -> None:
+        if name in object.__getattribute__(self, '_tag_map'):
+            self._write_tag_value(name, value)
+        else:
+            super().__setattr__(name, value)
 
     # ------------------------------------------------------------------
     # Tag discovery
     # ------------------------------------------------------------------
+
+    def _track_tag_value(self, plc_tag_name: str) -> Any:
+        """Helper to read a single tag value from the PLC for initial seeding.
+        """
+        watched_tags = PlcConnectionManager.get_watch_table()
+        if plc_tag_name in watched_tags:  # We're already watching this tag, so we have a value cached.
+            return object.__getattribute__(self, plc_tag_name)
+
+        if object.__getattribute__(self, plc_tag_name) is None:
+            # Attempt to read a value to see if it's worth tracking
+            val = PlcConnectionManager.read_plc_tag(plc_tag_name).Value
+
+            if val is None:
+                log(self).debug(
+                    "LogixSource: tag '%s' read returned None, skipping watch setup",
+                    plc_tag_name,
+                )
+                return None
+
+            # Set up a watched tag with the connection manager for future requests
+            PlcConnectionManager.add_watch_tag(
+                plc_tag_name,
+                data_type=0,  # Let pylogix infer the type on first read
+                callback=lambda value: object.__setattr__(self, plc_tag_name, value.Value)
+            )
+            return val
+
+    def _write_tag_value(self, plc_tag_name: str, value: Any) -> None:
+        """Helper to write a single tag value to the PLC for initial seeding.
+        """
+        if plc_tag_name not in object.__getattribute__(self, '_tag_map'):
+            raise AttributeError(f"Tag '{plc_tag_name}' is not tracked; cannot write value")
+        PlcConnectionManager.write_watch_tag(plc_tag_name, value)
 
     def _seed_from_plc(self, scalar_only: bool = True) -> None:
         """Query the PLC for its tag list and pre-declare one attribute per tag.
