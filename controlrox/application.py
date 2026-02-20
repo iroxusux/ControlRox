@@ -61,7 +61,7 @@ class ControlRoxApplication(ControllerApplication):
         )
 
         # Layout
-        self.treeview_commandbar.frame.pack(fill='x', side='bottom')
+        self.treeview_commandbar.pack(fill='x', side='bottom')
         self.controller_treeview.pack(fill='both', expand=True, side='top')
 
         # Initialize
@@ -125,22 +125,6 @@ class ControlRoxApplication(ControllerApplication):
             tooltip='View controller Data Types',
             selectable=True
         ))
-
-    def _config_menu_file_entries(self) -> None:
-        """Configure the file menu entries based on the controller state."""
-        log(self).debug('Configuring file menu entries based on controller state.')
-        self.gui.gui_menu().file_menu.config_item(
-            index='Save Controller',
-            state='disabled' if not self.controller else 'normal'
-        )
-        self.gui.gui_menu().file_menu.config_item(
-            index='Save Controller As...',
-            state='disabled' if not self.controller else 'normal'
-        )
-        self.gui.gui_menu().file_menu.config_item(
-            index='Close Controller',
-            state='disabled' if not self.controller else 'normal'
-        )
 
     def _display_common_list_in_treeview(
         self,
@@ -339,7 +323,6 @@ class ControlRoxApplication(ControllerApplication):
     ) -> None:
         super().refresh(False)
         self._display_controller_properties_in_treeview()
-        self._config_menu_file_entries()
 
         if restore_app_state:
             self.set_app_state_normal()
@@ -347,5 +330,4 @@ class ControlRoxApplication(ControllerApplication):
     def set_controller(self, controller: IController | None) -> None:
         super().set_controller(controller)
         self._display_controller_properties_in_treeview()
-        self._config_menu_file_entries()
         self.refresh()

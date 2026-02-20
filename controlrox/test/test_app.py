@@ -171,22 +171,6 @@ class TestApp(unittest.TestCase):
         self.workspace_patcher = patch('controlrox.application.ControlRoxApplication._build_workspace_elements')
         self.mock_workspace_build = self.workspace_patcher.start()
 
-    def test_config_menu_file_entries_no_controller(self):
-        """Test configuring file menu entries with no controller."""
-        object.__setattr__(self.app, '_controller', None)
-
-        with patch.object(self.app, '_config_menu_file_entries') as mock_config:
-            self.app._config_menu_file_entries()
-            mock_config.assert_called_once()
-
-    def test_config_menu_file_entries_with_controller(self):
-        """Test configuring file menu entries with controller."""
-        object.__setattr__(self.app, '_controller', MagicMock(spec=IController))
-
-        with patch.object(self.app, '_config_menu_file_entries') as mock_config:
-            self.app._config_menu_file_entries()
-            mock_config.assert_called_once()
-
     def test_display_common_list_in_treeview_no_controller(self):
         """Test displaying list with no controller."""
         object.__setattr__(self.app, '_controller', None)
